@@ -1,0 +1,50 @@
+input system
+	scheme manager
+	-> input scheme
+		-> input context
+			-> input
+				- input single
+				- input combination
+				-> raw inputs
+
+A raw input specifies a specific device input to recieve.
+It contains a value associated with it.
+It can have multiple dimensions.
+
+An input is a named control and its different raw inputs.
+A single control can use different input from any raw inputs.
+Like binding fire to left mouse, right bumper, or a screen tap.
+Inputs can be either a single input or a combination of inputs.
+
+An input context is a collection of input inputs that are used in a specific
+context.
+Input contexts represent controls that occupy different sections of a program.
+Like controls for different characters or vehicles.
+Or a prompt to open a door.
+
+An input scheme is a collection of input contexts to define an entire control
+scheme.
+Useful for foreign keyboard layouts or control scheme profiles.
+
+A scheme manager decides which input scheme to use.
+
+The input system has scheme managers and sends input events to them.
+Input system broadcast the activated inputs as event messages.
+
+
+Raw Inputs can be scalar or vector and are normalized between 0 and 1.
+
+
+Inputs have 4 states, start, hold, stop, idle.
+	-> Start is when an input is first pressed or when a significant signal
+		change is reached.
+		It is triggered once.
+	-> Hold is when an input has been pressed but not released
+		It is triggered constantly.
+	-> Stop is when an input has been released
+		It is triggered once.
+	-> Idle is when an input is not being used
+		It is triggered once. constantly???
+
+An input can support an arbitrary number of consecutive presses given a
+different, defined timing window for each or a single timing window for each.
