@@ -1,10 +1,10 @@
--- CORE FILE
+-- initializes the engine
 
 require("Feint_Engine.feintAPI")
 
 printf("\nInitializing Feint Engine\n\n")
 
-Feint.Paths.PRINT()
+Feint.Paths.Print()
 
 -- REQUIRE LIBRARIES
 -- global = require("globalFunctions", true)
@@ -65,6 +65,8 @@ love.graphics.setLineStyle("rough")
 love.graphics.setDefaultFilter("nearest", "nearest", 16)
 love.math.setRandomSeed(G_SEED)
 
-PRINT_ENV(_ENV, false)
+Feint.Util.Core.PRINT_ENV(_ENV, false)
+
+printf("\nInitialized\n")
 
 printf("\nExiting bootstrap.lua\n")

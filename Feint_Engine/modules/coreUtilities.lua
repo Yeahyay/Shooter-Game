@@ -1,21 +1,16 @@
 local coreUtilities = {logLevel = 0}
-do
-	local lastEnv = getfenv(1)
-	-- 	coreUtilities._ENV = coreUtilities
-	-- 	coreUtilities._ENV_LAST = lastEnv
-	-- 	coreUtilities._TYPE = "MODULE"
-	-- 	coreUtilities._LAYER = lastEnv._LAYER and lastEnv._LAYER + 1 or 0
-	-- 	coreUtilities._NAME = "CORE UTILITIES"
-	-- 	-- set the table coreUtilities to refer to the main program's _G
-	setmetatable(coreUtilities, {__index = lastEnv})
-end
+-- do
+-- 	local lastEnv = getfenv(1)
+-- 	-- 	coreUtilities._ENV = coreUtilities
+-- 	-- 	coreUtilities._ENV_LAST = lastEnv
+-- 	-- 	coreUtilities._TYPE = "MODULE"
+-- 	-- 	coreUtilities._LAYER = lastEnv._LAYER and lastEnv._LAYER + 1 or 0
+-- 	-- 	coreUtilities._NAME = "CORE UTILITIES"
+-- 	-- 	-- set the table coreUtilities to refer to the main program's _G
+-- 	setmetatable(coreUtilities, {__index = lastEnv})
+-- end
 
-function math.round(num, numDecimalPlaces)
-	local mult = 10^(numDecimalPlaces or 0)
-	return math.floor(num * mult + 0.5) / mult
-end
-
-function loveType(obj)
+function coreUtilities.loveType(obj)
 	if type(obj) == "userdata" and obj.type then
 		return obj:type()
 	end
@@ -23,7 +18,7 @@ function loveType(obj)
 end
 
 -- make this better lmao
-function overloaded()
+function coreUtilities.overloaded()
 	local functionSignatures = {}
 	local mt = {}
 
@@ -72,9 +67,9 @@ function overloaded()
 end
 
 coreUtilities.PRINT_ENV_Level = 3
-function PRINT_ENV(env, verbose, restrict)
+function coreUtilities.PRINT_ENV(env, verbose, restrict)
 	if true then
-		local restrict = restrict or defaultGlobal
+		local restrict = restrict or defaultAll -- defaultGlobals
 		restrict["_ENV"] = env._ENV
 		restrict["_ENV_LAST"] = env._ENV_LAST
 		restrict["_TYPE"] = env._TYPE
@@ -99,7 +94,7 @@ function PRINT_ENV(env, verbose, restrict)
 			if not empty then
 				printf("__ELEMENTS__\n")
 				for k, v in pairs(env) do
-					if not restrict or not restrict[k] then
+					if (not restrict or not restrict[k]) and not k:match("default") then
 						printf("   %s\t%s\n", k, v)
 					end
 				end
@@ -113,9 +108,10 @@ function PRINT_ENV(env, verbose, restrict)
 	end
 end
 
+
 do
 	local _require = require
-	function requireOld(...)
+	local function requireOld(...)
 		_require(...)
 	end
 	function require(path, ...)
@@ -192,7 +188,7 @@ function coreUtilities.newSourceEnv(name, parent, lastEnv)
 end
 
 coreUtilities.DEBUG_PRINT_TABLE_Level = 1
-function DEBUG_PRINT_TABLE(table, format)
+function coreUtilities.DEBUG_PRINT_TABLE(table, format)
 	if coreUtilities.logLevel >= coreUtilities.DEBUG_PRINT_TABLE_Level then
 		printf("---\n")
 		for k, v in pairs(table) do

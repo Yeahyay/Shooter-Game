@@ -7,6 +7,8 @@ function printf(format, ...)
 	end
 end
 
+local FEINT_ROOT = (...):gsub("feintAPI", "")
+
 Feint = {
 	Name = "Feint API",
 	-- Paths = {
@@ -24,108 +26,50 @@ setmetatable(Feint, {
 	__index = hidden,
 })
 
-local exceptions = require("Feint_Engine.exceptions")
+local exceptions = require("Feint_Engine.modules.exceptions")
 
-function hidden.AddModule(name)
+function hidden.AddModule(name, privateData)
 	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 	printf("Adding module %s\n", name)
 	local newModule = {}
-	local newHidden = {}
-	newHidden.private = newHidden
+	local newPrivate = privateData or {} -- closure to a module's private state
+	newPrivate.private = newPrivate
+
+	function newPrivate.Finalize()
+		-- getmetatable(newModule).__newindex = function(t, k, v)
+		-- 	if t[k] then
+		-- 		t[k] = v
+		-- 	else
+		-- 		-- newPrivate[k] = v
+		-- 		error(exceptions.READ_ONLY_MODIFICATION_ERROR(t, k))
+		-- 	end
+		-- end
+	end
+	-- newPrivate.AddModule = self.AddModule
+
 	setmetatable(newModule, {
-		__index = newHidden,
+		__index = newPrivate,
 		__tostring = function() return string.format("Feint %s", name) end,
 	})
-
-	-- function newHidden.Finalize()
-	-- 	getmetatable(newModule).__newindex = function(t, k, v)
-	-- 		if t[k] then
-	-- 			t[k] = v
-	-- 		else
-	-- 			error(exceptions.READ_ONLY_MODIFICATION_ERROR(t, k))
-	-- 		end
-	-- 	end
-	-- end
 
 	Feint[name] = newModule
 end
 
-Feint.AddModule("Paths")
-Feint.Paths.size = 1
--- Feint.Util = require("Feint_Engine.utilities")
--- Feint.Util.Core = require("Feint_Engine.coreUtilities")
-
--- PATHS DEFINITION
-if Feint.Paths.Root == nil then
-	Feint.Paths.Root = (...):gsub("feintAPI", "")
-end
-function Feint.Paths.Add(name, path, external, file)
-	local path = path or name
-	assert(type(path) == "string", "needs a string")
-
-	local newPath = nil
-
-	-- if it's a file, no postfix
-	local postfix = ""
-	if file ~= "file" then
-		postfix = "."
-	end
-	if external == "external" then
-		newPath = path .. postfix
-	else
-		newPath = Feint.Paths.Root .. path .. postfix
-	end
-	if not Feint.Paths[name] then
-		Feint.Paths[name] = newPath
-
-		Feint.Paths.size = Feint.Paths.size + 1
-		if file == "file" then
-			-- printf("Added file     path \"%s\" (%s)\n", name, newPath)
-		else
-			if external == "external" then
-				-- printf("Added external path \"%s\" (%s)\n", name, newPath)
-			else
-				-- printf("Added Feint    path \"%s\" (%s)\n", name, newPath)
-			end
-		end
-	else
-		printf("Path %s (%s) already exists.\n", newPath)
-	end
-end
-function Feint.Paths.SlashDelimited(path)
-	return path:gsub("%.", "/")
-end
-function Feint.Paths.PRINT()
-	local min = 0
-	for k, v in pairs(Feint.Paths) do
-		if k ~= "hidden" then --k ~= "size" and k ~= "PRINT" then
-			min = math.max(min, k:len())
-		end
-	end
-	min = min + 1
-	-- printf("hidden\n")
-	-- for k, v in pairs(Feint.Paths.hidden) do
-	-- 	printf("%-" .. min .. "s %s\n", k .. ",", v)
-	-- end
-	-- printf("main\n")
-	local fmt = "%-" .. min .. "s %s\n"
-	for k, v in pairs(Feint.Paths) do
-		if k ~= "hidden" then--k ~= "size" and k ~= "PRINT" then
-			printf(fmt, k .. ",", v)
-		end
-	end
-end
-
-Feint.Paths.Add("Archive", "archive")
+-- PATHS
+-- To use the path system, I need the path to it; ironic
+Feint.AddModule("Paths", require("Feint_Engine.modules.paths", FEINT_ROOT)) -- give it the root as well
+Feint.Paths.Add("Modules", "modules")
 Feint.Paths.Add("Lib", "lib")
+-- Feint.Paths.Add("Archive", "archive")
+Feint.Paths.Finalize()
 
 -- UTIL
-Feint.AddModule("Util")
-Feint.Util = require(Feint.Paths.Root .. "utilities")
-Feint.Util.Core = require(Feint.Paths.Root .. "coreUtilities")
+Feint.AddModule("Util", require(Feint.Paths.Modules .. "utilities"))
+Feint.Util.Core = require(Feint.Paths.Modules .. "coreUtilities")
 Feint.Util.Class = require(Feint.Paths.Lib .. "30log-master.30log-clean")
 Feint.Util.Memoize = require(Feint.Paths.Lib .. "memoize-master.memoize")
 Feint.Util.Exceptions = exceptions
+Feint.Util.Finalize()
 
 -- ECS
 Feint.Paths.Add("ECS", "ECS") -- add path
@@ -137,19 +81,29 @@ Feint.ECS.EntityArchetype = require(Feint.Paths.ECS .. "EntityArchetype")
 Feint.ECS.Component = require(Feint.Paths.ECS .. "Component")
 Feint.ECS.System = require(Feint.Paths.ECS .. "System")
 Feint.ECS.Assemblage = require(Feint.Paths.ECS .. "Assemblage")
+Feint.ECS.Finalize()
 
 -- MATH
 Feint.AddModule("Math")
 Feint.Math.Vec2 = require(Feint.Paths.Lib .. "brinevector2D.brinevector")
 Feint.Math.Vec3 = require(Feint.Paths.Lib .. "brinevector3D.brinevector3D")
 -- Feint.vMath = require(Feint.Paths.Root .. "vMath")
+Feint.Math.Finalize()
 
 -- LOGGING
+Feint.Paths.Add("Log", "logs")
+Feint.AddModule("Log", require(Feint.Paths.Modules.. "log"))
 -- Feint
 
 -- SERIALIZATION
-Feint.Paths.Add("Parsing")
+Feint.Paths.Add("Parsing", Feint.Paths.Modules .. "parsing")
+Feint.AddModule("Parsing")
 -- return Feint
+
+
+for k, v in pairs(Feint.Paths) do
+	print(k, v)
+end
 
 --[[
 if Feint.Paths.Root == nil then

@@ -87,7 +87,7 @@ end
 coreUtilities.PRINT_ENV_Level = 3
 function PRINT_ENV(env, verbose, restrict)
 	if true then
-		local restrict = restrict or defaultGlobal
+		local restrict = restrict or defaultGlobals
 		restrict["_ENV"] = env._ENV
 		restrict["_ENV_LAST"] = env._ENV_LAST
 		restrict["_TYPE"] = env._TYPE

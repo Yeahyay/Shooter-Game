@@ -35,7 +35,7 @@ Feint_InputContext = require(Feint_INPUT_PATH.."/InputContext", true)
 -- 	mouseStop(...)
 -- end
 
-PRINT_ENV(_ENV_LAST, false)
+-- PRINT_ENV(_ENV_LAST, false)
 
 local InputSystem = System:new("InputSystem", {"input", Input})
 function InputSystem:init(...)

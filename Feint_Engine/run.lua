@@ -42,10 +42,14 @@ function love.load()
 	end
 end
 
+Feint.Util.Core.PRINT_ENV(_G, false)
+
 local startTime = love.timer.getTime()
 function love.update(dt)
 	G_TIMER = math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
-	World.DefaultWorld:update()
+	if false then
+		World.DefaultWorld:update()
+	end
 	-- if currentGame then
 	-- 	currentGame.update(dt)
 	-- 	if Slab then
@@ -72,6 +76,6 @@ function love.quit()
 	end
 end
 
-PRINT_ENV(_ENV, false)
+-- PRINT_ENV(_ENV, false)
 
 printf("\nExiting run.lua\n")

@@ -19,13 +19,22 @@ print(luaInfo())
 print(love.getVersion())
 print()
 
-defaultGlobal = {}
+defaultGlobals = {}
 for k, v in pairs(_G) do
-	defaultGlobal[k] = v
+	defaultGlobals[k] = v
 end
-defaultPackage = {}
+defaultPackages = {}
 for k, v in pairs(package.loaded) do
-	defaultPackage[k] = v
+	defaultPackages[k] = v
+end
+defaultAll = {}
+for k, v in pairs(_G) do
+	if string.match(k, "default") then
+		-- print(k)
+		for k, v in pairs(v) do
+			defaultAll[k] = v
+		end
+	end
 end
 
 local PATH = love.filesystem.getSource()
@@ -36,7 +45,7 @@ local SAVEDIR = love.filesystem.getSaveDirectory()
 -- require("PepperFishProfiler")
 PROFILER = nil--newProfiler()
 
-debugLevel = 0
+DEBUG_LEVEL = 0
 _ENV = _G
 _ENV_LAST = _G
 _TYPE = "SOURCE" -- or MODULE
@@ -49,15 +58,14 @@ function math.clamp(x, min, max)
 end
 
 do
-	local _print = print
+	local printOld = print
 	function print(...)
-		_print("OLD PRINT", ...)
+		printOld("OLD PRINT", ...)
 	end
-	printOld = _print
 end
 
-SRC_PATH = "src."
-LIB_PATH = "lib."
+-- SRC_PATH = "src."
+-- LIB_PATH = "lib."
 
 -- BOOTSTRAP
 
