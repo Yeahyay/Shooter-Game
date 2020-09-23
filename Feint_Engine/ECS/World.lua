@@ -37,7 +37,7 @@ end
 function World:destroy()
 end
 
-Feint.Util.makeTableReadOnly(World, function(self, k)
+Feint.Util.Table.makeTableReadOnly(World, function(self, k)
 	return string.format("attempt to modify %s", World.Name)
 end)
 return World

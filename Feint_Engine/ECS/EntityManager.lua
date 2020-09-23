@@ -100,7 +100,7 @@ function EntityManager:removeEntity(id)
 	self.entityIds[id] = nil
 end
 
-Feint.Util.makeTableReadOnly(EntityManager, function(self, k)
+Feint.Util.Table.makeTableReadOnly(EntityManager, function(self, k)
 	return string.format("attempt to modify %s", EntityManager.Name)
 end)
 return EntityManager

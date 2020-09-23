@@ -13,7 +13,7 @@ function EntityChunk:newEntity(data)
 end
 function EntityChunk:removeEntity()
 end
--- Feint.Util.makeTableReadOnly(EntityChunk, function(self, k)
+-- Feint.Util.Table.makeTableReadOnly(EntityChunk, function(self, k)
 -- 	return string.format("attempt to modify %s", EntityChunk.Name)
 -- end)
 return EntityChunk

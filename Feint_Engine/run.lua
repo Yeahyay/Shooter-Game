@@ -42,11 +42,11 @@ function love.load()
 	end
 end
 
-Feint.Util.Core.PRINT_ENV(_G, false)
+Feint.Util.Debug.PRINT_ENV(_G, false)
 
 local startTime = love.timer.getTime()
 function love.update(dt)
-	G_TIMER = math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
+	G_TIMER = Feint.Math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
 	if false then
 		World.DefaultWorld:update()
 	end

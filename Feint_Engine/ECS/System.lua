@@ -8,7 +8,7 @@ end
 function System:update(dt)
 end
 
-Feint.Util.makeTableReadOnly(System, function(self, k)
+Feint.Util.Table.makeTableReadOnly(System, function(self, k)
 	return string.format("attempt to modify %s", System.Name)
 end)
 

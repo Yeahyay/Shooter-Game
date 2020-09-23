@@ -1,4 +1,4 @@
--- initializes the engine
+-- initializes the bare minimum for the engine to run
 
 require("Feint_Engine.feintAPI")
 
@@ -65,7 +65,7 @@ love.graphics.setLineStyle("rough")
 love.graphics.setDefaultFilter("nearest", "nearest", 16)
 love.math.setRandomSeed(G_SEED)
 
-Feint.Util.Core.PRINT_ENV(_ENV, false)
+Feint.Util.Debug.PRINT_ENV(_ENV, false)
 
 printf("\nInitialized\n")
 

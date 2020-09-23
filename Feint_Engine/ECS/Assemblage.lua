@@ -6,7 +6,7 @@ function Assemblage:init()
 	self.components = {}
 end
 
-Feint.Util.makeTableReadOnly(Assemblage, function(self, k)
+Feint.Util.Table.makeTableReadOnly(Assemblage, function(self, k)
 	return string.format("attempt to modify %s", Assemblage.Name)
 end)
 return Assemblage

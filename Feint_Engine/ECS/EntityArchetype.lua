@@ -8,7 +8,7 @@ function EntityArchetype:init(components, ...)
 	self.chunkCapacity = 32
 end
 
--- Feint.Util.makeTableReadOnly(EntityArchetype, function(self, k)
+-- Feint.Util.Table.makeTableReadOnly(EntityArchetype, function(self, k)
 -- 	return string.format("attempt to modify %s", EntityArchetype.Name)
 -- end)
 return EntityArchetype

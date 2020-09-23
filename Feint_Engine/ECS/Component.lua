@@ -4,7 +4,6 @@ local Component = ECSUtils.newClass("Component")
 -- local ffi = require("ffi")
 
 function Component:init(data, ...)
-	print("soindiominufi")
 	self.instances = 0
 	self.data = {}
 	-- self.instantiate = self.new
@@ -72,7 +71,7 @@ function Component:new(name, ...)
 	return instance
 end
 -- ]]
-Feint.Util.makeTableReadOnly(Component, function(self, k)
+Feint.Util.Table.makeTableReadOnly(Component, function(self, k)
 	return string.format("attempt to modify %s", Component.Name)
 end)
 return Component
