@@ -40,6 +40,8 @@ function love.load()
 	for k, v in ipairs(World.DefaultWorld.updateOrder) do
 		printf("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
 	end
+
+	Feint.Log.log();
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)
