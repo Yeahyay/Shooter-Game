@@ -53,6 +53,13 @@ Feint.AddModule("Log", require(Feint.Paths.Modules.. "log"))
 Feint.Paths.Add("Parsing", Feint.Paths.Modules .. "parsing")
 Feint.AddModule("Parsing")
 
+-- LIB
+local Slab = require(Feint.Paths.Lib.."Slab-0_6_3.Slab")
+Feint.AddModule("UI")
+Feint.UI.Immediate = setmetatable({}, {
+	__index = Slab
+})
+
 getmetatable(Feint).__newindex = function(t, k, v)
 	if t[k] then
 		t[k] = v

@@ -49,7 +49,7 @@ Feint.Util.Debug.PRINT_ENV(_G, false)
 local startTime = love.timer.getTime()
 function love.update(dt)
 	G_TIMER = Feint.Math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
-	if false then
+	if true then
 		World.DefaultWorld:update()
 	end
 	-- if currentGame then

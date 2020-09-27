@@ -10,6 +10,14 @@ local coreUtilities = {logLevel = 0}
 -- 	setmetatable(coreUtilities, {__index = lastEnv})
 -- end
 
+do
+	local socket = require("socket")
+	local startTime = love.timer.getTime() - (socket.gettime() % 1)
+	function coreUtilities.getTime()
+		return love.timer.getTime() - startTime
+	end
+end
+
 function coreUtilities.loveType(obj)
 	if type(obj) == "userdata" and obj.type then
 		return obj:type()
