@@ -10,6 +10,8 @@ local coreUtilities = {logLevel = 0}
 -- 	setmetatable(coreUtilities, {__index = lastEnv})
 -- end
 
+love.timer = require("love.timer")
+
 do
 	local socket = require("socket")
 	local startTime = love.timer.getTime() - (socket.gettime() % 1)
@@ -23,6 +25,15 @@ function coreUtilities.loveType(obj)
 		return obj:type()
 	end
 	return nil
+end
+
+function coreUtilities.type(obj)
+	local type = type(obj)
+	if type == "userdata" and obj.type then
+		return obj:type()
+	else
+		return type
+	end
 end
 
 -- make this better lmao
@@ -169,7 +180,7 @@ function coreUtilities.requireEnv(env, directory, ...)
 			setfenv(loader, env)
 		end)
 		if not status then
-			printf("Error requiring into %s: %s\n", _ENV._NAME, msg)
+			log("Error in requireEnv: %s. It's probably a thread.\n", msg)
 		end
 		data = loader(directory, ...)
 		-- data = coreUtilities.loadChunk(env, directory)()

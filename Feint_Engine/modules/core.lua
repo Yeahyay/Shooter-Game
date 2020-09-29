@@ -10,7 +10,9 @@ local core = {
 	-- Math = {},
 }
 
-local private = {}
+local private = {
+	Modules = {},
+}
 setmetatable(core, {
 	__index = private,
 })
@@ -26,10 +28,28 @@ function printf(format, ...)
 	end
 end
 
-function private.AddModule(name, privateData)
+function log(...)
+	printf("%s: ", _ENV._NAME)
+	printf(...)
+end
+
+function private.LoadModule(name)
 	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
-	printf("Adding module %s\n", name)
-	local newModule = {}
+	local module = private.Modules[name]
+	if module then
+		log("Loading module %s\n", name)
+		module.setup()
+		Feint[name] = private.Modules[name]
+	else
+		log("Failed to load module %s\n", name)
+	end
+end
+function private.AddModule(name, privateData, setupFunc)
+	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+	-- log("Adding module %s\n", name)
+	local newModule = {
+		Name = name,
+	}
 	local newPrivate = privateData or {} -- closure to a module's private state
 	newPrivate.private = newPrivate
 
@@ -45,12 +65,24 @@ function private.AddModule(name, privateData)
 	end
 	-- newPrivate.AddModule = self.AddModule
 
+	function newPrivate.setup(...)
+		if setupFunc then
+			setupFunc(newModule, ...)
+		end
+	end
+
 	setmetatable(newModule, {
 		__index = newPrivate,
-		__tostring = function() return string.format("Feint %s", name) end,
+		__tostring = function() return string.format("Feint \"%s\" Module", name) end,
 	})
 
-	Feint[name] = newModule
+	-- if setupFunc then
+	-- 	setupFunc(newModule)
+	-- end
+
+	private.Modules[name] = newModule
+	Feint[name] = {}
+	return newModule
 end
 
 return core

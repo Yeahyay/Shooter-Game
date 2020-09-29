@@ -41,6 +41,7 @@ local PATH = love.filesystem.getSource()
 local SAVEDIR = love.filesystem.getSaveDirectory()
 print("PATH: "..PATH)
 print("SAVEDIR: "..SAVEDIR)
+print()
 
 -- require("PepperFishProfiler")
 PROFILER = nil--newProfiler()
@@ -51,7 +52,7 @@ _ENV_LAST = _G
 _TYPE = "SOURCE" -- or MODULE
 _LAYER = 0
 _REQUIRE_SILENT = false
-_NAME = "GLOBAL TABLE"
+_NAME = "THREAD_00"
 
 function math.clamp(x, min, max)
 	return math.max(math.min(x, max), min)

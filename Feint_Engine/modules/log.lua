@@ -8,7 +8,8 @@ end
 
 local dir = string.format("%s/logs/%s", love.filesystem.getWorkingDirectory(), string.format("log_%s", time()))
 
-local logFile = io.open(dir, "w")
+local logFile = nil
+-- print(dir)
 function log.log(message, write)
 	local output = string.format("%s %s\n", time(), message or "Empty log")
 	if write then

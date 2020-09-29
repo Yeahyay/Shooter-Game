@@ -1,4 +1,5 @@
 -- CORE FILE
+-- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
 
 function love.keypressed(...)
@@ -14,10 +15,14 @@ end
 function love.mousereleased(...)
 end
 
+function love.threaderror(thread, message)
+	error(string.format("Thread (%s): Error \"%s\"\n", thread, message))
+end
 function love.load()
 	-- World.DefaultWorld:registerSystem(Feint.ECS.System:new("testSystem1"))
 	-- World.DefaultWorld:registerSystem(Feint.ECS.System:new("testSystem2"))
 	-- World.DefaultWorld:generateUpdateOrderList()
+
 
 	Feint.Paths.Add("Game_ECS_Files", "src.ECS", "external")
 	Feint.Paths.Add("Game_ECS_Bootstrap", Feint.Paths.Game_ECS_Files.."bootstrap", "external", "file")
@@ -25,6 +30,7 @@ function love.load()
 	Feint.Paths.Add("Game_ECS_Systems", Feint.Paths.Game_ECS_Files.."systems", "external")
 	local systems = {}
 	local systemCount = 0
+	--[[
 	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Paths.SlashDelimited(Feint.Paths.Game_ECS_Systems))) do
 		-- print(k, v)
 		if v:match(".lua") then
@@ -38,10 +44,15 @@ function love.load()
 
 	World.DefaultWorld:generateUpdateOrderList()
 	for k, v in ipairs(World.DefaultWorld.updateOrder) do
-		printf("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
+		log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
 	end
 
-	Feint.Log.log();
+	-- Feint.Log.log();
+	Feint.Thread.newWorker(1, function(self)
+
+	end)
+	Feint.Thread.startWorker(1)
+	--]]
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)
@@ -49,7 +60,7 @@ Feint.Util.Debug.PRINT_ENV(_G, false)
 local startTime = love.timer.getTime()
 function love.update(dt)
 	G_TIMER = Feint.Math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
-	if true then
+	if false then
 		World.DefaultWorld:update()
 	end
 	-- if currentGame then
@@ -62,9 +73,10 @@ function love.update(dt)
 	-- 	end
 	-- end
 end
+local run = Feint.Run
 function love.draw(dt)
-	G_FPS = 1 / tick.dt
-	G_INT = tick.accum / math.max(0, tick.rate)
+	G_FPS = 1 / run.dt
+	G_INT = run.accum / math.max(0, run.rate)
 	if currentGame then
 		currentGame.draw(dt)
 		if Slab then
@@ -80,4 +92,5 @@ end
 
 -- PRINT_ENV(_ENV, false)
 
-printf("\nExiting run.lua\n")
+printf("\n")
+log("Exiting run.lua\n")

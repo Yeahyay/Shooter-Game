@@ -26,7 +26,8 @@ function RenderSystem:update(...)
 	--
 	end)
 
-	Feint.Log.log("a")
+	-- Feint.Log.log(""\n\n")
+	printf("\n")
 
 	-- self.EntityManager:forEach(self, {Entity, Transform, Renderer, Physics}, function(entity, transform, renderer, physics)
 	-- 	local transform = components.Transform

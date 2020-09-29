@@ -13,6 +13,8 @@ function EntityManager:init(name)
 	self.archetypeChunks = {}
 	self.archetypesChunksCount = 0
 
+	self.forEachJobs = {}
+
 	-- self.ID_INDEX = 0
 	self.EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
 end
@@ -50,7 +52,8 @@ local getEntities = Feint.Util.Memoize(function(query)
 	return entities
 end)
 
-local generateQuery = (function(components, componentsCount)
+local generateQuery = --Feint.Util.Memoize
+(function(components, componentsCount)
 	print(components, componentsCount)
 	printf("Generating EntityQuery for components: ")
 
@@ -84,9 +87,7 @@ function EntityManager:forEach(system, arguments, callback)
 	printf("forEach from System \"%s\"\n", system.Name)
 	-- print(arguments)
 	local startTime = getTime()
-	-- for i = 1, 10 do
 		local query = generateQuery(arguments, #arguments)
-	-- end
 	local endTime = getTime() - startTime
 	printf("TIME: %f\n", endTime)
 	avg = avg + endTime

@@ -2,16 +2,23 @@
 
 require("Feint_Engine.feintAPI")
 
-printf("\nInitializing Feint Engine\n\n")
+Feint.LoadModule("ECS")
+-- print(Feint.ECS.System)
+Feint.LoadModule("Math")
+Feint.LoadModule("Log")
+Feint.LoadModule("Parsing")
+Feint.LoadModule("Serialize")
+Feint.LoadModule("Audio")
+Feint.LoadModule("Tween")
+Feint.LoadModule("UI")
+print(Feint.UI.Immediate)
 
-Feint.Paths.Print()
-
--- REQUIRE LIBRARIES
--- global = require("globalFunctions", true)
+printf("\n")
+log("Initializing Feint Engine\n\n")
 
 require(Feint.Paths.Root.."run")
 
-tick = require(Feint.Paths.Lib.."tick-master.tick")
+-- tick = require(Feint.Paths.Lib.."tick-master.tick")
 -- Slab = require(Feint.Paths.Lib.."Slab-0_6_3.Slab")
 -- memoize = require(LIB_PATH.."memoize-master.memoize", true)
 -- uuid = require(LIB_PATH.."uuid-master.src.uuid", true)
@@ -19,8 +26,8 @@ tick = require(Feint.Paths.Lib.."tick-master.tick")
 -- slam = require(LIB_PATH.."slam-master.slam", true)
 -- flux = require(LIB_PATH.."flux-master.flux", true)
 
-tick.framerate = 60
-tick.rate = 1 / 60
+Feint.Run.framerate = 60
+Feint.Run.rate = 1 / 60
 G_DEBUG = false
 -- G_TIMER = 0
 G_FPS = 0
@@ -50,6 +57,8 @@ love.math.setRandomSeed(G_SEED)
 
 Feint.Util.Debug.PRINT_ENV(_ENV, false)
 
-printf("\nInitialized\n")
+printf("\n")
+log("Initialized\n")
 
-printf("\nExiting bootstrap.lua\n")
+printf("\n")
+log("Exiting bootstrap.lua\n")

@@ -37,7 +37,7 @@ function paths.Add(name, path, external, file)
 			end
 		end
 	else
-		printf("Path %s (%s) already exists.\n", newPath, newPath)
+		log("Path %s (%s) already exists.\n", newPath, newPath)
 	end
 end
 
@@ -61,7 +61,7 @@ function paths.Print()
 	local fmt = "%-" .. min .. "s %s\n"
 	for k, v in pairs(Feint.Paths) do
 		if k ~= "hidden" then--k ~= "size" and k ~= "PRINT" then
-			printf(fmt, k .. ",", v)
+			log(fmt, k .. ",", v)
 		end
 	end
 end
