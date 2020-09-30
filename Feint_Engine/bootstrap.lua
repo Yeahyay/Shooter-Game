@@ -3,8 +3,6 @@
 require("Feint_Engine.feintAPI")
 
 Feint.LoadModule("ECS")
-Feint.LoadModule("Math")
-Feint.LoadModule("Log")
 Feint.LoadModule("Parsing")
 Feint.LoadModule("Serialize")
 Feint.LoadModule("Audio")
@@ -17,14 +15,6 @@ printf("\n")
 log("Initializing Feint Engine\n\n")
 
 require(Feint.Paths.Root.."run")
-
--- tick = require(Feint.Paths.Lib.."tick-master.tick")
--- Slab = require(Feint.Paths.Lib.."Slab-0_6_3.Slab")
--- memoize = require(LIB_PATH.."memoize-master.memoize", true)
--- uuid = require(LIB_PATH.."uuid-master.src.uuid", true)
--- bitser = require(LIB_PATH.."bitser.bitser", true)
--- slam = require(LIB_PATH.."slam-master.slam", true)
--- flux = require(LIB_PATH.."flux-master.flux", true)
 
 Feint.Run.framerate = 60
 Feint.Run.rate = 1 / 60

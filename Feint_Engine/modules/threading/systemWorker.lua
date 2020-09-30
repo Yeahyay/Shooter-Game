@@ -41,7 +41,7 @@ do
 	end
 end
 
-local Feint = require("Feint_Engine.feintAPI", {Audio = true})
+require("Feint_Engine.feintAPI", {Audio = true})
 
 love.timer = require("love.timer")
 

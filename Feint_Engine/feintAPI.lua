@@ -77,7 +77,7 @@ end)
 
 -- SERIALIZATION
 Feint.AddModule("Serialize", function(self)
-	Feint.Serialize.Bitser = require(Feint.Paths.Lib .. "bitser.bitser")
+	self.Bitser = require(Feint.Paths.Lib .. "bitser.bitser")
 	self.Finalize()
 end)
 
@@ -89,7 +89,7 @@ end)
 
 -- TWEENING
 Feint.AddModule("Tween", function(self)
-	Feint.Tween.Flux = require(Feint.Paths.Lib .. "flux-master.flux")
+	self.Flux = require(Feint.Paths.Lib .. "flux-master.flux")
 	self.Finalize()
 end)
 

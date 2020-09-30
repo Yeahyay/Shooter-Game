@@ -39,31 +39,33 @@ end
 
 function private.LoadModule(name)
 	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
-	local module = private.Modules[name]
+	local module = private.Modules[name] -- checks if module exists
 	if module then
 		log("Loading module %s\n", name)
 		module.setup()
-		-- Feint[name] = private.Modules[name]
 	else
 		log("Failed to load module %s\n", name)
 	end
 end
--- function private.AddModule(module)
--- 	private.Modules[module.Name] = module
--- end
+
 function private.AddModule(name, setupFunc)
 	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 	-- log("Adding module %s\n", name)
 	local newModule = {
 		Name = name,
 	}
+
 	local newPrivate = {} -- closure to a module's private state
 	newPrivate.require = function(name, ...)
-		assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
-		newPrivate.private = require(name, ...)
-		setmetatable(newPrivate, {
-			__index = newPrivate.private
-		})
+		if getmetatable(newPrivate) then
+			error(string.format("Module '%s' is already loaded with data", name))
+		else
+			assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+			newPrivate.private = require(name, ...)
+			setmetatable(newPrivate, {
+				__index = newPrivate.private
+			})
+		end
 	end
 	newPrivate.Finalize = function()
 		getmetatable(newModule).__newindex = function(t, k, v)
