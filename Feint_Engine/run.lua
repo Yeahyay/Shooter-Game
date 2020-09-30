@@ -24,14 +24,13 @@ function love.load()
 	-- World.DefaultWorld:generateUpdateOrderList()
 
 
-	Feint.Paths.Add("Game_ECS_Files", "src.ECS", "external")
-	Feint.Paths.Add("Game_ECS_Bootstrap", Feint.Paths.Game_ECS_Files.."bootstrap", "external", "file")
-	Feint.Paths.Add("Game_ECS_Components", Feint.Paths.Game_ECS_Files.."components", "external")
-	Feint.Paths.Add("Game_ECS_Systems", Feint.Paths.Game_ECS_Files.."systems", "external")
+	Feint.Paths.Add("Game_ECS_Files", "src.ECS")
+	Feint.Paths.Add("Game_ECS_Bootstrap", Feint.Paths.Game_ECS_Files.."bootstrap", "file")
+	Feint.Paths.Add("Game_ECS_Components", Feint.Paths.Game_ECS_Files.."components")
+	Feint.Paths.Add("Game_ECS_Systems", Feint.Paths.Game_ECS_Files.."systems")
 	local systems = {}
 	local systemCount = 0
 	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Paths.SlashDelimited(Feint.Paths.Game_ECS_Systems))) do
-		-- print(k, v)
 		if v:match(".lua") then
 			local path = Feint.Paths.Game_ECS_Systems..v:gsub(".lua", "")
 			local system = require(path)
@@ -51,8 +50,6 @@ function love.load()
 
 	end)
 	Feint.Thread.startWorker(1)
-	--[, [
-	--]]
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)

@@ -8,18 +8,19 @@ Feint = require(FEINT_ROOT .. "modules.core")
 
 -- PATHS
 -- To use the path system, I need the path to it; ironic
-local paths = Feint.AddModule("Paths", function(self) -- give it the root as well
+Feint.AddModule("Paths", function(self) -- give it the root as well
 	self.require("Feint_Engine.modules.paths", FEINT_ROOT)
-	self.Add("Modules", "modules")
-	self.Add("Lib", "lib")
-	self.Add("Archive", "archive")
+	self.Add("Modules", Feint.Paths.Root .. "modules")
+	self.Add("Lib", Feint.Paths.Root .. "lib")
+	self.Add("Archive", Feint.Paths.Root .. "archive")
 	self.Finalize()
 end)
 Feint.LoadModule("Paths")
+Feint.Paths.Print()
 
 -- UTIL
-Feint.Paths.Add("Util", "modules.utilities")
-Feint.AddModule("Util", function(self)--, require(Feint.Paths.Modules .. "utilities"))
+Feint.Paths.Add("Util", Feint.Paths.Modules .. "utilities")
+Feint.AddModule("Util", function(self)
 	self.Core = require(Feint.Paths.Util .. "coreUtilities")
 	self.Debug = require(Feint.Paths.Util .. "debugUtilities")
 	self.File = require(Feint.Paths.Util .. "fileUtilities")
@@ -34,14 +35,14 @@ Feint.AddModule("Util", function(self)--, require(Feint.Paths.Modules .. "utilit
 end)
 
 -- THREADING
-Feint.Paths.Add("Thread", "modules.threading")
+Feint.Paths.Add("Thread", Feint.Paths.Modules .. "threading")
 Feint.AddModule("Thread", function(self)
 	self.require(Feint.Paths.Thread .. "thread")
 	self.Finalize()
 end)
 
 -- ECS
-Feint.Paths.Add("ECS", "ECS") -- add path
+Feint.Paths.Add("ECS", Feint.Paths.Root .. "ECS") -- add path
 Feint.AddModule("ECS", function(self)
 	self.Util = require(Feint.Paths.ECS .. "ECSUtils") -- require components into table
 	self.EntityManager = require(Feint.Paths.ECS .. "EntityManager")
@@ -63,7 +64,7 @@ Feint.AddModule("Math", function(self)
 end)
 
 -- LOGGING
-Feint.Paths.Add("Log", "logs")
+Feint.Paths.Add("Log", Feint.Paths.Root .. "logs")
 Feint.AddModule("Log", function(self)
 	self.require(Feint.Paths.Modules.. "log")
 end)
@@ -95,7 +96,7 @@ end)
 
 -- LIB
 do
-	local Slab = require(Feint.Paths.Lib.."Slab-0_6_3.Slab")
+	local Slab = require(Feint.Paths.Lib .. "Slab-0_6_3.Slab")
 	Feint.AddModule("UI", function(self)
 		self.Immediate = setmetatable({}, {
 			__index = Slab
@@ -117,10 +118,9 @@ getmetatable(Feint).__newindex = function(t, k, v)
 	end
 end
 
+-- DEFAULT MODULES
 Feint.LoadModule("Util")
 Feint.LoadModule("Thread")
 Feint.LoadModule("Math")
 Feint.LoadModule("Log")
 Feint.LoadModule("Run")
-
--- return Feint

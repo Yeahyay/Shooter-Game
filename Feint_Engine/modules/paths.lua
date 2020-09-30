@@ -7,7 +7,7 @@ if paths.Root == nil then
 	paths.Root = FEINT_ROOT or "Feint_Engine."
 end
 
-function paths.Add(name, path, external, file)
+function paths.Add(name, path, file)
 	local path = path or name
 	assert(type(path) == "string", "needs a string")
 
@@ -18,11 +18,11 @@ function paths.Add(name, path, external, file)
 	if file ~= "file" then
 		postfix = "."
 	end
-	if external == "external" then
+	-- if external == "external" then
 		newPath = path .. postfix
-	else
-		newPath = paths.Root .. path .. postfix
-	end
+	-- else
+	-- 	newPath = paths.Root .. path .. postfix
+	-- end
 	if not paths[name] then
 		paths[name] = newPath
 

@@ -1,6 +1,6 @@
 local module = {}
 
-local exceptions = require("Feint_Engine.modules.utilities.exceptions")
+local exceptions = Feint.Util.Exceptions
 
 function module:new(name, private, setupFunc)
 	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
@@ -51,7 +51,6 @@ function private.AddModule(name, privateData, setupFunc)
 		-- 	end
 		-- end
 	end
-	-- newPrivate.AddModule = self.AddModule
 
 	function newPrivate.setup(...)
 		if setupFunc then
@@ -64,15 +63,10 @@ function private.AddModule(name, privateData, setupFunc)
 		__tostring = function() return string.format("Feint \"%s\" Module", name) end,
 	})
 
-	-- if setupFunc then
-	-- 	setupFunc(newModule)
-	-- end
-
 	private.Modules[name] = newModule
 	Feint[name] = newModule
 	return newModule
 end
-
 
 setmetatable(module, {
 	__index = module,
