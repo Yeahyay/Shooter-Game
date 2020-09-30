@@ -3,7 +3,6 @@
 require("Feint_Engine.feintAPI")
 
 Feint.LoadModule("ECS")
--- print(Feint.ECS.System)
 Feint.LoadModule("Math")
 Feint.LoadModule("Log")
 Feint.LoadModule("Parsing")
@@ -11,6 +10,7 @@ Feint.LoadModule("Serialize")
 Feint.LoadModule("Audio")
 Feint.LoadModule("Tween")
 Feint.LoadModule("UI")
+
 print(Feint.UI.Immediate)
 
 printf("\n")

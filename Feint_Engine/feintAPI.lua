@@ -7,19 +7,19 @@ local excludedModules = args[2] or {}
 Feint = require(FEINT_ROOT .. "modules.core")
 
 -- PATHS
-do
-	-- To use the path system, I need the path to it; ironic
-	local paths = Feint.AddModule("Paths", require("Feint_Engine.modules.paths", FEINT_ROOT)) -- give it the root as well
-	Feint.LoadModule("Paths")
-	paths.Add("Modules", "modules")
-	paths.Add("Lib", "lib")
-	paths.Add("Archive", "archive")
-	-- paths.Finalize()
-end
+-- To use the path system, I need the path to it; ironic
+local paths = Feint.AddModule("Paths", function(self) -- give it the root as well
+	self.require("Feint_Engine.modules.paths", FEINT_ROOT)
+	self.Add("Modules", "modules")
+	self.Add("Lib", "lib")
+	self.Add("Archive", "archive")
+	self.Finalize()
+end)
+Feint.LoadModule("Paths")
 
 -- UTIL
 Feint.Paths.Add("Util", "modules.utilities")
-Feint.AddModule("Util", nil, function(self)--, require(Feint.Paths.Modules .. "utilities"))
+Feint.AddModule("Util", function(self)--, require(Feint.Paths.Modules .. "utilities"))
 	self.Core = require(Feint.Paths.Util .. "coreUtilities")
 	self.Debug = require(Feint.Paths.Util .. "debugUtilities")
 	self.File = require(Feint.Paths.Util .. "fileUtilities")
@@ -30,19 +30,19 @@ Feint.AddModule("Util", nil, function(self)--, require(Feint.Paths.Modules .. "u
 	self.Class = require(Feint.Paths.Lib .. "30log-master.30log-clean")
 	self.Memoize = require(Feint.Paths.Lib .. "memoize-master.memoize")
 	self.UUID = require(Feint.Paths.Lib .. "uuid-master.src.uuid")
+	self.Finalize()
 end)
-Feint.LoadModule("Util")
--- Feint.Util.Finalize()
 
 -- THREADING
 Feint.Paths.Add("Thread", "modules.threading")
-Feint.AddModule("Thread", require(Feint.Paths.Thread .. "thread"), function(self)
+Feint.AddModule("Thread", function(self)
+	self.require(Feint.Paths.Thread .. "thread")
+	self.Finalize()
 end)
-Feint.LoadModule("Thread")
 
 -- ECS
 Feint.Paths.Add("ECS", "ECS") -- add path
-Feint.AddModule("ECS", nil, function(self)
+Feint.AddModule("ECS", function(self)
 	self.Util = require(Feint.Paths.ECS .. "ECSUtils") -- require components into table
 	self.EntityManager = require(Feint.Paths.ECS .. "EntityManager")
 	self.World = require(Feint.Paths.ECS .. "World")
@@ -50,57 +50,63 @@ Feint.AddModule("ECS", nil, function(self)
 	self.Component = require(Feint.Paths.ECS .. "Component")
 	self.System = require(Feint.Paths.ECS .. "System")
 	self.Assemblage = require(Feint.Paths.ECS .. "Assemblage")
+	self.Finalize()
 end)
--- Feint.ECS.Finalize()
 
 -- MATH
-Feint.AddModule("Math", require(Feint.Paths.Modules .. "extendedMath"), function(self)
+Feint.AddModule("Math", function(self)
+	self.require(Feint.Paths.Modules .. "extendedMath")
 	self.Vec2 = require(Feint.Paths.Lib .. "brinevector2D.brinevector")
 	self.Vec3 = require(Feint.Paths.Lib .. "brinevector3D.brinevector3D")
 	-- Feint.vMath = require(Feint.Paths.Root .. "vMath")
+	self.Finalize()
 end)
--- Feint.Math.Finalize()
-Feint.LoadModule("Math")
 
 -- LOGGING
 Feint.Paths.Add("Log", "logs")
-Feint.AddModule("Log", require(Feint.Paths.Modules.. "log"), function(self)
+Feint.AddModule("Log", function(self)
+	self.require(Feint.Paths.Modules.. "log")
 end)
-Feint.LoadModule("Log")
+Feint.Log.Finalize()
 
 -- PARSING
 Feint.Paths.Add("Parsing", Feint.Paths.Modules .. "parsing")
-Feint.AddModule("Parsing", nil, function(self)
+Feint.AddModule("Parsing", function(self)
+	self.Finalize()
 end)
 
 -- SERIALIZATION
-Feint.AddModule("Serialize", nil, function(self)
+Feint.AddModule("Serialize", function(self)
 	Feint.Serialize.Bitser = require(Feint.Paths.Lib .. "bitser.bitser")
+	self.Finalize()
 end)
 
 -- AUDIO
-Feint.AddModule("Audio", nil, function(self)
+Feint.AddModule("Audio", function(self)
 	Feint.Audio.Slam = require(Feint.Paths.Lib .. "slam-master.slam")
+	self.Finalize()
 end)
 
 -- TWEENING
-Feint.AddModule("Tween", nil, function(self)
+Feint.AddModule("Tween", function(self)
 	Feint.Tween.Flux = require(Feint.Paths.Lib .. "flux-master.flux")
+	self.Finalize()
 end)
 
 -- LIB
 do
 	local Slab = require(Feint.Paths.Lib.."Slab-0_6_3.Slab")
-	Feint.AddModule("UI", nil, function(self)
+	Feint.AddModule("UI", function(self)
 		self.Immediate = setmetatable({}, {
 			__index = Slab
 		})
+		self.Finalize()
 	end)
 
-	Feint.AddModule("Run", require(Feint.Paths.Lib.."tick-master.tick"), function(self)
+	Feint.AddModule("Run", function(self)
+		self.require(Feint.Paths.Lib.."tick-master.tick")
+		-- self.Finalize()
 	end)
-	Feint.LoadModule("Run")
-	-- Feint.Run
 end
 
 getmetatable(Feint).__newindex = function(t, k, v)
@@ -110,3 +116,11 @@ getmetatable(Feint).__newindex = function(t, k, v)
 		error(string.format("Module \"%s\" does not exist in Feint\n", k))
 	end
 end
+
+Feint.LoadModule("Util")
+Feint.LoadModule("Thread")
+Feint.LoadModule("Math")
+Feint.LoadModule("Log")
+Feint.LoadModule("Run")
+
+-- return Feint

@@ -23,8 +23,8 @@ function paths.Add(name, path, external, file)
 	else
 		newPath = paths.Root .. path .. postfix
 	end
-	if not Feint.Paths[name] then
-		Feint.Paths[name] = newPath
+	if not paths[name] then
+		paths[name] = newPath
 
 		paths.size = paths.size + 1
 		if file == "file" then
@@ -47,7 +47,7 @@ end
 
 function paths.Print()
 	local min = 0
-	for k, v in pairs(Feint.Paths) do
+	for k, v in pairs(paths) do
 		if k ~= "hidden" then --k ~= "size" and k ~= "PRINT" then
 			min = math.max(min, k:len())
 		end
@@ -59,7 +59,7 @@ function paths.Print()
 	-- end
 	-- printf("main\n")
 	local fmt = "%-" .. min .. "s %s\n"
-	for k, v in pairs(Feint.Paths) do
+	for k, v in pairs(paths) do
 		if k ~= "hidden" then--k ~= "size" and k ~= "PRINT" then
 			log(fmt, k .. ",", v)
 		end

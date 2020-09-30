@@ -30,7 +30,6 @@ function love.load()
 	Feint.Paths.Add("Game_ECS_Systems", Feint.Paths.Game_ECS_Files.."systems", "external")
 	local systems = {}
 	local systemCount = 0
-	--[[
 	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Paths.SlashDelimited(Feint.Paths.Game_ECS_Systems))) do
 		-- print(k, v)
 		if v:match(".lua") then
@@ -52,6 +51,7 @@ function love.load()
 
 	end)
 	Feint.Thread.startWorker(1)
+	--[, [
 	--]]
 end
 
