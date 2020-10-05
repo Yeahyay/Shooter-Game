@@ -33,6 +33,21 @@ _NAME = string.format("THREAD_%02d", self.id)
 
 local channel = love.thread.getChannel("thread_data_" .. self.id)
 
+require("Feint_Engine.feintAPI", {Audio = true})
+
+love.timer = require("love.timer")
+
+-- local loadfile = Feint.Util.Memoize(loadfile)
+
+local jobCode = {}
+local loadJob = Feint.Util.Memoize(function(data, type)
+	if type == "string" then
+		jobCode[data] = loadstring(data)
+	elseif type == "file" then
+		jobCode[data] = loadfile(data)
+	end
+end)
+
 do
 	local printOld = print
 	function print(...)
@@ -40,10 +55,6 @@ do
 		printOld(...)
 	end
 end
-
-require("Feint_Engine.feintAPI", {Audio = true})
-
-love.timer = require("love.timer")
 
 local loop = coroutine.create(loadfile())
 

@@ -45,11 +45,15 @@ function love.load()
 		log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
 	end
 
+	--[[
 	-- Feint.Log.log();
 	Feint.Thread.newWorker(1, function(self)
 
 	end)
 	Feint.Thread.startWorker(1)
+	local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
+	channel:push("local x = 1; return x")
+	--]]
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)

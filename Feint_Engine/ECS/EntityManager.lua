@@ -84,6 +84,7 @@ local getTime = love.timer.getTime
 local avg = 0
 local avgTimes = 0
 function EntityManager:forEach(system, arguments, callback)
+	-- MAKE THIS THREADED
 	printf("forEach from System \"%s\"\n", system.Name)
 	-- print(arguments)
 	local startTime = getTime()
