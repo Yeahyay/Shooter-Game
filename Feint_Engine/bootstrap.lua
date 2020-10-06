@@ -14,14 +14,15 @@ print(Feint.UI.Immediate)
 printf("\n")
 log("Initializing Feint Engine\n\n")
 
-require(Feint.Paths.Root.."run")
-
 Feint.Run.framerate = 60
 Feint.Run.rate = 1 / 60
 G_DEBUG = false
 -- G_TIMER = 0
 G_FPS = 0
 G_AVG_FPS = 0
+G_AVG_DELTA = 0
+G_AVG_DELTA_ITERATIONS = 10
+G_AVG_DELTA_FIRST = 0
 
 G_SPEED = 1
 
@@ -37,13 +38,14 @@ end
 G_INF = math.huge
 G_SEED = 2--love.timer.getTime())
 
-local ui = Feint.UI.Immediate
-ui.Initialize()
-
 love.graphics.setLineStyle("rough")
 --love.graphics.setWireframe(true)
 love.graphics.setDefaultFilter("nearest", "nearest", 16)
 love.math.setRandomSeed(G_SEED)
+
+
+require(Feint.Paths.Root.."run")
+
 
 Feint.Util.Debug.PRINT_ENV(_ENV, false)
 

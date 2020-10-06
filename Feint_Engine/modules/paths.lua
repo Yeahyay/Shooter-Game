@@ -1,13 +1,19 @@
 local _, FEINT_ROOT = ...
 
 local paths = {}
-paths.size = 1
+
+local private = {}
+private.size = 1
+
+setmetatable(paths, {
+	__index = private,
+})
 
 if paths.Root == nil then
 	paths.Root = FEINT_ROOT or "Feint_Engine."
 end
 
-function paths.Add(name, path, file)
+function private.Add(name, path, file)
 	local path = path or name
 	assert(type(path) == "string", "needs a string")
 
@@ -18,15 +24,13 @@ function paths.Add(name, path, file)
 	if file ~= "file" then
 		postfix = "."
 	end
-	-- if external == "external" then
-		newPath = path .. postfix
-	-- else
-	-- 	newPath = paths.Root .. path .. postfix
-	-- end
+
+	newPath = path .. postfix
+
 	if not paths[name] then
 		paths[name] = newPath
 
-		paths.size = paths.size + 1
+		private.size = private.size + 1
 		if file == "file" then
 			-- printf("Added file     path \"%s\" (%s)\n", name, newPath)
 		else
@@ -41,11 +45,11 @@ function paths.Add(name, path, file)
 	end
 end
 
-function paths.SlashDelimited(path)
+function private.SlashDelimited(path)
 	return path:gsub("%.", "/")
 end
 
-function paths.Print()
+function private.Print()
 	local min = 0
 	for k, v in pairs(paths) do
 		if k ~= "hidden" then --k ~= "size" and k ~= "PRINT" then

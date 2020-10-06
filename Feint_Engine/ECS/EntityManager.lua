@@ -54,23 +54,25 @@ end)
 
 local generateQuery = --Feint.Util.Memoize
 (function(components, componentsCount)
-	print(components, componentsCount)
-	printf("Generating EntityQuery for components: ")
+	-- print(components, componentsCount)
+	-- printf("Generating EntityQuery for components: ")
 
 	for i = 1, componentsCount - 1, 1 do
-		local j = 0
-		j = 1
-		if i then
-		else
-			error("no")
+		local componentData = components[i]
+		local name = componentData.Name
+		if name == "Entity" then
+			goto forEnd
 		end
+
 		-- assert(components[i] ~= nil, string.format("Component %d does not exist\n", i))
-		printf("%s, ", components[i].Name or "nonexistent")
+		-- printf("%s, ", components[i].Name or "nonexistent")
+		::forEnd::
 	end
+
 	-- assert(components[#components] ~= nil, string.format("Component %d does not exist\n", #components))
-	if #components > 0 then
-		printf("%s\n", components[#components].Name or "nonexistent")
-	end
+	-- if #components > 0 then
+	-- 	printf("%s\n", components[#components].Name or "nonexistent")
+	-- end
 
 	local query = nil
 	return query
@@ -86,14 +88,21 @@ local avgTimes = 0
 function EntityManager:forEach(system, arguments, callback)
 	-- MAKE THIS THREADED
 	printf("forEach from System \"%s\"\n", system.Name)
-	-- print(arguments)
+
 	local startTime = getTime()
+
+	for i = 1, 500000, 1 do
+		-- generate an entity query that fits the specified arguments
 		local query = generateQuery(arguments, #arguments)
+	end
+
 	local endTime = getTime() - startTime
-	printf("TIME: %f\n", endTime)
+	printf("TIME: %fs, %f frames\n", endTime, endTime * 60)
 	avg = avg + endTime
 	avgTimes = avgTimes + 1
-	printf("AVG: %f\n", avg / avgTimes)
+	printf("AVG: %fs; %f frames\n", avg / avgTimes, endTime * 60)
+	-- printf("%s: %f frames for loadstring\n", func, (endT - startT) * 60)
+
 	execute(getEntities(query), callback)
 	printf("Finished forEach\n")
 end

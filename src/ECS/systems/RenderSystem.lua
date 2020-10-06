@@ -5,17 +5,17 @@ local Renderer = Feint.ECS.Component:new("Renderer", {
 	test = 0
 });
 
-local Transform = Feint.ECS.Component:new("Renderer", {
+local Transform = Feint.ECS.Component:new("Transform", {
 	test = 0
 });
 
-local Entity = "Entity"
+local Entity = {Name = "Entity"}
 
 local RenderSystem = System:new("RenderSystem")
 function RenderSystem:init(...)
 end
 -- Feint.Util.Memoize(
-local components = {Renderer, Transform}--{Entity, Transform, Renderer, Physics}
+local components = {Entity, Renderer, Transform}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:update(...)
 	-- local instance = Renderer:new{}
 
