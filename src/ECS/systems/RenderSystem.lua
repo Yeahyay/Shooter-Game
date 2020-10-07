@@ -14,9 +14,13 @@ local Entity = {Name = "Entity"}
 local RenderSystem = System:new("RenderSystem")
 function RenderSystem:init(...)
 end
+
+function RenderSystem:start()
+	self.EntityManager:CreateEntity({})
+end
 -- Feint.Util.Memoize(
 local components = {Entity, Renderer, Transform}--{Entity, Transform, Renderer, Physics}
-function RenderSystem:update(...)
+function RenderSystem:update(dt)
 	-- local instance = Renderer:new{}
 
 	self.EntityManager:forEach(self, components, function(entity, transform, renderer, physics)
@@ -27,7 +31,7 @@ function RenderSystem:update(...)
 	end)
 
 	-- Feint.Log.log(""\n\n")
-	printf("\n")
+	-- printf("\n")
 
 	-- self.EntityManager:forEach(self, {Entity, Transform, Renderer, Physics}, function(entity, transform, renderer, physics)
 	-- 	local transform = components.Transform
