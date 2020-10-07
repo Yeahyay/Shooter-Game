@@ -106,7 +106,7 @@ do
 
 	Feint.AddModule("Run", function(self)
 		self.require(Feint.Paths.Lib.."tick-master.tick")
-		-- self.Finalize()
+		self.Finalize()
 	end)
 end
 

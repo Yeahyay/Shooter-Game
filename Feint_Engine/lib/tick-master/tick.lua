@@ -1,5 +1,5 @@
-local tick = {
-	framerate = nil,
+local tickModule = {
+	framerate = -1,
 	rate = .03,
 	timescale = 1,
 	sleep = .001,
@@ -29,16 +29,16 @@ love.run = function()
 
 	while true do
 		timer.step()
-		tick.dt = timer.getDelta() * tick.timescale
-		tick.accum = tick.accum + tick.dt
+		tickModule.dt = timer.getDelta() * tickModule.timescale
+		tickModule.accum = tickModule.accum + tickModule.dt
 
 		if graphics and graphics.isActive() then
 			graphics.clear(graphics.getBackgroundColor())
 			graphics.origin()
 		end
 
-		while tick.accum >= tick.rate do
-			tick.accum = tick.accum - tick.rate
+		while tickModule.accum >= tickModule.rate do
+			tickModule.accum = tickModule.accum - tickModule.rate
 
 			if love.event then
 				love.event.pump()
@@ -53,11 +53,11 @@ love.run = function()
 				end
 			end
 
-			tick.tick = tick.tick + 1
-			if love.update then love.update(tick.rate) end
+			tickModule.tick = tickModule.tick + 1
+			if love.update then love.update(tickModule.rate) end
 		end
 
-		while tick.framerate and timer.getTime() - lastframe < 1 / tick.framerate do
+		while tickModule.framerate and timer.getTime() - lastframe < 1 / tickModule.framerate do
 			timer.sleep(.0005)
 		end
 
@@ -65,13 +65,13 @@ love.run = function()
 		if graphics and graphics.isActive() then
 			-- graphics.clear(graphics.getBackgroundColor())
 			-- graphics.origin()
-			tick.frame = tick.frame + 1
+			tickModule.frame = tickModule.frame + 1
 			if love.draw then love.draw() end
 			graphics.present()
 		end
 
-		timer.sleep(tick.sleep)
+		timer.sleep(tickModule.sleep)
 	end
 end
 
-return tick
+return tickModule

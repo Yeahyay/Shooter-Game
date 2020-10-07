@@ -63,16 +63,21 @@ function private.AddModule(name, setupFunc)
 			assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 			newPrivate.private = require(name, ...)
 			setmetatable(newPrivate, {
-				__index = newPrivate.private
+				__index = newPrivate.private,
+				__newindex = newPrivate.private
 			})
+			print("REQ", newPrivate.private)
 		end
 	end
+
 	newPrivate.Finalize = function()
-		getmetatable(newModule).__newindex = function(t, k, v)
-			if t[k] then
-				t[k] = v
-			else
-				-- newPrivate[k] = v
+		local mt = getmetatable(newModule)
+		mt.__newindex = function(t, k, v)
+			if rawget(t, k) then -- does the index exist within the table itself, ignoring all metamethods
+				rawset(t, k, v)
+			elseif newPrivate[k] then -- if not, access its private table
+				newPrivate[k] = v -- the private table will access its own __index and _newindex, which are the private table's "private" index
+			else -- if the index is not in the table, its private table, or that private table's private section, then it's an error
 				error(exceptions.READ_ONLY_MODIFICATION_ERROR(t, k))
 			end
 		end

@@ -91,16 +91,16 @@ function EntityManager:forEach(system, arguments, callback)
 
 	local startTime = getTime()
 
-	for i = 1, 500000, 1 do
+	for i = 1, 1000, 1 do
 		-- generate an entity query that fits the specified arguments
 		local query = generateQuery(arguments, #arguments)
 	end
 
-	local endTime = getTime() - startTime
-	printf("TIME: %fs, %f frames\n", endTime, endTime * 60)
-	avg = avg + endTime
-	avgTimes = avgTimes + 1
-	printf("AVG: %fs; %f frames\n", avg / avgTimes, endTime * 60)
+	-- local endTime = getTime() - startTime
+	-- printf("TIME: %fs, %f frames\n", endTime, endTime * 60)
+	-- avg = avg + endTime
+	-- avgTimes = avgTimes + 1
+	-- printf("AVG: %fs; %f frames\n", avg / avgTimes, endTime * 60)
 	-- printf("%s: %f frames for loadstring\n", func, (endT - startT) * 60)
 
 	execute(getEntities(query), callback)
