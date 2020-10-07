@@ -58,6 +58,24 @@ function love.load()
 		log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
 	end
 
+	World.DefaultWorld:start()
+
+	-- love.window.updateMode(960, 540, {
+	-- 	fullscreen = false,
+	-- 	fullscreentype = "desktop",
+	-- 	vsync = false,
+	-- 	msaa = 0,
+	-- 	resizable = false,
+	-- 	borderless = false,
+	-- 	centered = true,
+	-- 	display = 1,
+	-- 	minwidth = 1,
+	-- 	minheight = 1,
+	-- 	highdpi = false,
+	-- 	x = nil,
+	-- 	y = nil,
+	-- })
+
 	--[[
 	-- Feint.Log.log();
 	Feint.Thread.newWorker(1, function(self)

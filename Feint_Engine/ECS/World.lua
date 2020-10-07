@@ -22,10 +22,17 @@ function World:setUpdateOrderList(list)
 	self.updateOrder = list
 end
 
-function World:update()
+function World:start()
 	local list = self.updateOrder
 	for i = 1, #list do
-		self.systems[list[i]]:update()
+		self.systems[list[i]]:start()
+	end
+end
+
+function World:update(dt)
+	local list = self.updateOrder
+	for i = 1, #list do
+		self.systems[list[i]]:update(dt)
 	end
 end
 
