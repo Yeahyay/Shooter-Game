@@ -59,14 +59,14 @@ function coreUtilities.overloaded()
 		local signature = {}
 		local signatureSize = 0
 		local function __newindex(self, key, value)
-			print(key, type(key), value, type(value))
+			printf("%s, %s, %s\n", key, type(key), value, type(value))
 			signatureSize = signatureSize + 1
 			signature[signatureSize] = key
 			functionSignatures[table.concat(signature, ",")] = value
-			print("bind", table.concat(signature, ", "))
+			printf("bind %s\n", table.concat(signature, ", "))
 		end
 		local function __index(self, key)
-			print("I", key, type(key))
+			printf("I %s, %s\n", key, type(key))
 			signatureSize = signatureSize + 1
 			signature[signatureSize] = key
 			return setmetatable({}, { __index = __index, __newindex = __newindex })
@@ -94,7 +94,6 @@ do
 	function require(path, ...)
 		-- printf("Entering %s.lua\n", path)
 		-- local m = path:match("%/")
-		-- print(m)
 		-- if m then
 		-- 	error("use a period")
 		-- end

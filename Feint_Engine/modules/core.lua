@@ -66,7 +66,6 @@ function private.AddModule(name, setupFunc)
 				__index = newPrivate.private,
 				__newindex = newPrivate.private
 			})
-			print("REQ", newPrivate.private)
 		end
 	end
 
@@ -77,7 +76,7 @@ function private.AddModule(name, setupFunc)
 				rawset(t, k, v)
 			elseif newPrivate[k] then -- if not, access its private table
 				newPrivate[k] = v -- the private table will access its own __index and _newindex, which are the private table's "private" index
-			else -- if the index is not in the table, its private table, or that private table's private section, then it's an error
+			elseif newPrivate[k] == nil then-- if the index is not in the table, its private table, or that private table's private section, then it's an error
 				error(exceptions.READ_ONLY_MODIFICATION_ERROR(t, k))
 			end
 		end

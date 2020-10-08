@@ -45,12 +45,26 @@ end)
 Feint.Paths.Add("ECS", Feint.Paths.Root .. "ECS") -- add path
 Feint.AddModule("ECS", function(self)
 	self.Util = require(Feint.Paths.ECS .. "ECSUtils") -- require components into table
+	self.EntityArchetype = require(Feint.Paths.ECS .. "EntityArchetype")
 	self.EntityManager = require(Feint.Paths.ECS .. "EntityManager")
 	self.World = require(Feint.Paths.ECS .. "World")
-	self.EntityArchetype = require(Feint.Paths.ECS .. "EntityArchetype")
 	self.Component = require(Feint.Paths.ECS .. "Component")
 	self.System = require(Feint.Paths.ECS .. "System")
 	self.Assemblage = require(Feint.Paths.ECS .. "Assemblage")
+	self.Finalize()
+end)
+
+-- INPUT
+Feint.Paths.Add("Input", Feint.Paths.Modules .."input")
+Feint.AddModule("Input", function(self)
+	self.require(Feint.Paths.Input .. "input")
+	self.Finalize()
+end)
+
+-- GRAPHICS
+Feint.Paths.Add("Graphics", Feint.Paths.Modules .. "graphics")
+Feint.AddModule("Graphics", function(self)
+	self.require(Feint.Paths.Graphics .. "graphics")
 	self.Finalize()
 end)
 

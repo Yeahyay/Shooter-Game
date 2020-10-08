@@ -10,7 +10,6 @@ function Component:init(data, ...)
 	if data and #data > 0 then
 		self:setData(data)
 	end
-	-- print("sldm"..tostring(self))
 end
 function Component:setData(data)
 	for i = 1, #data do
@@ -33,7 +32,6 @@ function Component:new(name, data, ...)
 	})
 	self.init(instance, data, ...)
 	getmetatable(instance).__newindex = function(t, k, v)
-		print(t, k, v)
 		error("No.")
 	end
 	return instance
@@ -48,7 +46,6 @@ end
 -- end
 --[[
 function Component:new(name, ...)
-	print(self, self.Super)
 	-- printf("%s", self.instances)
 	local instance = {
 		new = function(self, data)

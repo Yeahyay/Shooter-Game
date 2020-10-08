@@ -3,7 +3,7 @@
 local World = Feint.ECS.World
 
 local oldRate = Feint.Run.rate
-function love.keypressed(key)
+function love.keypressed(key, ...)
 	if key == "space" then
 		if Feint.Run.rate == 0 then
 			print("PLAY")
@@ -13,14 +13,16 @@ function love.keypressed(key)
 			oldRate = Feint.Run.rate
 			Feint.Run.rate = 0
 		end
-		-- print(Feint.Run.rate)
-		-- print(oldRate)
+	end
+	if key == "z" then
+		Feint.Graphics.toggleInterpolation()
 	end
 end
 function love.keyreleased(...)
 end
 
-function love.mousemoved(...)
+function love.mousemoved(x, y, dx, dy)
+	Feint.Input.mousemoved(x, y, dx, dy)
 end
 
 function love.mousepressed(...)
@@ -60,21 +62,23 @@ function love.load()
 
 	World.DefaultWorld:start()
 
-	-- love.window.updateMode(960, 540, {
-	-- 	fullscreen = false,
-	-- 	fullscreentype = "desktop",
-	-- 	vsync = false,
-	-- 	msaa = 0,
-	-- 	resizable = false,
-	-- 	borderless = false,
-	-- 	centered = true,
-	-- 	display = 1,
-	-- 	minwidth = 1,
-	-- 	minheight = 1,
-	-- 	highdpi = false,
-	-- 	x = nil,
-	-- 	y = nil,
-	-- })
+	if false then
+		love.window.updateMode(960, 540, {
+			fullscreen = false,
+			fullscreentype = "desktop",
+			vsync = false,
+			msaa = 0,
+			resizable = false,
+			borderless = false,
+			centered = true,
+			display = 1,
+			minwidth = 1,
+			minheight = 1,
+			highdpi = false,
+			x = nil,
+			y = nil,
+		})
+	end
 
 	--[[
 	-- Feint.Log.log();
@@ -102,6 +106,7 @@ local L_AVG_TPS_SUM = 0
 
 local startTime = love.timer.getTime()
 function love.update(dt)
+	Feint.Graphics.clear()
 	-- G_TIMER = Feint.Math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
 
 	--[[ -- unreliable tickrate counter
@@ -179,6 +184,9 @@ function love.draw(dt)
 	-- 		Slab.Draw(dt)
 	-- 	end
 	-- end
+
+	Feint.Graphics.updateInterpolate(run.accum)
+	Feint.Graphics.draw()
 
 	love.graphics.printf(string.format("FPS:      %7.2f, DT:      %7.4fms\n", G_FPS, 1000 * G_FPS_DELTA), 0, 0, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
 	love.graphics.printf(string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", G_AVG_FPS, 1000 * G_AVG_FPS_DELTA), 0, DEFAULT_FONT_HEIGHT / 2, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)

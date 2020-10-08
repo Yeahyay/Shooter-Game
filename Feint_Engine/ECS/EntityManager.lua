@@ -1,6 +1,7 @@
 local ECSUtils = Feint.ECS.Util
 
 local EntityManager = ECSUtils.newClass("EntityManager")
+local EntityArchetype = Feint.ECS.EntityArchetype
 function EntityManager:init(name)
 	self.name = name
 	self.entities = {} -- {[index] = idIndex}
@@ -36,18 +37,15 @@ function EntityManager:getNewEntityId()
 	return newID
 end
 
-function EntityManager:CreateEntity()
-<<<<<<< HEAD
-	
-=======
+function EntityManager:CreateEntity(archetype)
 
->>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
 end
 EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
 
-local EntityArchetype = Feint.ECS.EntityArchetype
 function EntityManager:newArchetype(components)
-	self.archetypes[#self.archetypes] = EntityArchetype:new(components)
+	local archetype = EntityArchetype:new("?", components)
+	self.archetypes[#self.archetypes] = archetype
+	return archetype
 end
 
 local function getEntity()
@@ -94,30 +92,34 @@ end
 local getTime = love.timer.getTime
 local avg = 0
 local avgTimes = 0
+
+
+local input = Feint.Input
+local px, py = 0, 0
+local lx, ly = 0, 0
 function EntityManager:forEach(system, arguments, callback)
 	-- MAKE THIS THREADED
-	printf("forEach from System \"%s\"\n", system.Name)
+	-- printf("forEach from System \"%s\"\n", system.Name)
 
 	local startTime = getTime()
 
-<<<<<<< HEAD
 	for i = 1, 1, 1 do
-=======
-	for i = 1, 100000, 1 do
->>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
+		lx, ly = px, py
 		-- generate an entity query that fits the specified arguments
 		local query = generateQuery(arguments, #arguments)
+
+		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
+		Feint.Graphics.rectangle(lx, ly, 0, "fill", px, py, 50, 50)
 	end
 
 	local endTime = getTime() - startTime
-	printf("TIME: %fs, %f frames\n", endTime, endTime * 60)
+	-- printf("TIME: %fs, %f frames\n", endTime, endTime * 60)
 	avg = avg + endTime
 	avgTimes = avgTimes + 1
-	printf("AVG: %fs; %f frames\n", avg / avgTimes, endTime * 60)
-	-- printf("%s: %f frames for loadstring\n", func, (endT - startT) * 60)
+	-- printf("AVG: %fs; %f frames\n", avg / avgTimes, endTime * 60)
 
 	execute(getEntities(query), callback)
-	printf("Finished forEach\n")
+	-- printf("Finished forEach\n")
 end
 
 function EntityManager:removeEntity(id)

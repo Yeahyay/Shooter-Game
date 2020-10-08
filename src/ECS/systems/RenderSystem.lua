@@ -2,11 +2,14 @@ local ECSUtils = Feint.ECS.Util
 local System = Feint.ECS.System
 
 local Renderer = Feint.ECS.Component:new("Renderer", {
-	test = 0
+	visible = true
 });
 
 local Transform = Feint.ECS.Component:new("Transform", {
-	test = 0
+	x = 0,
+	y = 0,
+	sizeX = 50,
+	sizeY = 50,
 });
 
 local Entity = {Name = "Entity"}
@@ -16,12 +19,10 @@ function RenderSystem:init(...)
 end
 
 function RenderSystem:start()
-<<<<<<< HEAD
-	self.EntityManager:CreateEntity({})
-=======
-	self.EntityManager:CreateEntity()
->>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
+	local archetype = self.EntityManager:newArchetype({Renderer, Transform})
+	self.EntityManager:CreateEntity(archetype)
 end
+
 -- Feint.Util.Memoize(
 local components = {Entity, Renderer, Transform}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:update(dt)

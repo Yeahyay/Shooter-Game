@@ -16,7 +16,6 @@ do	-- DEFAULT FILTERS
 	defaultAll = {}
 	for k, v in pairs(_G) do
 		if string.match(k, "default") then
-			-- print(k)
 			for k, v in pairs(v) do
 				defaultAll[k] = v
 			end
@@ -59,6 +58,5 @@ end
 local loop = coroutine.create(loadfile())
 
 while self.running do
-
 	print("rgjndsfkm")
 end
