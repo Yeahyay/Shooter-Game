@@ -37,7 +37,11 @@ function EntityManager:getNewEntityId()
 end
 
 function EntityManager:CreateEntity()
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
 end
 EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
 
@@ -96,7 +100,11 @@ function EntityManager:forEach(system, arguments, callback)
 
 	local startTime = getTime()
 
+<<<<<<< HEAD
 	for i = 1, 1, 1 do
+=======
+	for i = 1, 100000, 1 do
+>>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
 		-- generate an entity query that fits the specified arguments
 		local query = generateQuery(arguments, #arguments)
 	end

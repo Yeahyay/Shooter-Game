@@ -16,7 +16,11 @@ function RenderSystem:init(...)
 end
 
 function RenderSystem:start()
+<<<<<<< HEAD
 	self.EntityManager:CreateEntity({})
+=======
+	self.EntityManager:CreateEntity()
+>>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
 end
 -- Feint.Util.Memoize(
 local components = {Entity, Renderer, Transform}--{Entity, Transform, Renderer, Physics}

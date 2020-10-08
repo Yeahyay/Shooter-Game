@@ -15,18 +15,30 @@ printf("\n")
 log("Initializing Feint Engine\n\n")
 
 Feint.Run.framerate = 60 -- framerate cap
+<<<<<<< HEAD
 Feint.Run.rate = 1 / 30 -- update dt
+=======
+Feint.Run.rate = 1 / 10 -- update dt
+>>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
 Feint.Run.sleep = 0.001
 G_DEBUG = false
 -- G_TIMER = 0
 
 G_FPS = 0
 G_FPS_DELTA = 0
+<<<<<<< HEAD
 G_FPS_DELTA_SMOOTHNESS = 0.975
 
 G_AVG_FPS = 0
 G_AVG_FPS_DELTA = 0
 G_AVG_FPS_DELTA_ITERATIONS = Feint.Run.framerate > 0 and Feint.Run.framerate * 2 or 60
+=======
+G_FPS_DELTA_SMOOTHNESS = 0.95
+
+G_AVG_FPS = 0
+G_AVG_FPS_DELTA = 0
+G_AVG_FPS_DELTA_ITERATIONS = Feint.Run.framerate > 0 and Feint.Run.framerate or 60
+>>>>>>> 72655daabb9c608da1e7ea4826031b145afffd71
 
 G_TPS = 0
 G_TPS_DELTA = 0
