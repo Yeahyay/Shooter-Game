@@ -2,7 +2,8 @@ local ECSUtils = Feint.ECS.Util
 local System = Feint.ECS.System
 
 local Renderer = Feint.ECS.Component:new("Renderer", {
-	visible = true
+	visible = true,
+	lastState = {}
 });
 
 local Transform = Feint.ECS.Component:new("Transform", {
