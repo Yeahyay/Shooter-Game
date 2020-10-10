@@ -13,11 +13,10 @@ if paths.Root == nil then
 	paths.Root = FEINT_ROOT or "Feint_Engine."
 end
 
-function private.Add(name, path, file)
-	local path = path or name
+function private.Add(name, pathString, file)
+	local path = pathString or name
 	assert(type(path) == "string", "needs a string")
 
-	local newPath = nil
 
 	-- if it's a file, no postfix
 	local postfix = ""
@@ -25,12 +24,13 @@ function private.Add(name, path, file)
 		postfix = "."
 	end
 
-	newPath = path .. postfix
+	local newPath = pathString .. postfix
 
 	if not paths[name] then
 		paths[name] = newPath
 
 		private.size = private.size + 1
+		-- luacheck: push ignore
 		if file == "file" then
 			-- printf("Added file     path \"%s\" (%s)\n", name, newPath)
 		else
@@ -40,6 +40,7 @@ function private.Add(name, path, file)
 				-- printf("Added Feint    path \"%s\" (%s)\n", name, newPath)
 			end
 		end
+		-- luacheck: pop ignore
 	else
 		log("Path %s (%s) already exists.\n", newPath, newPath)
 	end

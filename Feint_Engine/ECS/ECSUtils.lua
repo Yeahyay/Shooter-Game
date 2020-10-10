@@ -38,7 +38,10 @@ function ECSUtils.new(super, objType, name, ...)
 	newInstance.Super = super
 	newInstance.string = tostring(newInstance)
 	newInstance.Type = objType
-	assert(type(newInstance.Name) == "string", Feint.Util.Exceptions.BAD_ARG_ERROR(1, "new instance name", "string", type(newInstance.Name)))
+	assert(
+		type(newInstance.Name) == "string",
+		Feint.Util.Exceptions.BAD_ARG_ERROR(1, "new instance name", "string", type(newInstance.Name))
+	)
 
 	setmetatable(newInstance, {
 		__index = super,

@@ -1,7 +1,7 @@
 -- INIT
 -- require("lib.console.console")
 io.stdout:setvbuf("no")
-function luaInfo()
+local function luaInfo()
 	local info = "Lua version: " .. _VERSION .. "\n"
 	info = info .. "LuaJIT version: "
 	if (jit) then
@@ -19,6 +19,7 @@ print(luaInfo())
 print(love.getVersion())
 print()
 
+-- luacheck: push ignore
 defaultGlobals = {}
 for k, v in pairs(_G) do
 	defaultGlobals[k] = v
@@ -36,6 +37,7 @@ for k, v in pairs(_G) do
 		end
 	end
 end
+-- luacheck: pop ignore
 
 local PATH = love.filesystem.getSource()
 local SAVEDIR = love.filesystem.getSaveDirectory()

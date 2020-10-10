@@ -20,6 +20,7 @@ function tableUtilities.readOnlyTable(table)
 	})
 end
 
+-- luacheck:push ignore
 function tableUtilities.formatTableString(table)
 	local mt = getmetatable(table)
 	if mt then
@@ -33,6 +34,7 @@ function tableUtilities.formatTableString(table)
 		}
 	end
 end
+-- luacheck: pop ignore
 
 function tableUtilities.makeTableReadOnly(table, callback)
 	assert(getmetatable(table), "table must have a metatable")

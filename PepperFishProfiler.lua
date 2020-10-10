@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 --[[== Introduction ==
 
   Note that this requires os.clock(), debug.sethook(),
@@ -249,16 +251,16 @@ function _profiler._internal_profile_by_call(self, action)
 
 		-- Now, if we have a parent, update its call info...
 		if this_ar.parent_ar then
-			this_ar.parent_ar.children[caller_info.func] = 
+			this_ar.parent_ar.children[caller_info.func] =
 			(this_ar.parent_ar.children[caller_info.func] or 0) + 1
-			this_ar.parent_ar.children_time[caller_info.func] = 
-			(this_ar.parent_ar.children_time[caller_info.func] or 0 ) + 
+			this_ar.parent_ar.children_time[caller_info.func] =
+			(this_ar.parent_ar.children_time[caller_info.func] or 0 ) +
 			this_ar.this_time
 			if caller_info.name == nil then
-				this_ar.parent_ar.anon_child = 
+				this_ar.parent_ar.anon_child =
 				this_ar.parent_ar.anon_child + this_ar.this_time
 			else
-				this_ar.parent_ar.name_child = 
+				this_ar.parent_ar.name_child =
 				this_ar.parent_ar.name_child + this_ar.this_time
 			end
 		end
@@ -272,7 +274,7 @@ function _profiler._internal_profile_by_call(self, action)
 			inforec.func_info = caller_info
 			for k, v in pairs(this_ar.children) do
 				inforec.children[k] = (inforec.children[k] or 0) + v
-				inforec.children_time[k] = 
+				inforec.children_time[k] =
 				(inforec.children_time[k] or 0) + this_ar.children_time[k]
 			end
 		end
@@ -308,9 +310,9 @@ function _profiler._internal_profile_by_time(self, action)
 				else
 					info.anon_child_time = info.anon_child_time + timetaken
 				end
-				info.children[last_caller.func] = 
+				info.children[last_caller.func] =
 				(info.children[last_caller.func] or 0) + 1
-				info.children_time[last_caller.func] = 
+				info.children_time[last_caller.func] =
 				(info.children_time[last_caller.func] or 0) + timetaken
 			end
 		end
@@ -403,13 +405,13 @@ function _profiler.report( self, outfile, sort_by_total_time )
 		local record = self.rawstats[func]
 		local thisfuncname = " " .. self:_pretty_name(func) .. " "
 		if string.len( thisfuncname ) < 42 then
-			thisfuncname = 
+			thisfuncname =
 			string.rep( "-", (42 - string.len(thisfuncname)) / 2 ) .. thisfuncname
-			thisfuncname = 
+			thisfuncname =
 			thisfuncname .. string.rep( "-", 42 - string.len(thisfuncname) )
 		end
 
-		total_time = total_time + ( record.time - ( record.anon_child_time + 
+		total_time = total_time + ( record.time - ( record.anon_child_time +
 		record.name_child_time ) )
 		outfile:write( string.rep( "-", 19 ) .. thisfuncname ..
 		string.rep( "-", 19 ) .. "\n" )
@@ -420,7 +422,7 @@ function _profiler.report( self, outfile, sort_by_total_time )
 		outfile:write( "Time spent in children: " ..
 			string.format("%4.3f", record.anon_child_time + record.name_child_time) ..
 		"s\n" )
-		local timeinself = 
+		local timeinself =
 		record.time - (record.anon_child_time + record.name_child_time)
 		outfile:write( "Time spent in self:     " ..
 		string.format("%4.3f", timeinself) .. "s\n" )

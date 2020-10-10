@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 LevelParser = class("LevelParser")
 function LevelParser:init()
 	print("Level parser initialized")

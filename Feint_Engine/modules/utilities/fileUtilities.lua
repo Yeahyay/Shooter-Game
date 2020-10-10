@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local fileUtilities = {}
 
 function fileUtilities.save(level)

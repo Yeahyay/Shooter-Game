@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local EventManager = ECSUtils.newClass("EventManager")
 function EventManager:init(lenient)
 	self.events = {}

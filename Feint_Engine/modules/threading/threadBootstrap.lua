@@ -4,6 +4,7 @@ local self = args[1]
 -- self.running = true
 
 -- INIT
+-- luacheck: push ignore
 do	-- DEFAULT FILTERS
 	defaultGlobals = {}
 	for k, v in pairs(_G) do
@@ -22,6 +23,7 @@ do	-- DEFAULT FILTERS
 		end
 	end
 end
+-- luacheck: pop ignore
 
 _ENV = _G
 _ENV_LAST = _G

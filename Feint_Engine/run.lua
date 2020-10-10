@@ -43,7 +43,7 @@ function love.load()
 	Feint.Paths.Add("Game_ECS_Bootstrap", Feint.Paths.Game_ECS_Files.."bootstrap", "file")
 	Feint.Paths.Add("Game_ECS_Components", Feint.Paths.Game_ECS_Files.."components")
 	Feint.Paths.Add("Game_ECS_Systems", Feint.Paths.Game_ECS_Files.."systems")
-	local systems = {}
+	local systems = {} -- luacheck: ignore
 	local systemCount = 0
 	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Paths.SlashDelimited(Feint.Paths.Game_ECS_Systems))) do
 		if v:match(".lua") then
@@ -62,6 +62,7 @@ function love.load()
 
 	World.DefaultWorld:start()
 
+	-- luacheck: ignore
 	if false then
 		love.window.updateMode(960, 540, {
 			fullscreen = false,
@@ -104,10 +105,8 @@ local L_AVG_TPS_LIST_INDEX = 1
 local L_AVG_TPS_SUM = 0
 ]]
 
-local startTime = love.timer.getTime()
 function love.update(dt)
 	Feint.Graphics.clear()
-	-- G_TIMER = Feint.Math.round(love.timer.getTime() - startTime, 10)--G_TIMER + tick.dt
 
 	--[[ -- unreliable tickrate counter
 	local tickrate = run.rate + run.accum
@@ -149,7 +148,7 @@ local DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
 love.graphics.setFont(DEFAULT_FONT)
 
 local	fpsList = {}
-for i = 1, G_AVG_FPS_DELTA_ITERATIONS, 1 do
+for i = 1, run.G_AVG_FPS_DELTA_ITERATIONS, 1 do
 	fpsList[i] = 0
 end
 local fpsIndex = 1
@@ -159,24 +158,24 @@ local ui = Feint.UI.Immediate
 ui.Initialize()
 function love.draw(dt)
 	do
-		G_FPS_DELTA = G_FPS_DELTA + (run.dt - G_FPS_DELTA) * (1 - G_FPS_DELTA_SMOOTHNESS)
-		G_FPS = 1/ G_FPS_DELTA
+		run.G_FPS_DELTA = run.G_FPS_DELTA + (run.dt - run.G_FPS_DELTA) * (1 - run.G_FPS_DELTA_SMOOTHNESS)
+		run.G_FPS = 1/ run.G_FPS_DELTA
 	end
 
 	do
 		fpsSum = fpsSum -	fpsList[fpsIndex]
 		fpsSum = fpsSum + run.dt
 		fpsList[fpsIndex] = run.dt
-		fpsIndex = fpsIndex % G_AVG_FPS_DELTA_ITERATIONS + 1
-		G_AVG_FPS_DELTA = fpsSum / G_AVG_FPS_DELTA_ITERATIONS
+		fpsIndex = fpsIndex % run.G_AVG_FPS_DELTA_ITERATIONS + 1
+		run.G_AVG_FPS_DELTA = fpsSum / run.G_AVG_FPS_DELTA_ITERATIONS
 
-		G_AVG_FPS = 1 / G_AVG_FPS_DELTA
+		run.G_AVG_FPS = 1 / run.G_AVG_FPS_DELTA
 	end
 
 	-- local smoothing = 1 - 0.1
 	-- G_FPS = (G_FPS * smoothing) + ((love.mouse.getX()) * (1.0-smoothing))
 
-	G_INT = run.accum / math.max(0, run.rate)
+	run.G_INT = run.accum / math.max(0, run.rate)
 
 	-- if currentGame then
 	-- 	currentGame.draw(dt)
@@ -188,20 +187,39 @@ function love.draw(dt)
 	Feint.Graphics.updateInterpolate(run.accum)
 	Feint.Graphics.draw()
 
-	love.graphics.printf(string.format("FPS:      %7.2f, DT:      %7.4fms\n", G_FPS, 1000 * G_FPS_DELTA), 0, 0, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
-	love.graphics.printf(string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", G_AVG_FPS, 1000 * G_AVG_FPS_DELTA), 0, DEFAULT_FONT_HEIGHT / 2, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
-	love.graphics.printf(string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.dt, 1000 * run.dt), 0, DEFAULT_FONT_HEIGHT / 2 * 2, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
+	love.graphics.printf(
+		string.format("FPS:      %7.2f, DT:      %7.4fms\n",
+		run.G_FPS, 1000 * run.G_FPS_DELTA), 0, 0, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
+	love.graphics.printf(
+		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", run.G_AVG_FPS, 1000 * run.G_AVG_FPS_DELTA),
+		0, DEFAULT_FONT_HEIGHT / 2, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
+	love.graphics.printf(
+		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.dt, 1000 * run.dt),
+		0, DEFAULT_FONT_HEIGHT / 2 * 2, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
 
-	-- love.graphics.printf(string.format("TPS:      %7.2f, DT:      %7.4fms\n", G_TPS, 1000 * G_TPS_DELTA), 0, DEFAULT_FONT_HEIGHT / 2 * 4, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
-	-- love.graphics.printf(string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", G_AVG_TPS, 1000 * G_AVG_TPS_DELTA), 0, DEFAULT_FONT_HEIGHT / 2 * 5, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
-	-- love.graphics.printf(string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.rate, 1000 * run.rate), 0, DEFAULT_FONT_HEIGHT / 2 * 6, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
+	-- love.graphics.printf(
+	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", run.G_TPS, 1000 * run.G_TPS_DELTA),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- )
+	-- love.graphics.printf(
+	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", run.G_AVG_TPS, 1000 * run.G_AVG_TPS_DELTA),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- )
+	-- love.graphics.printf(
+	-- 	string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.rate, 1000 * run.rate),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- )
 
-	love.graphics.printf(string.format("Memory Usage: %fkiB", collectgarbage("count") / 1024), 0, DEFAULT_FONT_HEIGHT / 2 * 4, G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
+	love.graphics.printf(string.format("Memory Usage: %fkiB", collectgarbage("count") / 1024),
+		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
 end
 function love.quit()
-	if currentGame then
-		currentGame.quit()
-	end
+	-- if currentGame then
+	-- 	currentGame.quit()
+	-- end
 end
 
 -- PRINT_ENV(_ENV, false)

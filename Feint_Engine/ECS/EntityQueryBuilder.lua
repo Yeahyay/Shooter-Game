@@ -17,7 +17,7 @@ function EntityQueryBuilder:withAll(...)
 		local v = select(i, ...)
 		if v.componentData then
 			self.queryComponents_WithAll_Count = self.queryComponents_WithAll_Count + 1
-			self.queryComponents_WithAll[queryComponents_WithAll_Count] = v
+			self.queryComponents_WithAll[self.queryComponents_WithAll_Count] = v
 		end
 	end
 	return self
@@ -28,7 +28,7 @@ function EntityQueryBuilder:with(...)
 		local v = select(i, ...)
 		if v.componentData then
 			self.queryComponents_With_Count = self.queryComponents_With_Count + 1
-			self.queryComponents_With[queryComponents_With_Count] = v
+			self.queryComponents_With[self.queryComponents_With_Count] = v
 		end
 	end
 	return self
@@ -39,7 +39,7 @@ function EntityQueryBuilder:without(...)
 		local v = select(i, ...)
 		if v.componentData then
 			self.queryComponents_Without_Count = self.queryComponents_Without_Count + 1
-			self.queryComponents_Without[queryComponents_Without_Count] = v
+			self.queryComponents_Without[self.queryComponents_Without_Count] = v
 		end
 	end
 	return self

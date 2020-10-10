@@ -17,7 +17,17 @@ setmetatable(graphics, {
 
 function private.rectangle(lx, ly, lr, mode, x, y, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
-	graphics.drawQueue[graphics.drawQueueSize] = {"rectangle", lx, G_SCREEN_SIZE.y - ly, lr, mode, x, G_SCREEN_SIZE.y - y, width, height}
+	graphics.drawQueue[graphics.drawQueueSize] = {
+		"rectangle",
+		lx,
+		Feint.Graphics.G_SCREEN_SIZE.y - ly,
+		lr,
+		mode,
+		x,
+		Feint.Graphics.G_SCREEN_SIZE.y - y,
+		width,
+		height
+	}
 end
 
 function private.clear()

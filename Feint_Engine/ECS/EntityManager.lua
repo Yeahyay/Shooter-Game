@@ -21,14 +21,14 @@ function EntityManager:init(name)
 end
 
 function EntityManager:getNewEntityId()
-	local reuseID = false
+	-- local reuseID = false
 	local newID = -1
-	local newIDIndex = -1
+	-- local newIDIndex = -1
 	for i = 1, self.entitiesCount do--#self.entities do
 		if self.entityIDState[i] == true then
-			reuseID = true
+			-- reuseID = true
 			newID = self.entityID[i]
-			newIDIndex = i
+			-- newIDIndex = i
 			break
 		end
 	end
@@ -48,10 +48,10 @@ function EntityManager:newArchetype(components)
 	return archetype
 end
 
-local function getEntity()
-	local entity = nil
-	return entity
-end
+-- local function getEntity()
+-- 	local entity = nil
+-- 	return entity
+-- end
 
 local getEntities = Feint.Util.Memoize(function(query)
 	printf("Getting Entities from Query\n")
@@ -102,11 +102,12 @@ function EntityManager:forEach(system, arguments, callback)
 	-- printf("forEach from System \"%s\"\n", system.Name)
 
 	local startTime = getTime()
+	local query = nil
 
 	for i = 1, 1, 1 do
 		lx, ly = px, py
 		-- generate an entity query that fits the specified arguments
-		local query = generateQuery(arguments, #arguments)
+		query = generateQuery(arguments, #arguments)
 
 		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
 		Feint.Graphics.rectangle(lx, ly, 0, "fill", px, py, 50, 50)

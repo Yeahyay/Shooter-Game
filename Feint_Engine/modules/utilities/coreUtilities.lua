@@ -10,7 +10,7 @@ local coreUtilities = {logLevel = 0}
 -- 	setmetatable(coreUtilities, {__index = lastEnv})
 -- end
 
-love.timer = require("love.timer")
+-- love.timer = require("love.timer")
 
 do
 	local socket = require("socket")
@@ -37,6 +37,7 @@ function coreUtilities.type(obj)
 end
 
 -- make this better lmao
+-- luacheck: push ignore
 function coreUtilities.overloaded()
 	local functionSignatures = {}
 	local mt = {}
@@ -84,7 +85,7 @@ function coreUtilities.overloaded()
 
 	return setmetatable({ default = oerror }, mt)
 end
-
+-- luacheck: pop ignore
 
 do
 	local _require = require

@@ -2,7 +2,7 @@ local args = {...}
 
 local FEINT_ROOT = args[1]:gsub("feintAPI", "")
 
-local excludedModules = args[2] or {}
+-- local excludedModules = args[2] or {}
 
 Feint = require(FEINT_ROOT .. "modules.core")
 
@@ -65,6 +65,11 @@ end)
 Feint.Paths.Add("Graphics", Feint.Paths.Modules .. "graphics")
 Feint.AddModule("Graphics", function(self)
 	self.require(Feint.Paths.Graphics .. "graphics")
+	do
+		local screenHeight = 720
+		local screenWidth = screenHeight * (16 / 9)
+		self.G_SCREEN_SIZE = Feint.Math.Vec2.new(screenWidth, screenHeight)
+	end
 	self.Finalize()
 end)
 
@@ -74,6 +79,8 @@ Feint.AddModule("Math", function(self)
 	self.Vec2 = require(Feint.Paths.Lib .. "brinevector2D.brinevector")
 	self.Vec3 = require(Feint.Paths.Lib .. "brinevector3D.brinevector3D")
 	-- Feint.vMath = require(Feint.Paths.Root .. "vMath")
+	self.G_INF = math.huge
+	self.G_SEED = 2--love.timer.getTime())
 	self.Finalize()
 end)
 
@@ -120,6 +127,29 @@ do
 
 	Feint.AddModule("Run", function(self)
 		self.require(Feint.Paths.Lib.."tick-master.tick")
+
+		self.G_DEBUG = false
+		-- G_TIMER = 0
+
+		self.G_FPS = 0
+		self.G_FPS_DELTA = 0
+		self.G_FPS_DELTA_SMOOTHNESS = 0.975
+
+		self.G_AVG_FPS = 0
+		self.G_AVG_FPS_DELTA = 0
+		self.G_AVG_FPS_DELTA_ITERATIONS = self.framerate > 0 and self.framerate * 2 or 60
+
+		self.G_TPS = 0
+		self.G_TPS_DELTA = 0
+		self.G_TPS_DELTA_SMOOTHNESS = 0.9
+
+		self.G_AVG_TPS = 0
+		self.G_AVG_TPS_DELTA = 0
+		self.G_AVG_TPS_DELTA_ITERATIONS = 60
+
+		self.G_SPEED = 1
+
+		self.G_INT = 0
 		self.Finalize()
 	end)
 end

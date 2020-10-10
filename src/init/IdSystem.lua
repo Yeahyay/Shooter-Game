@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 IdSystem = System({Id, "Id"})
 function IdSystem:init()
 	self.Ids = {}--id, entity

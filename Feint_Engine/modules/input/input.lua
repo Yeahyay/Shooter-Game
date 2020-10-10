@@ -19,6 +19,9 @@ input.mouse.PositionRaw = Feint.Math.Vec2(0, 0)
 input.mouse.PositionOld = Feint.Math.Vec2(0, 0)
 input.mouse.Position = Feint.Math.Vec2(0, 0)
 
+-- mouse.PositionWorld = Vec3.new()
+-- mouse.PositionWorldOld = Vec3.new()
+
 input.mouse.PositionUnitOld = Feint.Math.Vec2(0, 0)
 input.mouse.PositionUnit = Feint.Math.Vec2(0, 0)
 
@@ -34,12 +37,12 @@ end
 function private.mousemoved(x, y, dx, dy)
 	local mouse = input.mouse
 	mouse.PositionRawOld = mouse.PositionRaw
-	mouse.PositionRaw.x, mouse.PositionRaw.y = x, G_SCREEN_SIZE.y-y
+	mouse.PositionRaw.x, mouse.PositionRaw.y = x, Feint.Graphics.G_SCREEN_SIZE.y-y
 	mouse.PositionOld = mouse.Position
-	mouse.Position = mouse.PositionRaw - G_SCREEN_SIZE / 2
+	mouse.Position = mouse.PositionRaw - Feint.Graphics.G_SCREEN_SIZE / 2
 
 	mouse.PositionUnitOld = mouse.PositionUnit
-	mouse.PositionUnit = mouse.Position / G_SCREEN_SIZE
+	mouse.PositionUnit = mouse.Position / Feint.Graphics.G_SCREEN_SIZE
 
 	mouse.PositionDeltaOld = mouse.PositionDelta
 	-- mouse.PositionDelta = mouse.Position - mouse.PositionOld

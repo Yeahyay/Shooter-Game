@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local RenderSystem = System:new("RenderSystem",
 	{"physics", Renderer, Physics, Transform},
 	{"renderable", Renderer, Transform}

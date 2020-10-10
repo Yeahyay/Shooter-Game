@@ -6,9 +6,9 @@ require("love.system")
 
 thread.MAX_CORES = love.system.getProcessorCount()
 
-function thread.newWorker(id, func)
+function thread.newWorker(id)
 	log("Creating new worker thread \"THREAD_%02d\"\n", id)
-	local thread = {
+	local newThread = {
 		thread = love.thread.newThread(Feint.Paths.SlashDelimited(Feint.Paths.Thread) .. "threadBootstrap.lua"),
 		id = not workers[id] and id or #workers + 1,
 		running = false,
@@ -27,8 +27,8 @@ function thread.newWorker(id, func)
 	local endT = Feint.Util.Core.getTime()
 	printf("%s: %f frames for loadstring\n", func, (endT - startT) * 60)
 	-- print(thread.id, thread.func)
-	workers[#workers + 1] = thread
-	return thread
+	workers[#workers + 1] = newThread
+	return newThread
 end
 
 function thread.getWorkers()
@@ -37,8 +37,8 @@ end
 
 function thread.startWorker(threadID, ...)
 	-- print(workers[threadID].thread)
-	local thread = workers[threadID]
-	thread.thread:start(thread, ...)
+	local threadObject = workers[threadID]
+	threadObject.thread:start(thread, ...)
 end
 
 return thread
