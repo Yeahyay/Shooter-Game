@@ -1,4 +1,4 @@
-local ECSUtils = Feint.ECS.Util
+-- local ECSUtils = Feint.ECS.Util
 local System = Feint.ECS.System
 
 local Renderer = Feint.ECS.Component:new("Renderer", {
@@ -38,12 +38,6 @@ function RenderSystem:update(dt)
 
 	-- Feint.Log.log(""\n\n")
 	-- printf("\n")
-
-	-- self.EntityManager:forEach(self, {Entity, Transform, Renderer, Physics}, function(entity, transform, renderer, physics)
-	-- 	local transform = components.Transform
-	-- 	local renderer = components.Renderer
-	-- 	local physics = components.Physics
-	-- end)
 end
 
 return RenderSystem
