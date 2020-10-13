@@ -6,7 +6,10 @@ globals = {"Feint", "printf", "log"}
 exclude_files = {
 	"Feint_Engine/lib",
 	"Feint_Engine/modules/parsing/Kaitai_Struct",
-	"Feint_Engine/moduels/input/InputSystem/InputSchemes/Default/*"
+	"Feint_Engine/modules/input/InputSystem/*",
+	"*/DataStructures/*",
 }
 
-ignore = {"422", "431", "432"}
+-- file["Feint_Engine/"]
+
+ignore = {"422", "423", "431", "432"}

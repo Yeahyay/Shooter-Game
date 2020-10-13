@@ -10,6 +10,14 @@ local tableUtilities = {}
 -- 	setmetatable(tableUtilities, {__index = lastEnv})
 -- end
 
+tableUtilities.preallocate = Feint.Util.Memoize(function(arrayLangth, hashLength)
+	local t = loadstring("return {" .. ("1, "):rep(arrayLangth or 0) .. ("a = 1,"):rep(hashLength or 0) .. "}")();
+	for k in pairs(t) do
+		t[k] = nil
+	end
+	return t;
+end)
+
 function tableUtilities.readOnlyTable(table)
 	return setmetatable({}, {
 		__index = table,

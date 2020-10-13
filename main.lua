@@ -19,7 +19,7 @@ print(luaInfo())
 print(love.getVersion())
 print()
 
--- luacheck: push ignore
+-- luacheck: globals defaultGlobals defaultPackages defaultAll
 defaultGlobals = {}
 for k, v in pairs(_G) do
 	defaultGlobals[k] = v
@@ -37,7 +37,6 @@ for k, v in pairs(_G) do
 		end
 	end
 end
--- luacheck: pop ignore
 
 local PATH = love.filesystem.getSource()
 local SAVEDIR = love.filesystem.getSaveDirectory()
@@ -48,6 +47,7 @@ print()
 -- require("PepperFishProfiler")
 PROFILER = nil--newProfiler()
 
+-- luacheck: new globals
 DEBUG_LEVEL = 0
 _ENV = _G
 _ENV_LAST = _G

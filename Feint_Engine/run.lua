@@ -62,6 +62,40 @@ function love.load()
 
 	World.DefaultWorld:start()
 
+	Feint.Util.Table.preallocate(1000000)
+
+	local f = setmetatable({}, {
+		__len = 10,
+	})
+	print("sll", #f)
+	-- local t = {}
+	-- for i = 1, 1200000 do
+	-- 	t[i] = {
+	-- 		a = "a",
+	-- 		b = "b",
+	-- 		c = "c",
+	-- 		d = "d",
+	-- 		e = "e",
+	-- 		f = "f",
+	-- 		g = "g",
+	-- 		h = "h",
+	-- 		i = "i",
+	-- 		j = "j",
+	-- 		k = "k",
+	-- 		l = "l",
+	-- 		m = "m",
+	-- 		n = "n",
+	-- 		o = "o",
+	-- 		p = "p",
+	-- 		q = "q",
+	-- 		r = "r",
+	-- 		s = "s",
+	-- 		t = "t",
+	-- 		u = "u",
+	-- 		v = "v",
+	-- 	}
+	-- end
+
 	-- luacheck: ignore
 	if false then
 		love.window.updateMode(960, 540, {
@@ -212,7 +246,7 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage: %fkiB", collectgarbage("count") / 1024),
+	love.graphics.printf(string.format("Memory Usage: %fkiB", collectgarbage("count") / 1000),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
 end

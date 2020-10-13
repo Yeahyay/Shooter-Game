@@ -21,16 +21,17 @@ Feint.Paths.Print()
 -- UTIL
 Feint.Paths.Add("Util", Feint.Paths.Modules .. "utilities")
 Feint.AddModule("Util", function(self)
+	-- UTIL LIBRARIES
+	self.Class = require(Feint.Paths.Lib .. "30log-master.30log-clean")
+	self.Memoize = require(Feint.Paths.Lib .. "memoize-master.memoize")
+	self.UUID = require(Feint.Paths.Lib .. "uuid-master.src.uuid")
+
 	self.Core = require(Feint.Paths.Util .. "coreUtilities")
 	self.Debug = require(Feint.Paths.Util .. "debugUtilities")
 	self.File = require(Feint.Paths.Util .. "fileUtilities")
 	self.String = require(Feint.Paths.Util .. "stringUtilities")
 	self.Table = require(Feint.Paths.Util .. "tableUtilities")
 	self.Exceptions = require(Feint.Paths.Util .. "exceptions")
-	-- UTIL LIBRARIES
-	self.Class = require(Feint.Paths.Lib .. "30log-master.30log-clean")
-	self.Memoize = require(Feint.Paths.Lib .. "memoize-master.memoize")
-	self.UUID = require(Feint.Paths.Lib .. "uuid-master.src.uuid")
 	self.Finalize()
 end)
 

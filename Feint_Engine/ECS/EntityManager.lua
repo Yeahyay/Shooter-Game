@@ -38,13 +38,12 @@ function EntityManager:getNewEntityId()
 end
 
 function EntityManager:CreateEntity(archetype)
-
 end
 EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
 
 function EntityManager:newArchetype(components)
 	local archetype = EntityArchetype:new("?", components)
-	self.archetypes[#self.archetypes] = archetype
+	self.archetypes[archetype.Name] = archetype
 	return archetype
 end
 
@@ -86,7 +85,7 @@ local generateQuery = --Feint.Util.Memoize
 end)
 
 local execute = function(entities, callback)
-	printf("Calling function on entities\n")
+	-- printf("Calling function on entities\n")
 end
 
 local getTime = love.timer.getTime
