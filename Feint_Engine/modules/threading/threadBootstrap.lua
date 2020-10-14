@@ -34,20 +34,36 @@ _NAME = string.format("THREAD_%02d", self.id)
 
 local channel = love.thread.getChannel("thread_data_" .. self.id)
 
-require("Feint_Engine.feintAPI", {Audio = true})
-
+-- print(love.timer)
 love.timer = require("love.timer")
+
+require("Feint_Engine.feintAPI", {Audio = true})
 
 -- local loadfile = Feint.Util.Memoize(loadfile)
 
+-- Feint.LoadModule("Input")
+Feint.LoadModule("ECS")
+-- Feint.LoadModule("Graphics")
+-- Feint.LoadModule("Parsing")
+-- Feint.LoadModule("Serialize")
+-- Feint.LoadModule("Audio")
+-- Feint.LoadModule("Tween")
+-- Feint.LoadModule("UI")
+
+
 local jobCode = {}
-local loadJob = Feint.Util.Memoize(function(data, type)
-	if type == "string" then
-		jobCode[data] = loadstring(data)
-	elseif type == "file" then
-		jobCode[data] = loadfile(data)
+local loadJob = function(data, type)
+	if not jobCode[data] then
+		if type == "string" then
+			jobCode[data] = loadstring(data)
+		elseif type == "file" then
+			jobCode[data] = loadfile(data)
+		elseif type == "function" then
+			jobCode[data] = data
+		end
 	end
-end)
+	return jobCode[data]
+end
 
 do
 	local printOld = print
@@ -57,8 +73,21 @@ do
 	end
 end
 
-local loop = coroutine.create(loadfile())
+local loop = coroutine.create(function(data, ...)
+	while true do
+		local func = loadJob(data.func, data.type)
+		func("poop")
+		coroutine.yield()
+	end
+end)
 
-while self.running do
-	print("rgjndsfkm")
+while true do
+	local data = false
+	repeat
+		data = channel:demand()
+	until data
+
+	if data.go then
+		coroutine.resume(loop, data)
+	end
 end

@@ -10,7 +10,15 @@ local Transform = Feint.ECS.Component:new("Transform", {
 	x = 0,
 	y = 0,
 	sizeX = 50,
-	sizeY = 50,
+	sizeY = 51,
+	sizeZ = 52,
+	sizeA = 53,
+	sizeB = 54,
+	sizeC = 55,
+	sizeD = 56,
+	sizeE = 57,
+	sizeF = 58,
+	sizeG = 59,
 });
 
 local Entity = {Name = "Entity"}
@@ -33,7 +41,7 @@ function RenderSystem:update(dt)
 	-- 	-- local transform = components.Transform
 	-- 	-- local renderer = components.Renderer
 	-- 	-- local physics = components.Physics
-	--
+		Feint.Log.log("Yeet\n")
 	end)
 
 	-- Feint.Log.log(""\n\n")

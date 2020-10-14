@@ -62,40 +62,6 @@ function love.load()
 
 	World.DefaultWorld:start()
 
-	Feint.Util.Table.preallocate(1000000)
-
-	local f = setmetatable({}, {
-		__len = 10,
-	})
-	print("sll", #f)
-	-- local t = {}
-	-- for i = 1, 1200000 do
-	-- 	t[i] = {
-	-- 		a = "a",
-	-- 		b = "b",
-	-- 		c = "c",
-	-- 		d = "d",
-	-- 		e = "e",
-	-- 		f = "f",
-	-- 		g = "g",
-	-- 		h = "h",
-	-- 		i = "i",
-	-- 		j = "j",
-	-- 		k = "k",
-	-- 		l = "l",
-	-- 		m = "m",
-	-- 		n = "n",
-	-- 		o = "o",
-	-- 		p = "p",
-	-- 		q = "q",
-	-- 		r = "r",
-	-- 		s = "s",
-	-- 		t = "t",
-	-- 		u = "u",
-	-- 		v = "v",
-	-- 	}
-	-- end
-
 	-- luacheck: ignore
 	if false then
 		love.window.updateMode(960, 540, {
@@ -115,6 +81,16 @@ function love.load()
 		})
 	end
 
+	Feint.Thread.newWorker(1, nil)
+	Feint.Thread.startWorker(1, {})
+	local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
+	channel:push({
+		go = true,
+		func = string.dump(function(test)
+			print("yo", test)
+		end),
+		type = "string",
+	})
 	--[[
 	-- Feint.Log.log();
 	Feint.Thread.newWorker(1, function(self)
@@ -160,8 +136,8 @@ function love.update(dt)
 	end
 	-]]
 
-	if true then
-		World.DefaultWorld:update(dt)
+	if false then
+		World.DefaultWorld:update(dt) -- luacheck: ignore
 	end
 	--[[
 	if currentGame then

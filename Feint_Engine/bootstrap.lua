@@ -15,7 +15,7 @@ printf("\n")
 log("Initializing Feint Engine\n\n")
 
 Feint.Run.framerate = 120 -- framerate cap
-Feint.Run.rate = 1 / 30 -- update dt
+Feint.Run.rate = 1 / 60 -- update dt
 Feint.Run.sleep = 0.001
 
 -- G_RENDERSTATS = love.graphics.getStats()

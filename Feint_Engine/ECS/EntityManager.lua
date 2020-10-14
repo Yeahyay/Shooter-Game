@@ -2,6 +2,7 @@ local ECSUtils = Feint.ECS.Util
 
 local EntityManager = ECSUtils.newClass("EntityManager")
 local EntityArchetype = Feint.ECS.EntityArchetype
+local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
 function EntityManager:init(name)
 	self.name = name
 	self.entities = {} -- {[index] = idIndex}
@@ -17,7 +18,7 @@ function EntityManager:init(name)
 	self.forEachJobs = {}
 
 	-- self.ID_INDEX = 0
-	self.EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
+	self.EntityQueryBuilder = EntityQueryBuilder:new("EntityManager_EntityQueryBuilder")
 end
 
 function EntityManager:getNewEntityId()
@@ -39,7 +40,7 @@ end
 
 function EntityManager:CreateEntity(archetype)
 end
-EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
+-- EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
 
 function EntityManager:newArchetype(components)
 	local archetype = EntityArchetype:new("?", components)
@@ -52,39 +53,45 @@ end
 -- 	return entity
 -- end
 
-local getEntities = Feint.Util.Memoize(function(query)
-	printf("Getting Entities from Query\n")
+local getEntities = --Feint.Util.Memoize(function(query)
+(function(query)
+	-- printf("Getting Entities from Query\n")
 	local entities = {}
 	return entities
 end)
 
-local generateQuery = --Feint.Util.Memoize
-(function(components, componentsCount)
+function EntityManager:buildQuery(arguments, componentsCount)
 	-- print(components, componentsCount)
-	-- printf("Generating EntityQuery for components: ")
+	-- printf("Building EntityQuery for components: ")
 
-	for i = 1, componentsCount - 1, 1 do
-		local componentData = components[i]
-		local name = componentData.Name
-		if name == "Entity" then
-			goto forEnd
-		end
+	-- local components = {}--{false, false, false, false, false, false}--Feint.Util.Table.preallocate(componentsCount)
 
-		-- assert(components[i] ~= nil, string.format("Component %d does not exist\n", i))
-		-- printf("%s, ", components[i].Name or "nonexistent")
-		::forEnd::
-	end
-
-	-- assert(components[#components] ~= nil, string.format("Component %d does not exist\n", #components))
-	-- if #components > 0 then
-	-- 	printf("%s\n", components[#components].Name or "nonexistent")
+	-- for i = 1, componentsCount, 1 do
+	-- 	local componentData = arguments[i]
+	-- 	-- local name = componentData.Name
+	-- 	if not componentData.componentData then
+	-- 		goto forEnd
+	-- 	end
+	--
+	-- 	-- assert(arguments[i] ~= nil, string.format("Component %d does not exist\n", i))
+	-- 	-- if i < componentsCount then
+	-- 	-- 	printf("%s, ", arguments[i].Name or "nonexistent")
+	-- 	-- end
+	-- 	components[#components + 1] = componentData
+	-- 	::forEnd::
 	-- end
 
-	local query = nil
-	return query
-end)
+	-- assert(arguments[#arguments] ~= nil, string.format("Component %d does not exist\n", #arguments))
+	-- if #arguments > 0 then
+	-- 	printf("%s\n", arguments[#arguments].Name or "nonexistent")
+	-- end
 
-local execute = function(entities, callback)
+	local queryBuilder = self.EntityQueryBuilder
+	local query = queryBuilder:withAll(arguments):build();
+	return query
+end
+
+function EntityManager:execute(entities, callback)
 	-- printf("Calling function on entities\n")
 end
 
@@ -92,34 +99,38 @@ local getTime = love.timer.getTime
 local avg = 0
 local avgTimes = 0
 
-
 local input = Feint.Input
 local px, py = 0, 0
 local lx, ly = 0, 0
 function EntityManager:forEach(system, arguments, callback)
 	-- MAKE THIS THREADED
-	-- printf("forEach from System \"%s\"\n", system.Name)
+	-- printf("\nforEach from System \"%s\"\n", system.Name)
 
-	local startTime = getTime()
-	local query = nil
-
-	for i = 1, 1, 1 do
+	do
 		lx, ly = px, py
-		-- generate an entity query that fits the specified arguments
-		query = generateQuery(arguments, #arguments)
-
 		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
 		Feint.Graphics.rectangle(lx, ly, 0, "fill", px, py, 50, 50)
 	end
 
+	local startTime = getTime()
+
+	-- generate an entity query that fits the specified arguments
+	local query = nil
+	for i = 1, 42500, 1 do
+		query = self:buildQuery(self, arguments, #arguments)
+	end
+
 	local endTime = getTime() - startTime
-	-- printf("TIME: %fs, %f frames\n", endTime, endTime * 60)
+	-- printf("TIME: %10.6fms, %10.6f%% of frame time\n", endTime * 1000, endTime / (1 / Feint.Run.framerate) * 100)
 	avg = avg + endTime
 	avgTimes = avgTimes + 1
-	-- printf("AVG: %fs; %f frames\n", avg / avgTimes, endTime * 60)
+	-- printf("AVG:  %10.6fms, %10.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / Feint.Run.framerate) * 100)
 
-	execute(getEntities(query), callback)
-	-- printf("Finished forEach\n")
+	-- collectgarbage()
+	-- collectgarbage()
+
+	self:execute(getEntities(query), callback)
+	-- printf("Finished forEach\n\n")
 end
 
 function EntityManager:removeEntity(id)

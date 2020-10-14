@@ -1,10 +1,17 @@
 local EntityQuery = {}
 
-function EntityQuery:init(components, componentsExclude)
-	printf("created entity query with %s and without %s",
-		table.concat(self.queryComponents, ", "),
-		table.concat(self.queryComponentsExclude, ", ")
-	)
+function EntityQuery:init(with, withCount, withall, withallCount, without, withoutCount)
+	self.components = withall
+
+	-- printf("Built entity query with %d elements\n", #self.components)
+	-- local componentNames = {}
+	-- for i = 1, #self.components, 1 do
+	-- 	componentNames[i] = self.components[i].Name
+	-- end
+	-- printf("Built entity query with %s\n",
+	-- 	table.concat(componentNames, ", ")
+	-- 	-- table.concat(self.componentsExclude, ", ")
+	-- )
 end
 function EntityQuery:getChunkCount()
 
@@ -16,6 +23,7 @@ function EntityQuery:new(with, withall, without)
 	local newEntityQuery = setmetatable({}, {
 		__index = EntityQuery
 	})
+	newEntityQuery:init(with, withall, without)
 	return newEntityQuery
 end
 
