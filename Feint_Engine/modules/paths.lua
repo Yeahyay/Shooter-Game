@@ -15,7 +15,7 @@ end
 
 function private.Add(name, pathString, file)
 	local path = pathString or name
-	assert(type(path) == "string", "needs a string")
+	assert(type(path) == "string", 2, "needs a string")
 
 
 	-- if it's a file, no postfix

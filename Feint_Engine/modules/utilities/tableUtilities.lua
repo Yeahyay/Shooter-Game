@@ -9,9 +9,9 @@ local tableUtilities = {}
 -- 	-- set the table tableUtilities to refer to the main program's _G
 -- 	setmetatable(tableUtilities, {__index = lastEnv})
 -- end
-
-tableUtilities.preallocate = Feint.Util.Memoize(function(arrayLangth, hashLength)
-	local t = loadstring("return {" .. ("1, "):rep(arrayLangth or 0) .. ("a = 1,"):rep(hashLength or 0) .. "}")();
+local loadstring_ = Feint.Util.Memoize(loadstring)
+tableUtilities.preallocate = Feint.Util.Memoize(function(arraylength, hashLength)
+	local t = loadstring_("return {" .. ("1, "):rep(arraylength or 0) .. ("a = 1,"):rep(hashLength or 0) .. "}")();
 	for k in pairs(t) do
 		t[k] = nil
 	end
@@ -22,7 +22,7 @@ function tableUtilities.readOnlyTable(table)
 	return setmetatable({}, {
 		__index = table,
 		__newindex = function(t, k, v)
-			error("attempt to modify read-only table")
+			error("attempt to modify read-only table", 2)
 		end,
 		__metatable = false
 	})
@@ -45,7 +45,7 @@ end
 -- luacheck: pop ignore
 
 function tableUtilities.makeTableReadOnly(table, callback)
-	assert(getmetatable(table), "table must have a metatable")
+	assert(getmetatable(table), 2, "table must have a metatable")
 	local mt = getmetatable(table)
 	if mt then
 		mt.__newindex = function(t, k, v)

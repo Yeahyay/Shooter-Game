@@ -38,7 +38,7 @@ function log(...)
 end
 
 function private.LoadModule(name)
-	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+	assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 	local module = private.Modules[name] -- checks if module exists
 	if module then
 		log("Loading module %s\n", name)
@@ -49,7 +49,7 @@ function private.LoadModule(name)
 end
 
 function private.AddModule(name, setupFunc)
-	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+	assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 	-- log("Adding module %s\n", name)
 	local newModule = {
 		Name = name,
@@ -60,7 +60,7 @@ function private.AddModule(name, setupFunc)
 		if getmetatable(newPrivate) then
 			error(string.format("Module '%s' is already loaded with data", name))
 		else
-			assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+			assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 			newPrivate.private = require(name, ...)
 			setmetatable(newPrivate, {
 				__index = newPrivate.private,
@@ -75,9 +75,11 @@ function private.AddModule(name, setupFunc)
 			if rawget(t, k) then -- does the index exist within the table itself, ignoring all metamethods
 				rawset(t, k, v)
 			elseif newPrivate[k] then -- if not, access its private table
-				newPrivate[k] = v -- the private table will access its own __index and _newindex, which are the private table's "private" index
-			elseif newPrivate[k] == nil then-- if the index is not in the table, its private table, or that private table's private section, then it's an error
-				error(exceptions.READ_ONLY_MODIFICATION_ERROR(t, k))
+				-- the private table will access its own __index and _newindex, which are the private table's "private" index
+				newPrivate[k] = v
+			elseif newPrivate[k] == nil then
+				-- if the index is not in the table, its private table, or that private table's private section, then it's an error
+				error(exceptions.READ_ONLY_MODIFICATION_ERROR(t, k), 2)
 			end
 		end
 	end
@@ -97,7 +99,4 @@ function private.AddModule(name, setupFunc)
 	return newModule
 end
 
-collectgarbage()
-collectgarbage()
-collectgarbage()
 return core

@@ -33,13 +33,13 @@ function ECSUtils.new(super, objType, name, ...)
 	-- constructor for the instance
 
 	local newInstance = {}
-	assert(name, "no name given")
+	assert(name, 2, "no name given")
 	newInstance.Name = name or "?"
 	newInstance.Super = super
 	newInstance.string = tostring(newInstance)
 	newInstance.Type = objType
 	assert(
-		type(newInstance.Name) == "string",
+		type(newInstance.Name) == "string", 2,
 		Feint.Util.Exceptions.BAD_ARG_ERROR(1, "new instance name", "string", type(newInstance.Name))
 	)
 
