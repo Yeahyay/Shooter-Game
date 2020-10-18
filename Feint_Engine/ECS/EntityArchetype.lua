@@ -15,8 +15,9 @@ end
 
 function EntityArchetype:createArchetype()
 	local components = {}
-	for k, v in pairs(self.components) do
-		components[k] = v.Name
+	for i = 1, #self.components, 1 do
+		local v = self.components[i]
+		components[i] = v.Name
 	end
 	table.sort(components, function(a, b) return a < b end)
 	self.archetypeString = table.concat(components)

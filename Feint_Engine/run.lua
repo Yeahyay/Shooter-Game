@@ -81,25 +81,16 @@ function love.load()
 		})
 	end
 
-	Feint.Thread.newWorker(1, nil)
-	Feint.Thread.startWorker(1, {})
-	local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
-	channel:push({
-		go = true,
-		func = string.dump(function(test)
-			print("yo", test)
-		end),
-		type = "string",
-	})
-	--[[
-	-- Feint.Log.log();
-	Feint.Thread.newWorker(1, function(self)
-
-	end)
-	Feint.Thread.startWorker(1)
-	local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
-	channel:push("local x = 1; return x")
-	--]]
+	-- Feint.Thread.newWorker(1, nil)
+	-- Feint.Thread.startWorker(1, {})
+	-- local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
+	-- channel:push({
+	-- 	go = true,
+	-- 	func = string.dump(function(test)
+	-- 		print("yo", test)
+	-- 	end),
+	-- 	type = "string",
+	-- })
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)
@@ -136,7 +127,7 @@ function love.update(dt)
 	end
 	-]]
 
-	if false then
+	if true then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 	end
 	--[[
@@ -222,7 +213,7 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage: %fkiB", collectgarbage("count") / 1000),
+	love.graphics.printf(string.format("Memory Usage: %fmiB", collectgarbage("count") / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
 end

@@ -99,24 +99,15 @@ local getTime = love.timer.getTime
 local avg = 0
 local avgTimes = 0
 
-local input = Feint.Input
-local px, py = 0, 0
-local lx, ly = 0, 0
 function EntityManager:forEach(system, arguments, callback)
 	-- MAKE THIS THREADED
 	-- printf("\nforEach from System \"%s\"\n", system.Name)
-
-	do
-		lx, ly = px, py
-		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
-		Feint.Graphics.rectangle(lx, ly, 0, "fill", px, py, 50, 50)
-	end
 
 	local startTime = getTime()
 
 	-- generate an entity query that fits the specified arguments
 	local query = nil
-	for i = 1, 42500, 1 do
+	for i = 1, 5000, 1 do
 		query = self:buildQuery(self, arguments, #arguments)
 	end
 
