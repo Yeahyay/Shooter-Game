@@ -17,17 +17,31 @@ setmetatable(graphics, {
 
 function private.rectangle(lx, ly, lr, mode, x, y, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
-	graphics.drawQueue[graphics.drawQueueSize] = {
-		"rectangle",
-		lx,
-		Feint.Graphics.G_SCREEN_SIZE.y - ly,
-		lr,
-		mode,
-		x,
-		Feint.Graphics.G_SCREEN_SIZE.y - y,
-		width,
-		height
-	}
+	local size = graphics.drawQueueSize
+	local obj = graphics.drawQueue[size]
+	if not obj then
+		graphics.drawQueue[size] = {
+			"rectangle",
+			lx,
+			Feint.Graphics.G_SCREEN_SIZE.y - ly,
+			lr,
+			mode,
+			x,
+			Feint.Graphics.G_SCREEN_SIZE.y - y,
+			width,
+			height
+		}
+	else
+		obj[1] = "rectangle"
+		obj[2] = lx
+		obj[3] = Feint.Graphics.G_SCREEN_SIZE.y - ly
+		obj[4] = lr
+		obj[5] = mode
+		obj[6] = x
+		obj[7] = Feint.Graphics.G_SCREEN_SIZE.y - y
+		obj[8] = width
+		obj[9] = height
+	end
 end
 
 function private.clear()
@@ -35,12 +49,13 @@ function private.clear()
 end
 
 function private.draw()
+	local loveGraphics = love.graphics
 	for i = graphics.drawQueueSize, 1, -1 do
 		local drawCall = graphics.drawQueue[i]
 		local px, py = drawCall[2], drawCall[3]
 		local tx, ty = drawCall[6], drawCall[7]
 		local dx, dy = px + interpolate * (tx - px), py + interpolate * (ty - py)
-		love.graphics[drawCall[1]](drawCall[5], dx, dy, select(8, unpack(drawCall)))
+		loveGraphics[drawCall[1]](drawCall[5], dx, dy, select(8, unpack(drawCall)))
 	end
 end
 
@@ -54,7 +69,6 @@ function private.updateInterpolate(value)
 	else
 		interpolate = 0
 	end
-	-- print(interpolate)
 end
 
 return graphics
