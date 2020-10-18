@@ -68,8 +68,8 @@ end
 do
 	local printOld = print
 	function print(...)
-		printf("%s_OLD: ", _NAME)
-		printOld(...)
+		-- printf("%s_OLD: ", _NAME)
+		printOld("as'dsda\n", ...)
 	end
 end
 
@@ -83,6 +83,7 @@ end)
 
 while true do
 	local data = false
+	print("WAITING FOR FUNCTION")
 	repeat
 		data = channel:demand()
 	until data
@@ -91,3 +92,5 @@ while true do
 		coroutine.resume(loop, data)
 	end
 end
+
+channel.push(true)

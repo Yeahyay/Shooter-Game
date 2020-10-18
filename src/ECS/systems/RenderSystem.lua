@@ -32,10 +32,21 @@ function RenderSystem:start()
 	self.EntityManager:CreateEntity(archetype)
 end
 
+local input = Feint.Input
+local px, py = 0, 0
+local lx, ly = 0, 0
 -- Feint.Util.Memoize(
 local components = {Entity, Renderer, Transform}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:update(dt)
 	-- local instance = Renderer:new{}
+
+
+	do
+		lx, ly = px, py
+		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
+		local rect = Feint.Graphics.rectangle
+		rect(lx, ly, 0, "fill", px, py, 50, 50)
+	end
 
 	self.EntityManager:forEach(self, components, function(entity, transform, renderer, physics)
 	-- 	-- local transform = components.Transform

@@ -12,7 +12,7 @@ end
 
 function private.runJobs()
 	for i = 1, numJobs, 1 do
-		
+
 	end
 end
 

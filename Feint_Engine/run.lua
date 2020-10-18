@@ -81,25 +81,41 @@ function love.load()
 		})
 	end
 
-	Feint.Thread.newWorker(1, nil)
-	Feint.Thread.startWorker(1, {})
-	local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
-	channel:push({
-		go = true,
-		func = string.dump(function(test)
-			print("yo", test)
-		end),
-		type = "string",
-	})
-	--[[
-	-- Feint.Log.log();
-	Feint.Thread.newWorker(1, function(self)
-
-	end)
-	Feint.Thread.startWorker(1)
-	local channel = love.thread.getChannel("thread_data_"..Feint.Thread.getWorkers()[1].id)
-	channel:push("local x = 1; return x")
-	--]]
+	for i = 1, 10, 1 do
+		Feint.Thread.newWorker(i, nil)
+	end
+	love.timer.sleep(0.1)
+	for i = 1, 10, 1 do
+		Feint.Thread.startWorker(i, {})
+		local channel = love.thread.getChannel("thread_data_"..i)
+		printf("STARTING THREAD %d\n", i)
+		channel:push({
+			go = true,
+			-- func = string.dump(function(test)
+			-- 	print("yo", test)
+			-- end),
+			func = string.dump(function(test)
+				while true do
+					local a = 0
+					local b = {}
+					for i = 10000, 1, -1 do
+						local a = i + 1
+						b[i] = a
+					end
+					print("sadkmnk")
+					-- sort(b)
+					sleep(0.0001)
+				end
+			end),
+			type = "string",
+		})
+		local wait = false
+		print("WAITING FOR THREAD "..i)
+		while not wait do
+			wait = channel:demand()
+		end
+		print("DONE WAITING FOR THREAD "..i)
+	end
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)
@@ -136,7 +152,7 @@ function love.update(dt)
 	end
 	-]]
 
-	if false then
+	if true then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 	end
 	--[[
@@ -222,7 +238,7 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage: %fkiB", collectgarbage("count") / 1000),
+	love.graphics.printf(string.format("Memory Usage: %fmiB", collectgarbage("count") / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
 end
