@@ -107,7 +107,7 @@ function EntityManager:forEach(system, arguments, callback)
 
 	-- generate an entity query that fits the specified arguments
 	local query = nil
-	for i = 1, 10000, 1 do
+	for i = 1, 5000, 1 do
 		query = self:buildQuery(self, arguments, #arguments)
 	end
 
