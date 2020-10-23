@@ -52,7 +52,7 @@ function RenderSystem:update(dt)
 	-- 	-- local transform = components.Transform
 	-- 	-- local renderer = components.Renderer
 	-- 	-- local physics = components.Physics
-		Feint.Log.log("Yeet\n")
+		Feint.Log.log("Yeet")
 	end)
 
 	-- Feint.Log.log(""\n\n")

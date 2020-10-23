@@ -13,13 +13,15 @@ function EntityQueryBuilder:init()
 end
 function EntityQueryBuilder:withAll(components)
 	local componentCount = #components
+	local componentWithAllCount = self.queryComponents_WithAll_Count
 	for i = 1, componentCount do
 		local v = components[i]
 		if v.componentData then
-			self.queryComponents_WithAll_Count = self.queryComponents_WithAll_Count + 1
-			self.queryComponents_WithAll[self.queryComponents_WithAll_Count] = v
+			componentWithAllCount = componentWithAllCount + 1
+			self.queryComponents_WithAll[componentWithAllCount] = v
 		end
 	end
+	self.queryComponents_WithAll_Count = componentWithAllCount--self.queryComponents_WithAll_Count + 1
 	return self
 end
 function EntityQueryBuilder:with(components)

@@ -81,6 +81,7 @@ function love.load()
 		})
 	end
 
+	--[[
 	for i = 1, 10, 1 do
 		Feint.Thread.newWorker(i, nil)
 	end
@@ -116,6 +117,7 @@ function love.load()
 		end
 		print("DONE WAITING FOR THREAD "..i)
 	end
+	--]]
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)
@@ -131,8 +133,17 @@ local L_AVG_TPS_LIST_INDEX = 1
 local L_AVG_TPS_SUM = 0
 ]]
 
+local getTime = love.timer.getTime
+local avg = 0
+local avgTimes = 0
+
+
+
+
 function love.update(dt)
 	Feint.Graphics.clear()
+
+	local startTime = getTime()
 
 	--[[ -- unreliable tickrate counter
 	local tickrate = run.rate + run.accum
@@ -152,9 +163,9 @@ function love.update(dt)
 	end
 	-]]
 
-	if true then
+	-- if true then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
-	end
+	-- end
 	--[[
 	if currentGame then
 		currentGame.update(dt)
@@ -166,6 +177,11 @@ function love.update(dt)
 		end
 	end
 	--]]
+	local endTime = getTime() - startTime
+	printf("TIME: %10.6fms, %10.6f%% of frame time\n", endTime * 1000, endTime / (1 / 60) * 100)
+	avg = avg + endTime
+	avgTimes = avgTimes + 1
+	printf("AVG:  %10.6fms, %10.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / 60) * 100)
 end
 
 

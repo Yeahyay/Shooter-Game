@@ -6,7 +6,7 @@ function EntityArchetype:init(components, ...)
 	-- holds components for the archetype
 	self.components = components
 	self.archetypeData = {}
-	self.archetypeString = ""
+	self.archetypeString = nil
 	self.chunkCount = 0
 	self.chunkCapacity = 32
 	self:createArchetype()

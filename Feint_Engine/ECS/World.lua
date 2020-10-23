@@ -31,8 +31,9 @@ end
 
 function World:update(dt)
 	local list = self.updateOrder
+	local systems = self.systems
 	for i = 1, #list do
-		self.systems[list[i]]:update(dt)
+		systems[list[i]]:update(dt)
 	end
 end
 

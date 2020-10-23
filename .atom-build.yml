@@ -1,14 +1,14 @@
-cmd:         "/home/yeahyay/Programming/lua/love2d/love"
-name:        "Love 2d"
+cmd:          "/home/yeahyay/Programming/lua/love2d/love"
+name:         "Love 2d"
 args:
   - "./"
-sh:          true
-keymap:      ctrl-b
+sh:           true
+keymap:       ctrl-b
 targets:
   "Kaitai Struct":
-    cmd:     "ksc"
-    name:    "Kaitai Struct"
-    cwd:     "{FILE_ACTIVE_PATH}"
+    cmd:      "ksc"
+    name:     "Kaitai Struct"
+    cwd:      "{FILE_ACTIVE_PATH}"
     args:
       - "-no-version-check"
       - "-v"
@@ -16,26 +16,34 @@ targets:
       - "--outdir \"{FILE_ACTIVE_PATH}\""
       - "'{FILE_ACTIVE_NAME}'"
       # - "'{PROJECT_PATH}/src/Parsing/Kaitai_Struct/{FILE_ACTIVE_NAME}'"
-    sh:      true
+    sh:       true
   "Windows":
-    cmd:     "F:\\Programming\\Lua\\Love2D\\love-11.3-win64\\love"
-    name:    "Love 2d"
+    cmd:      "F:\\Programming\\Lua\\Love2D\\love-11.3-win64\\love"
+    name:     "Love 2d"
     args:
       - "./"
-    sh:      true
-    keymap:  ctrl-b
+    sh:       true
+    keymap:   ctrl-b
   "Lizard":
-    cmd:     "lizard"
-    name:    "Lizard"
+    # cwd:    "{PROJECT_PATH}"
+    cmd:      "lizard -l lua ./ -x\"*/lib/*\" -x\"*/DataStructures/*\""
+    name:     "Lizard"
     args:
-      - "./src"
-      - "-t 4"
-    sh:      true
-    keymap:  ctrl-alt-shift-a
+       # \".\\Feint_Engine\\*\""
+      # - "-l lua"
+      # # - "-t 4"
+      # - "./src"
+      # - "--exclude \"./src/*\""
+      # - "-x\"*/DataStructures/*\""
+      # - "\"{PROJECT_PATH}\\\""
+    sh:       true
+    keymap:   ctrl-alt-shift-a
   "Lizard Duplicate":
-    cmd:     "lizard"
-    name:    "Lizard duplicate"
+    cmd:      "lizard"
+    name:     "Lizard duplicate"
     args:
-      - "-Eduplicate ./src"
-    sh:      true
-    keymap:  ctrl-alt-shift-d
+      - "--exclude \"input*\""
+      - "-Eduplicate ./Feint_Engine/modules"
+      # - "-x \"*/lib/*\" -x \"*\\lib\\\""
+    sh:       true
+    keymap:   ctrl-alt-shift-d

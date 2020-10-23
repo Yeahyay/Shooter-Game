@@ -61,24 +61,23 @@ local getEntities = --Feint.Util.Memoize(function(query)
 end)
 
 function EntityManager:buildQuery(arguments, componentsCount)
-	-- print(components, componentsCount)
 	-- printf("Building EntityQuery for components: ")
 
-	-- local components = {}--{false, false, false, false, false, false}--Feint.Util.Table.preallocate(componentsCount)
-
+	-- local components = {nil, nil, nil, nil, nil, nil}--Feint.Util.Table.preallocate(componentsCount)
+	--
 	-- for i = 1, componentsCount, 1 do
 	-- 	local componentData = arguments[i]
 	-- 	-- local name = componentData.Name
-	-- 	if not componentData.componentData then
-	-- 		goto forEnd
-	-- 	end
+	-- 	-- if not componentData.componentData then
+	-- 	-- 	goto forEnd
+	-- 	-- end
 	--
 	-- 	-- assert(arguments[i] ~= nil, string.format("Component %d does not exist\n", i))
 	-- 	-- if i < componentsCount then
 	-- 	-- 	printf("%s, ", arguments[i].Name or "nonexistent")
 	-- 	-- end
 	-- 	components[#components + 1] = componentData
-	-- 	::forEnd::
+	-- 	-- ::forEnd::
 	-- end
 
 	-- assert(arguments[#arguments] ~= nil, string.format("Component %d does not exist\n", #arguments))
@@ -93,29 +92,18 @@ end
 
 function EntityManager:execute(entities, callback)
 	-- printf("Calling function on entities\n")
+	callback()
 end
 
-local getTime = love.timer.getTime
-local avg = 0
-local avgTimes = 0
 
 function EntityManager:forEach(system, arguments, callback)
 	-- MAKE THIS THREADED
 	-- printf("\nforEach from System \"%s\"\n", system.Name)
 
-	local startTime = getTime()
 
 	-- generate an entity query that fits the specified arguments
-	local query = nil
-	for i = 1, 5000, 1 do
-		query = self:buildQuery(self, arguments, #arguments)
-	end
 
-	local endTime = getTime() - startTime
-	-- printf("TIME: %10.6fms, %10.6f%% of frame time\n", endTime * 1000, endTime / (1 / Feint.Run.framerate) * 100)
-	avg = avg + endTime
-	avgTimes = avgTimes + 1
-	-- printf("AVG:  %10.6fms, %10.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / Feint.Run.framerate) * 100)
+	local query = self:buildQuery(arguments, #arguments)
 
 	-- collectgarbage()
 	-- collectgarbage()

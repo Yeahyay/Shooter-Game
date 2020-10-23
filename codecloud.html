@@ -1,0 +1,568 @@
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width,
+            initial-scale=1.0,maximum-scale=1.0" />
+        <style type="text/css">
+            canvas {
+                border: 1px solid black;
+                width: 700px;
+                height: 700px;
+            }
+        </style>
+        <script type="text/javascript">
+        
+
+function TagCloud(w, h, context) {
+    "use strict";
+    this.ctx = context;
+    this.canvasWidth = w;
+    this.canvasHeight = h;
+    this.fontSize = this.canvasHeight / 3;
+    this.shape = "rectangle";
+}
+
+TagCloud.prototype.setShape = function () {
+    this.shape = "circle";
+};
+
+TagCloud.prototype.render = function (tags) {
+    this.ctx.textBaseline = "top";
+    tags.forEach(function (tag) {
+        this.placeTag(tag[0]);
+    }, this);
+};
+
+TagCloud.prototype.placeTag = function (tag) {
+    var placement;
+    while (!(placement = this._getNonOverlappingPlaceWithBestSize(
+            this.fontSize, tag)))
+        this.fontSize *= 0.9;
+
+    this.ctx.fillStyle = this._getRandomColor();
+    this.ctx.fillText(tag, placement.x, placement.y);
+};
+
+TagCloud.prototype._getNonOverlappingPlaceWithBestSize =
+    function (fontSize, tag) {
+    this.ctx.font = "" + fontSize + "pt " + "Arial";
+    var lineHeight=this.getLineHeight(fontSize);
+    var tagWidth = this.ctx.measureText(tag).width;
+
+    var base = new BasePlacement(
+        (this.canvasWidth - tagWidth) * Math.random(),
+        (this.canvasHeight - lineHeight) * Math.random(),
+        lineHeight
+        );
+
+    var placement;
+    /* jshint ignore:start */
+    while (placement = base.nextPlaceToTry()) {
+        if (this._isPlaceEmpty(placement, tagWidth, lineHeight))
+            break;
+    }
+    /* jshint ignore:end */
+    return placement;
+};
+
+TagCloud.prototype.getLineHeight = function (fontSize) {
+    return this.ctx.measureText('M').width * 1.2;
+}
+
+TagCloud.prototype._getRandomColor = function (){
+    var colors = ["aqua", "black", "blue", "fuchsia", "gray", "green",
+                  "lime", "maroon", "navy", "olive", "orange", "purple",
+                  "red", "silver", "teal"];
+    return colors[Math.floor(colors.length * Math.random())];
+};
+
+TagCloud.prototype._isPlaceEmpty = function (placement, width, height) {
+    if (placement.x < 0 || placement.y < 0 || placement.x + width >
+         this.canvasWidth || placement.y + height > this.canvasHeight)
+        return false;
+
+    var pix = this.ctx.getImageData(
+                placement.x, placement.y, width, height).data;
+
+    for (var i = 0, n = pix.length; i < n; i += 4)
+        if (pix[i+3])
+                return false;
+
+    return [[placement.x, placement.y],
+            [placement.x + width, placement.y],
+            [placement.x, placement.y + height],
+            [placement.x + width, placement.y + height]].every(
+                function(pos) {
+                    var a = this.canvasWidth / 2;
+                    var b = this.canvasHeight / 2;
+                    var X = pos[0] - a;
+                    var Y = pos[1] - b;
+                    return (X * X / a / a + Y * Y / b / b < 1);
+                }, this);
+};
+
+TagCloud.prototype.getCoverage = function () {
+    var pix = this.ctx.getImageData(
+                0, 0, this.canvasWidth, this.canvasHeight).data;
+    var pixCount = 0;
+    for (var i = 0, n = pix.length; i < n; i += 4) {
+        if (pix[i+3])
+            pixCount++;
+    }
+    return pixCount * 100 / this.canvasWidth / this.canvasHeight;
+};
+
+function BasePlacement(x, y, h) {
+    var baseX = x,
+        baseY = y,
+        scale = h,
+        tryNumber = 0;
+
+    this.nextPlaceToTry = function() {
+        if (tryNumber < this._spiralOffsets.length)
+            return {
+                x : baseX + this._spiralOffsets[tryNumber][0] * scale,
+                y : baseY + this._spiralOffsets[tryNumber++][1] * scale
+            };
+    };
+}
+
+function generateSpiralOffsets() {
+    var spiralOffsets = [];
+    var radius = 0;
+    var dr = 0.2;
+    for (var i = 0; radius < 40; i+=0.4, radius += dr) {
+        spiralOffsets.push([
+                   radius * Math.sin(i),
+                   radius * Math.cos(i)
+                ]);
+    }
+    return spiralOffsets;
+}
+
+BasePlacement.prototype._spiralOffsets = generateSpiralOffsets();
+
+    
+        </script>
+        <script type="application/javascript">
+            function draw() {
+                var canvas = document.getElementById("canvas");
+                    if (canvas.getContext) {
+                        var ctx = canvas.getContext("2d");
+                        // scale 2x
+                        if(window.devicePixelRatio == 2) {
+                            canvas.setAttribute('width', canvas.width * 2);
+                            canvas.setAttribute('height', canvas.height * 2);
+                        }
+                        var tagCloud = new TagCloud(canvas.width,
+                            canvas.height, ctx);
+                        tagCloud.render([                                        ["local", 351],
+                                        ["function", 250],
+                                        ["0", 202],
+                                        ["Feint", 167],
+                                        ["then", 137],
+                                        ["1", 102],
+                                        ["mouse", 95],
+                                        ["...", 93],
+                                        ["name", 79],
+                                        ["love", 64],
+                                        ["Paths", 61],
+                                        ["k", 60],
+                                        ["v", 60],
+                                        ["state", 57],
+                                        ["type", 57],
+                                        ["x", 56],
+                                        ["data", 55],
+                                        ["y", 50],
+                                        ["vMath", 49],
+                                        ["components", 42],
+                                        ["true", 42],
+                                        ["graphics", 40],
+                                        ["i", 40],
+                                        ["2", 38],
+                                        ["printf", 38],
+                                        ["or", 37],
+                                        ["Vec2", 36],
+                                        ["string", 36],
+                                        ["value", 35],
+                                        ["math", 34],
+                                        ["Value", 33],
+                                        ["entity", 32],
+                                        ["addInput", 31],
+                                        ["false", 31],
+                                        ["format", 31],
+                                        ["init", 31],
+                                        ["pairs", 31],
+                                        ["Input", 29],
+                                        ["input", 28],
+                                        ["key", 27],
+                                        ["Util", 26],
+                                        ["context", 26],
+                                        ["run", 26],
+                                        ["ECS", 25],
+                                        ["World", 25],
+                                        ["not", 25],
+                                        ["size", 25],
+                                        ["nil", 24],
+                                        ["print", 23],
+                                        ["setmetatable", 23],
+                                        ["EntityManager", 22],
+                                        ["Vec3", 22],
+                                        ["mt", 22],
+                                        ["keyInputType", 21],
+                                        ["keyInputValueType", 21],
+                                        ["pos", 21],
+                                        ["Name", 20],
+                                        ["angle", 20],
+                                        ["id", 20],
+                                        ["triggerTypeConstant", 20],
+                                        ["ECSUtils", 19],
+                                        ["__index", 19],
+                                        ["assert", 19],
+                                        ["elseif", 19],
+                                        ["file", 19],
+                                        ["obj", 19],
+                                        ["EntityQueryBuilder", 18],
+                                        ["Transform", 18],
+                                        ["a", 18],
+                                        ["componentData", 18],
+                                        ["env", 18],
+                                        ["min", 18],
+                                        ["path", 18],
+                                        ["t", 18],
+                                        ["Graphics", 17],
+                                        ["Instance", 17],
+                                        ["log", 17],
+                                        ["object", 17],
+                                        ["position", 17],
+                                        ["table", 17],
+                                        ["Component", 16],
+                                        ["LoadModule", 16],
+                                        ["Physics", 16],
+                                        ["component", 16],
+                                        ["dt", 16],
+                                        ["start", 16],
+                                        ["transform", 16],
+                                        ["Add", 15],
+                                        ["AddModule", 15],
+                                        ["Finalize", 15],
+                                        ["Math", 15],
+                                        ["System", 15],
+                                        ["error", 15],
+                                        ["newInstance", 15],
+                                        ["stop", 15],
+                                        ["PositionRaw", 14],
+                                        ["archetype", 14],
+                                        ["level", 14],
+                                        ["max", 14],
+                                        ["messageName", 14],
+                                        ["release", 14],
+                                        ["update", 14],
+                                        ["5", 13],
+                                        ["Class", 13],
+                                        ["LevelParser", 13],
+                                        ["events", 13],
+                                        ["func", 13],
+                                        ["newPrivate", 13],
+                                        ["thread", 13],
+                                        ["G_SCREEN_SIZE", 12],
+                                        ["TriggerTypeEnum", 12],
+                                        ["b", 12],
+                                        ["bitser", 12],
+                                        ["physics", 12],
+                                        ["EntityQuery", 11],
+                                        ["Modules", 11],
+                                        ["Position", 11],
+                                        ["RenderSystem", 11],
+                                        ["__newindex", 11],
+                                        ["active", 11],
+                                        ["execute", 11],
+                                        ["message", 11],
+                                        ["restrict", 11],
+                                        ["triggerTypeStart", 11],
+                                        ["InputSystem", 10],
+                                        ["Lib", 10],
+                                        ["Run", 10],
+                                        ["_G", 10],
+                                        ["debugUtilities", 10],
+                                        ["exceptions", 10],
+                                        ["extendedMath", 10],
+                                        ["hold", 10],
+                                        ["newClass", 10],
+                                        ["physics1", 10],
+                                        ["physics2", 10],
+                                        ["signature", 10],
+                                        ["AssetManager", 9],
+                                        ["BAD_ARG_ERROR", 9],
+                                        ["Renderer", 9],
+                                        ["coreUtilities", 9],
+                                        ["cos", 9],
+                                        ["getmetatable", 9],
+                                        ["inputs", 9],
+                                        ["levelName", 9],
+                                        ["list", 9],
+                                        ["mouseInputType", 9],
+                                        ["mouseInputValueType", 9],
+                                        ["paths", 9],
+                                        ["push", 9],
+                                        ["register", 9],
+                                        ["util", 9],
+                                        ["vectors", 9],
+                                        ["world", 9],
+                                        ["Assets", 8],
+                                        ["DefaultWorld", 8],
+                                        ["EntityArchetype", 8],
+                                        ["EventManager", 8],
+                                        ["Root", 8],
+                                        ["_", 8],
+                                        ["and", 8],
+                                        ["ans", 8],
+                                        ["button", 8],
+                                        ["callback", 8],
+                                        ["drawCall", 8],
+                                        ["dx", 8],
+                                        ["dy", 8],
+                                        ["filesystem", 8],
+                                        ["getEntityComponents", 8],
+                                        ["getTime", 8],
+                                        ["index", 8],
+                                        ["info", 8],
+                                        ["inputCommand", 8],
+                                        ["property", 8],
+                                        ["queryComponents_With_Count", 8],
+                                        ["queryComponents_Without_Count", 8],
+                                        ["rate", 8],
+                                        ["returnValues", 8],
+                                        ["tableUtilities", 8],
+                                        ["1000", 7],
+                                        ["3", 7],
+                                        ["4", 7],
+                                        ["EntityChunk", 7],
+                                        ["InputGroup", 7],
+                                        ["InputGroupsEnum", 7],
+                                        ["InputTypeEnum", 7],
+                                        ["InputValueTypeEnum", 7],
+                                        ["PositionDelta", 7],
+                                        ["_ENV", 7],
+                                        ["_NAME", 7],
+                                        ["addInputGroup", 7],
+                                        ["body", 7],
+                                        ["contexts", 7],
+                                        ["inactive", 7],
+                                        ["inputContext", 7],
+                                        ["loader", 7],
+                                        ["makeTableReadOnly", 7],
+                                        ["preSolve", 7],
+                                        ["px", 7],
+                                        ["py", 7],
+                                        ["query", 7],
+                                        ["queryComponents_WithAll_Count", 7],
+                                        ["select", 7],
+                                        ["signatureSize", 7],
+                                        ["sin", 7],
+                                        ["system", 7],
+                                        ["systems", 7],
+                                        ["write", 7],
+                                        ["z", 7],
+                                        ["10", 6],
+                                        ["Camera", 6],
+                                        ["CameraSystem", 6],
+                                        ["G_FPS_DELTA", 6],
+                                        ["IdSystem", 6],
+                                        ["Ids", 6],
+                                        ["InputContext", 6],
+                                        ["PhysicsSystem", 6],
+                                        ["PositionUnit", 6],
+                                        ["argsCount", 6],
+                                        ["asset", 6],
+                                        ["componentCount", 6],
+                                        ["contact", 6],
+                                        ["copy", 6],
+                                        ["directory", 6],
+                                        ["drawQueueSize", 6],
+                                        ["forEach", 6],
+                                        ["fpsSum", 6],
+                                        ["io", 6],
+                                        ["jobCode", 6],
+                                        ["levelData", 6],
+                                        ["lx", 6],
+                                        ["ly", 6],
+                                        ["mult", 6],
+                                        ["newAssetCategory", 6],
+                                        ["newInputCommand", 6],
+                                        ["newInputContext", 6],
+                                        ["newModule", 6],
+                                        ["numEntities", 6],
+                                        ["package", 6],
+                                        ["postSolve", 6],
+                                        ["screenSize", 6],
+                                        ["status", 6],
+                                        ["values", 6],
+                                        ["100", 5],
+                                        ["50", 5],
+                                        ["60", 5],
+                                        ["FEINT_ROOT", 5],
+                                        ["GameInstance", 5],
+                                        ["InputScheme", 5],
+                                        ["PositionOld", 5],
+                                        ["PositionRawOld", 5],
+                                        ["Table", 5],
+                                        ["_ENV_LAST", 5],
+                                        ["__tostring", 5],
+                                        ["addContext", 5],
+                                        ["args", 5],
+                                        ["chunkCount", 5],
+                                        ["componentWithAllCount", 5],
+                                        ["components1", 5],
+                                        ["components2", 5],
+                                        ["concat", 5],
+                                        ["currentCamera", 5],
+                                        ["defaultAll", 5],
+                                        ["draw", 5],
+                                        ["endTime", 5],
+                                        ["entities", 5],
+                                        ["fileUtilities", 5],
+                                        ["fpsIndex", 5],
+                                        ["funcName", 5],
+                                        ["initComponentData", 5],
+                                        ["instance", 5],
+                                        ["interpolate", 5],
+                                        ["lenient", 5],
+                                        ["load", 5],
+                                        ["loaded", 5],
+                                        ["match", 5],
+                                        ["newTestEntity", 5],
+                                        ["numJobs", 5],
+                                        ["orig", 5],
+                                        ["preserveComponentData", 5],
+                                        ["systemsCount", 5],
+                                        ["timer", 5],
+                                        ["tostring", 5],
+                                        ["unpack", 5],
+                                        ["updateOrder", 5],
+                                        ["vec3ToVec2", 5],
+                                        ["workers", 5],
+                                        ["Components", 4],
+                                        ["DEFAULT_FONT_HEIGHT", 4],
+                                        ["ECSutils", 4],
+                                        ["G_AVG_FPS_DELTA", 4],
+                                        ["G_AVG_FPS_DELTA_ITERATIONS", 4],
+                                        ["Memoize", 4],
+                                        ["PositionDeltaOld", 4],
+                                        ["PositionUnitOld", 4],
+                                        ["PositionWorld", 4],
+                                        ["READ_ONLY_MODIFICATION_ERROR", 4],
+                                        ["SAVEDIR", 4],
+                                        ["_LAYER", 4],
+                                        ["_TYPE", 4],
+                                        ["_copy", 4],
+                                        ["_io", 4],
+                                        ["arguments", 4],
+                                        ["avg", 4],
+                                        ["avgTimes", 4],
+                                        ["build", 4],
+                                        ["channel", 4],
+                                        ["constant", 4],
+                                        ["deepcopy", 4],
+                                        ["default", 4],
+                                        ["defaultEditorScheme", 4],
+                                        ["defaultGlobals", 4],
+                                        ["defaultPackages", 4],
+                                        ["defaultPlayerScheme", 4],
+                                        ["drawQueue", 4],
+                                        ["empty", 4],
+                                        ["entityAdded", 4],
+                                        ["entityHasComponent", 4],
+                                        ["fixture", 4],
+                                        ["fixture1", 4],
+                                        ["fixture2", 4],
+                                        ["fpsList", 4],
+                                        ["functionSignatures", 4],
+                                        ["getUserData", 4],
+                                        ["gsub", 4],
+                                        ["idCount", 4],
+                                        ["interpolateOn", 4],
+                                        ["logFile", 4],
+                                        ["logLevel", 4],
+                                        ["lookup_table", 4],
+                                        ["mousemoved", 4],
+                                        ["newPath", 4],
+                                        ["new_table", 4],
+                                        ["num", 4],
+                                        ["numDecimalPlaces", 4],
+                                        ["number", 4],
+                                        ["nx", 4],
+                                        ["ny", 4],
+                                        ["printOld", 4],
+                                        ["queryComponents_With", 4],
+                                        ["queryComponents_WithAll", 4],
+                                        ["queryComponents_Without", 4],
+                                        ["random", 4],
+                                        ["range", 4],
+                                        ["requireEnv", 4],
+                                        ["startTime", 4],
+                                        ["systemCount", 4],
+                                        ["triggerTypeStop", 4],
+                                        ["with", 4],
+                                        ["withall", 4],
+                                        ["without", 4],
+                                        ["%", 3],
+                                        ["32", 3],
+                                        ["6", 3],
+                                        ["8", 3],
+                                        ["9", 3],
+                                        ["ClickPosition", 3],
+                                        ["ClickPositionWorld", 3],
+                                        ["DEFAULT_FONT", 3],
+                                        ["Debug", 3],
+                                        ["Entity", 3],
+                                        ["Exceptions", 3],
+                                        ["Feint_INPUT_PATH", 3],
+                                        ["Feint_InputContext", 3],
+                                        ["G_AVG_FPS", 3],
+                                        ["G_FPS", 3],
+                                        ["Game", 3],
+                                        ["Game_ECS_Files", 3],
+                                        ["Id", 3],
+                                        ["IdsReverse", 3],
+                                        ["PRINT_ENV", 3],
+                                        ["PositionDeltaRaw", 3],
+                                        ["PositionUnitRaw", 3],
+                                        ["ReleasePosition", 3],
+                                        ["ReleasePositionWorld", 3],
+                                        ["SlashDelimited", 3],
+                                        ["Vector2", 3],
+                                        ["Ykc", 3],
+                                        ["_REQUIRE_SILENT", 3],
+                                        ["__call", 3],
+                                        ["__mode", 3],
+                                        ["archetypeString", 3],
+                                        ["arg", 3],
+                                        ["capacity", 3],
+                                        ["category", 3],
+                                        ["chunk", 3],
+                                        ["clear", 3],
+                                        ["componentNames", 3],
+                                        ["convertData", 3],
+                                        ["core", 3],
+                                        ["coroutine", 3],
+                                        ["debugInputScheme", 3],
+                                        ["delta", 3],
+                                        ["event", 3],
+                                        ["executeStartHoldStop", 3],
+                                        ["filter", 3],
+                                        ["framerate", 3],
+                                        ["get", 3],
+                                        ["getPosition", 3],
+                                        ["globalInputScheme", 3],
+                                        ["height", 3],
+
+                                    ]);
+                                }
+                        }
+                    </script>
+                </head>
+                <body onload="draw();">
+                    <canvas id="canvas" width="700" height="700"></canvas>
+                </body>
+            </html>
