@@ -39,8 +39,6 @@ local lx, ly = 0, 0
 local components = {Entity, Renderer, Transform}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:update(dt)
 	-- local instance = Renderer:new{}
-
-
 	do
 		lx, ly = px, py
 		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
@@ -49,10 +47,10 @@ function RenderSystem:update(dt)
 	end
 
 	self.EntityManager:forEach(self, components, function(entity, transform, renderer, physics)
-	-- 	-- local transform = components.Transform
-	-- 	-- local renderer = components.Renderer
-	-- 	-- local physics = components.Physics
-		Feint.Log.log("Yeet")
+		-- local transform = components.Transform
+		-- local renderer = components.Renderer
+		-- local physics = components.Physics
+		-- Feint.Log.log("Yeet")
 	end)
 
 	-- Feint.Log.log(""\n\n")
