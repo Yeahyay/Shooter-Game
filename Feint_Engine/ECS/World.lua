@@ -2,13 +2,14 @@ local ECSUtils = Feint.ECS.Util
 local EntityManager = Feint.ECS.EntityManager
 
 local World = ECSUtils.newClass("World")
-function World:init()
+function World:init(name)
+	self.Name = name
 	self.systems = {}
 	self.systemsCount = 0
 	self.updateOrder = {}
-	self.EntityManager = EntityManager(self.Name.."EntityManager")
+	self.EntityManager = EntityManager()--self.Name .. "EntityManager")
 end
-World.DefaultWorld = World("DefaultWorld")
+World.DefaultWorld = World:new("DefaultWorld")
 
 function World:generateUpdateOrderList()
 	local list = {}

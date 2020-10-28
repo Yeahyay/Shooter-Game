@@ -29,27 +29,27 @@ function ECSUtils.instantiateComponent(component)
 
 end
 
-function ECSUtils.new(super, objType, name, ...)
+function ECSUtils.new(super, objType, --[[name,]] ...)
 	-- constructor for the instance
 
 	local newInstance = {}
-	assert(name, 2, "no name given")
-	newInstance.Name = name or "?"
+	-- assert(name, 2, "no name given")
+	-- newInstance.Name = name or "?"
 	newInstance.Super = super
 	newInstance.string = tostring(newInstance)
 	newInstance.Type = objType
-	assert(
-		type(newInstance.Name) == "string", 2,
-		Feint.Util.Exceptions.BAD_ARG_ERROR(1, "new instance name", "string", type(newInstance.Name))
-	)
+	-- assert(
+	-- 	type(newInstance.Name) == "string", 2,
+	-- 	Feint.Util.Exceptions.BAD_ARG_ERROR(1, "new instance name", "string", type(newInstance.Name))
+	-- )
 
 	setmetatable(newInstance, {
 		__index = super,
-		__call = function(newInstance, name, ...)
-			return newInstance:new(name, ...)
+		__call = function(newInstance, --[[name,]] ...)
+			return newInstance:new(--[[name,]] ...)
 		end,
 		__tostring = function()
-			return string.format("%s %s (%s)", objType, newInstance.Name, newInstance.string)
+			return string.format("%s %s (%s)", objType, --[[newInstance.Name]] "null", newInstance.string)
 		end
 	})
 
