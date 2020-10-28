@@ -175,10 +175,10 @@ function love.update(dt)
 	end
 	--]]
 	local endTime = getTime() - startTime
-	Feint.Log.log("TIME: %10.6fms, %10.6f%% of frame time\n", endTime * 1000, endTime / (1 / 60) * 100)
+	Feint.Log.log("TIME: %9.6fms, %9.6f%% of frame time\n", endTime * 1000, endTime / (1 / 60) * 100)
 	avg = avg + endTime
 	avgTimes = avgTimes + 1
-	Feint.Log.log("AVG:  %10.6fms, %10.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / 60) * 100)
+	Feint.Log.log("AVG:  %9.6fms, %9.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / 60) * 100)
 end
 
 
