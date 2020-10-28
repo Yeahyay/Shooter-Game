@@ -14,7 +14,7 @@ function EntityManager:init(--[[name]])
 	self.archetypes = {}
 	self.archetypeCount = 0
 	self.archetypeChunks = {}
-	self.archetypeChunksCount = 0
+	self.archetypeChunksCount = {}
 
 	self.forEachJobs = {}
 
@@ -46,15 +46,16 @@ end
 
 function EntityManager:newArchetype(components)
 	local archetype = EntityArchetype:new(components)
-	self.archetypes[archetype.Name] = archetype
+	self.archetypes[archetype] = archetype
+	self.archetypeCount = self.archetypeCount + 1
 	Feint.Log.logln(archetype.Name)
 	return archetype
 end
 
 function EntityManager:newArchetypeChunk(archetype)
 	local archetypeChunk = EntityArchetypeChunk:new(archetype)
-	self.ArchetypeChunks[archetype] = archetypeChunk
-	self.ArchetypeChunksCount[archetype] = 0
+	self.archetypeChunks[archetype] = archetypeChunk
+	self.archetypeChunksCount[archetype] = 0
 	Feint.Log.logln(archetypeChunk.Name)
 	return archetype
 end
