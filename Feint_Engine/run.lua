@@ -160,9 +160,9 @@ function love.update(dt)
 	end
 	-]]
 
-	-- if true then
+	if true then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
-	-- end
+	end
 	--[[
 	if currentGame then
 		currentGame.update(dt)
@@ -174,11 +174,13 @@ function love.update(dt)
 		end
 	end
 	--]]
-	local endTime = getTime() - startTime
-	Feint.Log.log("TIME: %9.6fms, %9.6f%% of frame time\n", endTime * 1000, endTime / (1 / 60) * 100)
-	avg = avg + endTime
-	avgTimes = avgTimes + 1
-	Feint.Log.log("AVG:  %9.6fms, %9.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / 60) * 100)
+	if false and Feint.Run.rate > 0 then
+		local endTime = getTime() - startTime
+		Feint.Log.log("TIME: %9.6fms, %9.6f%% of frame time\n", endTime * 1000, endTime / (1 / 60) * 100)
+		avg = avg + endTime
+		avgTimes = avgTimes + 1
+		Feint.Log.log("AVG:  %9.6fms, %9.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / 60) * 100)
+	end
 end
 
 

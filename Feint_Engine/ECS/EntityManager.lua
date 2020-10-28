@@ -2,23 +2,24 @@ local ECSUtils = Feint.ECS.Util
 
 local EntityManager = ECSUtils.newClass("EntityManager")
 local EntityArchetype = Feint.ECS.EntityArchetype
+local EntityArchetypeChunk = Feint.ECS.EntityArchetypeChunk
 local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
-function EntityManager:init(name)
-	self.name = name
+function EntityManager:init(--[[name]])
+	-- self.name = name
 	self.entities = {} -- {[index] = idIndex}
 	self.entitiesCount = 0
 	self.entityID = {} -- {[idIndex] = id}
 	self.entityIDState = {} -- {[idIndex] = state}
 
 	self.archetypes = {}
-	self.archetypesCount = 0
+	self.archetypeCount = 0
 	self.archetypeChunks = {}
-	self.archetypesChunksCount = 0
+	self.archetypeChunksCount = 0
 
 	self.forEachJobs = {}
 
 	-- self.ID_INDEX = 0
-	self.EntityQueryBuilder = EntityQueryBuilder:new("EntityManager_EntityQueryBuilder")
+	self.EntityQueryBuilder = EntityQueryBuilder:new()--"EntityManager_EntityQueryBuilder")
 end
 
 function EntityManager:getNewEntityId()
@@ -39,12 +40,22 @@ function EntityManager:getNewEntityId()
 end
 
 function EntityManager:CreateEntity(archetype)
+	-- if self.archetypeChunks[archetype]
 end
 -- EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
 
 function EntityManager:newArchetype(components)
-	local archetype = EntityArchetype:new("?", components)
+	local archetype = EntityArchetype:new(components)
 	self.archetypes[archetype.Name] = archetype
+	Feint.Log.logln(archetype.Name)
+	return archetype
+end
+
+function EntityManager:newArchetypeChunk(archetype)
+	local archetypeChunk = EntityArchetypeChunk:new(archetype)
+	self.ArchetypeChunks[archetype] = archetypeChunk
+	self.ArchetypeChunksCount[archetype] = 0
+	Feint.Log.logln(archetypeChunk.Name)
 	return archetype
 end
 

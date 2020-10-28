@@ -22,6 +22,10 @@ function log.log(fmt, ...)
 	local output = string.format("%s %s", time(), fmt or "Empty log")
 	printf(output, ...)
 end
+function log.logln(fmt, ...)
+	local output = string.format("%s %s\n", time(), fmt or "Empty log")
+	printf(output, ...)
+end
 function log.file(fmt, ...)
 	local output = string.format("%s %s\n", fullTime(), fmt and string.format(fmt, ...) or "Empty log")
 	print(output)

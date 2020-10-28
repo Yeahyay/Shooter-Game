@@ -2,9 +2,11 @@ local ECSutils = Feint.ECS.Util
 
 local EntityChunk = ECSutils.newClass("EntityChunk")
 function EntityChunk:init(archetype, ...)
-	self.archetype = archetype or nil
+	assert(Feint.Util.Core.type(archetype) == "table", "EntityArchetypeChunk needs an archetype")
+	self.archetype = archetype
+	self.Name = archetype.Name.."_ArchetypeChunk"
 	self.isFull = false
-	self.capacity = 32
+	self.capacity = 128
 	self.numEntities = 0
 	self.data = {}
 	for i = 1, self.capacity do

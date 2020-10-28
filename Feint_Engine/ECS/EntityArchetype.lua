@@ -3,9 +3,13 @@ local ECSutils = Feint.ECS.Util
 local EntityArchetype = ECSutils.newClass("EntityArchetype")
 
 function EntityArchetype:init(components, ...)
+	assert(type(components) ~= "string", 1)
 	-- holds components for the archetype
 	self.components = components
-	self.archetypeData = {}
+	self.componentData = {}
+	self.componentData_componentName = {}
+	self.componentData_fieldCount = {}
+	self.componentData_fieldName = {}
 	self.archetypeString = nil
 	self.chunkCount = 0
 	self.chunkCapacity = 32
@@ -21,7 +25,9 @@ function EntityArchetype:createArchetype()
 	end
 	table.sort(components, function(a, b) return a < b end)
 	self.archetypeString = table.concat(components)
-	print(self.archetypeString)
+	self.Name = self.archetypeString -- redundant?
+	-- Feint.Log.logln(self.archetypeString)
+	return self
 end
 
 -- Feint.Util.Table.makeTableReadOnly(EntityArchetype, function(self, k)
