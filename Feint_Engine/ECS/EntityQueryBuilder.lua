@@ -22,6 +22,7 @@ function EntityQueryBuilder:withAll(components)
 		end
 	end
 	self.queryComponents_WithAll_Count = componentWithAllCount--self.queryComponents_WithAll_Count + 1
+	-- print(#self.queryComponents_WithAll, componentWithAllCount)
 	return self
 end
 function EntityQueryBuilder:with(components)
@@ -109,5 +110,6 @@ end
 -- EntityQueryBuilder.with = Feint.Util.Memoize(EntityQueryBuilder.with)
 -- EntityQueryBuilder.withAll = Feint.Util.Memoize(EntityQueryBuilder.withAll)
 -- EntityQueryBuilder.without = Feint.Util.Memoize(EntityQueryBuilder.without)
-EntityQueryBuilder.build = Feint.Util.Memoize(EntityQueryBuilder.build)
+-- EntityQueryBuilder.build = Feint.Util.Memoize(EntityQueryBuilder.build) -- DON'T DO THIS
+
 return EntityQueryBuilder

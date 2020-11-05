@@ -11,10 +11,11 @@ function EntityManager:init(--[[name]])
 	self.entityID = {} -- {[idIndex] = id}
 	self.entityIDState = {} -- {[idIndex] = state}
 
-	self.archetypes = {}
+	self.archetypes = {} -- all entity archetypes
 	self.archetypeCount = 0
-	self.archetypeChunks = {}
+	self.archetypeChunks = {} -- a hash table of a list of archetype chunks
 	self.archetypeChunksCount = {}
+	self.archetypeChunksOpenStacks = setmetatable({}, {__mode = "k, v"}) -- queue of open archetype chunks
 
 	self.forEachJobs = {}
 
@@ -35,28 +36,60 @@ function EntityManager:getNewEntityId()
 		end
 	end
 
+	self.entitiesCount = self.entitiesCount + 1
 	-- self.entities
-	return newID
+	return self.entitiesCount --newID
+end
+
+function EntityManager:getNextArchetypeChunk(archetype)
+	local currentArchetypeChunkTable = self.archetypeChunks[archetype]
+	local currentArchetypeChunkTableCount = self.archetypeChunksCount[archetype]
+
+	local currentArchetypeChunk = currentArchetypeChunkTable[currentArchetypeChunkTableCount]
+	if currentArchetypeChunk:isFull() then
+		self:newArchetypeChunk(archetype)
+		-- error()
+	end
+	return currentArchetypeChunk
 end
 
 function EntityManager:CreateEntity(archetype)
-	-- if self.archetypeChunks[archetype]
+	-- Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
+	local archetypeChunk = self:getNextArchetypeChunk(archetype)
+	return archetypeChunk:newEntity(self:getNewEntityId())
 end
 -- EntityManager.CreateEntity = Feint.Util.Memoize(EntityManager.CreateEntity)
 
 function EntityManager:newArchetype(components)
 	local archetype = EntityArchetype:new(components)
-	self.archetypes[archetype] = archetype
+	self.archetypes[archetype.archetypeString] = archetype
 	self.archetypeCount = self.archetypeCount + 1
-	Feint.Log.logln(archetype.Name)
+	Feint.Log.logln("Creating archetype " .. archetype.Name)
+
+	self:newArchetypeChunk(archetype)
+
+	-- for k, v in pairs(self.archetypeChunks) do
+		-- print(k.archetypeString, v[1].archetype.archetypeString)
+		-- for k, v in pairs(v) do print("asd", k, v) end
+		-- print(self.archetypeChunksCount[v.archetype])
+	-- end
 	return archetype
 end
 
 function EntityManager:newArchetypeChunk(archetype)
 	local archetypeChunk = EntityArchetypeChunk:new(archetype)
-	self.archetypeChunks[archetype] = archetypeChunk
-	self.archetypeChunksCount[archetype] = 0
-	Feint.Log.logln(archetypeChunk.Name)
+
+	local currentArchetypeChunkTable = self.archetypeChunks[archetype]
+	if not currentArchetypeChunkTable then
+		self.archetypeChunks[archetype] = {}
+		self.archetypeChunksCount[archetype] = 0
+		currentArchetypeChunkTable = self.archetypeChunks[archetype]
+	end
+
+	self.archetypeChunksCount[archetype] = self.archetypeChunksCount[archetype] + 1
+	currentArchetypeChunkTable[self.archetypeChunksCount[archetype]] = archetypeChunk
+
+	Feint.Log.logln("Creating archetype chunk " .. archetypeChunk.Name)
 	return archetype
 end
 
@@ -102,11 +135,29 @@ function EntityManager:buildQuery(arguments, componentsCount)
 	return query
 end
 
-function EntityManager:execute(entities, callback)
+function EntityManager:execute(arguments, archetype, callback)
 	-- printf("Calling function on entities\n")
-	callback()
+	local archetypeChunks = self.archetypeChunks[archetype]
+	for i = 1, self.archetypeChunksCount[archetype], 1 do
+		local archetypeChunk = archetypeChunks[i]
+
+		for i = 1, archetypeChunk.numEntities, 1 do												  -- [1] is actually .size
+			callback(archetypeChunk.data, archetypeChunk.entityIndexToId[i], 1, arguments[2][1] + 1, arguments[3][1] + 1)
+		end
+	end
 end
 
+local getArchetype = Feint.Util.Memoize(function(...)
+	local arguments = {...}
+	local stringTable = {}
+	for i = 1, #arguments do
+		local v = arguments[i]
+		if v.componentData then
+			stringTable[#stringTable + 1] = v.Name
+		end
+	end
+	return table.concat(stringTable)
+end)
 
 function EntityManager:forEach(system, arguments, callback)
 	-- MAKE THIS THREADED
@@ -115,12 +166,16 @@ function EntityManager:forEach(system, arguments, callback)
 
 	-- generate an entity query that fits the specified arguments
 
-	local query = self:buildQuery(arguments, #arguments)
+	-- local query = self:buildQuery(arguments, #arguments)
 
 	-- collectgarbage()
 	-- collectgarbage()
 
-	self:execute(getEntities(query), callback)
+	-- for k, v in pairs(arguments) do print(k, v) end
+
+	local archetypeString = getArchetype(unpack(arguments))
+	self:execute(arguments, self.archetypes[archetypeString], callback)
+	-- self:execute(query:getArchetypeChunks(self.archetypeChunks), callback)
 	-- printf("Finished forEach\n\n")
 end
 

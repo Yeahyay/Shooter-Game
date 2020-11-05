@@ -7,7 +7,7 @@ local date = function()
 end
 
 local time = function()
-	return os.date(string.format("[%%I:%%M:%%S:%03d]", (util.getTime() % 1) * 1000))
+	return os.date(string.format("[%%I:%%M:%%S:%06d]", (util.getTime() % 1) * 1000000))
 end
 
 local fullTime = function()

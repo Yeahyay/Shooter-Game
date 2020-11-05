@@ -15,6 +15,10 @@ function EntityQuery:init(with, withCount, withall, withallCount, without, witho
 	):gsub("0", "_")
 	printf(string)
 end
+function EntityQuery:getArchetypeChunks(archetypeChunks)
+	-- for k, v in pairs(self.components) do print(k, v) end
+	-- print(#self.components)
+end
 function EntityQuery:getChunkCount()
 	Feint.Log.logln("ITERATE OVER ALL RELEVANT ARCHETYPE CHUNKS TO GET CHUNK COUNT")
 end
@@ -24,10 +28,10 @@ end
 function EntityQuery:new(with, withall, without)
 	local newEntityQuery = {
 		init = EntityQuery.init
-	} -- maybe a premature optimization
-	-- setmetatable({}, {
-	-- 	__index = EntityQuery
-	-- })
+	}
+	setmetatable(newEntityQuery, {
+		__index = EntityQuery
+	})
 	newEntityQuery:init(with, withall, without)
 	return newEntityQuery
 end

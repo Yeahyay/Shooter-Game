@@ -4,32 +4,32 @@ local Component = ECSUtils.newClass("Component")
 -- local ffi = require("ffi")
 
 function Component:init(data, ...)
-	self.instances = 0
-	self.data = {}
-	-- self.instantiate = self.new
-	if data and #data > 0 then
-		self:setData(data)
+	self.keys = {}
+	self.values = {}
+	self.size = #data
+
+	for k, v in ipairs(data) do
+		for k, v in pairs(v) do
+			self.keys[#self.keys + 1] = k
+			self.values[#self.values + 1] = v
+		end
 	end
+	self[1] = self.size
 end
 function Component:setData(data)
-	for i = 1, #data do
-		self.data[data[i]] = {}
-	end
 end
 -- [[
 function Component:new(name, data, ...)
 	local instance = {
-		-- data = {entityId = {}},
-		new = function(self, data)
-
-		end,
 		Name = name or "?",
 		componentData = true,
-		init = false,
 	}
 	setmetatable(instance, {
 		__index = self,
 	})
+	-- for k, v in pairs(data) do
+	-- 	Feint.Log.logln(k .. "\t" .. tostring(v))
+	-- end
 	self.init(instance, data, ...)
 	getmetatable(instance).__newindex = function(t, k, v)
 		error("No.")

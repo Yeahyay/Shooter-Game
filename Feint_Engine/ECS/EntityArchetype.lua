@@ -12,7 +12,8 @@ function EntityArchetype:init(components, ...)
 	self.componentData_fieldName = {}
 	self.archetypeString = nil
 	self.chunkCount = 0
-	self.chunkCapacity = 32
+	-- self.chunkCapacity = 32
+	self.totalSize = 0 -- the total size of every component and its fields
 	self:createArchetype()
 	return self
 end
@@ -22,6 +23,7 @@ function EntityArchetype:createArchetype()
 	for i = 1, #self.components, 1 do
 		local v = self.components[i]
 		components[i] = v.Name
+		self.totalSize = self.totalSize + self.components[i].size
 	end
 	table.sort(components, function(a, b) return a < b end)
 	self.archetypeString = table.concat(components)
