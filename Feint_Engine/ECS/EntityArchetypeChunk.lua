@@ -6,7 +6,7 @@ function EntityChunk:init(archetype, ...)
 	self.archetype = archetype
 	self.Name = archetype.Name.."_ArchetypeChunk"
 	self.isFull_cached = false
-	self.capacity = 64
+	self.capacity = 32
 	self.numEntities = 0
 	self.data = Feint.Util.Table.preallocate(self.capacity * self.archetype.totalSize, 0)
 	self.dataStatus = {}

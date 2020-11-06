@@ -138,12 +138,15 @@ end
 function EntityManager:execute(arguments, archetype, callback)
 	-- printf("Calling function on entities\n")
 	local archetypeChunks = self.archetypeChunks[archetype]
+	local a1, a2, a3, a4, a5, a6 = unpack(arguments)--arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]
 	for i = 1, self.archetypeChunksCount[archetype], 1 do
 		local archetypeChunk = archetypeChunks[i]
+		-- local idList = archetypeChunk.entityIndexToId
+		local data = archetypeChunk.data
 
-		for i = 1, archetypeChunk.numEntities, 1 do												  -- [1] is actually .size
-			callback(archetypeChunk.data, archetypeChunk.entityIndexToId[i], 1, arguments[2][1] + 1, arguments[3][1] + 1)
-		end
+		for i = 1, archetypeChunk.numEntities, 1 do
+			callback(data, --[[idList[i]]0, 1, a2[1] + 1, a3[1] + 1)
+		end									 -- [1] is actually .size
 	end
 end
 
