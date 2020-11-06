@@ -65,7 +65,7 @@ end
 
 function private.updateInterpolate(value)
 	if graphics.interpolateOn then
-		interpolate = value / Feint.Run.rate
+		interpolate = math.sqrt(value / Feint.Run.rate, 2)
 	else
 		interpolate = 0
 	end

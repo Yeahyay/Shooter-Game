@@ -31,7 +31,7 @@ local _archetype = {Renderer, Transform}
 
 function RenderSystem:start()
 	local archetype = self.EntityManager:newArchetype(_archetype)
-	for i = 1, 100, 1 do
+	for i = 1, 1000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 end
@@ -59,6 +59,7 @@ function RenderSystem:update(dt)
 		-- Feint.Log.logln(data[transform])
 		-- Feint.Log.log("%s %s %s\n", data[renderer], data[renderer + 1], data[transform])
 		data[transform] = data[transform] + Feint.Math.random2(-2, 2)
+		data[transform + 1] = data[transform + 1] + Feint.Math.random2(-2, 2)
 		-- Feint.Log.log("entity %02d: transform[x: %0.4f, y: %0.4f]\n", entity, data[transform], data[transform + 1])
 	end)
 
