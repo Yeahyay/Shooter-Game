@@ -225,8 +225,11 @@ function love.draw(dt)
 	-- 	end
 	-- end
 
+	love.graphics.push()
+	love.graphics.translate(Feint.Graphics.G_SCREEN_SIZE.x / 2, -Feint.Graphics.G_SCREEN_SIZE.y / 2)
 	Feint.Graphics.updateInterpolate(run.accum)
 	Feint.Graphics.draw()
+	love.graphics.pop()
 
 	love.graphics.printf(
 		string.format("FPS:      %7.2f, DT:      %7.4fms\n",

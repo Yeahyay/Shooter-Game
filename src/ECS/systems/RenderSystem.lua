@@ -29,29 +29,40 @@ end
 
 local _archetype = {Renderer, Transform}
 
+local math = Feint.Math
+local random2 = math.random2
+
+local components = {Entity, unpack(_archetype)}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:start()
 	local archetype = self.EntityManager:newArchetype(_archetype)
-	for i = 1, 10000, 1 do
+	for i = 1, 8000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
+	self.EntityManager:forEach(self, components, function(data, entity, renderer, transform, physics)
+		local x = data[transform]
+		local y = data[transform + 1]
+		x = random2(-200, 200)
+		y = random2(-200, 200)
+
+		data[transform] = x
+		data[transform + 1] = y
+	end)
+
 end
 
 local input = Feint.Input
 local px, py = 0, 0
 local lx, ly = 0, 0
 -- Feint.Util.Memoize(
-local components = {Entity, unpack(_archetype)}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:update(dt)
 	-- local instance = Renderer:new{}
 	do
 		lx, ly = px, py
-		px, py = input.mouse.PositionRaw.x - 50 / 2, input.mouse.PositionRaw.y + 50 / 2
+		px, py = input.mouse.Position.x - 50 / 2, input.mouse.Position.y + 50 / 2
 		local rect = Feint.Graphics.rectangle
 		rect(lx, ly, 0, "fill", px, py, 50, 50)
 	end
 
-	local math = Feint.Math
-	local random2 = math.random2
 	self.EntityManager:forEach(self, components, function(data, entity, renderer, transform, physics)
 		-- each argument is the index offset for the start of each component
 		-- every component object has a table for each component field's index offset
@@ -62,13 +73,12 @@ function RenderSystem:update(dt)
 		-- Feint.Log.log("%s %s %s\n", data[renderer], data[renderer + 1], data[transform])
 		local x = data[transform]
 		local y = data[transform + 1]
-		x = x + random2(-2, 2)
-		y = y + random2(-2, 2)
-		x = x + random2(-2, 2)
-		y = y + random2(-2, 2)
 
-		data[transform] = x
-		data[transform + 1] = y
+		local rect = Feint.Graphics.rectangle
+		rect(x, y, 0, "fill", x, y, 50, 50)
+
+		-- data[transform] = x
+		-- data[transform + 1] = y
 		-- Feint.Log.log("entity %02d: transform[x: %0.4f, y: %0.4f]\n", entity, data[transform], data[transform + 1])
 	end)
 
