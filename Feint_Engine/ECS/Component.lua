@@ -7,11 +7,17 @@ function Component:init(data, ...)
 	self.keys = {}
 	self.values = {}
 	self.size = #data
+	self.sizeBytes = 40 -- all tables are hash tables
 
 	for k, v in ipairs(data) do
 		for k, v in pairs(v) do
 			self.keys[#self.keys + 1] = k
 			self.values[#self.values + 1] = v
+			if type(k) == number then
+				self.sizeBytes = self.sizeBytes + 16 -- array
+			else
+				self.sizeBytes = self.sizeBytes + 40 -- hash table
+			end
 		end
 	end
 	self[1] = self.size

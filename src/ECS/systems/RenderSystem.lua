@@ -9,6 +9,8 @@ local Renderer = Feint.ECS.Component:new("Renderer", {
 local Transform = Feint.ECS.Component:new("Transform", {
 	{x = 0},
 	{y = 0},
+	{sizeX = 25},
+	{sizeY = 50},
 	-- {sizeX = 50},
 	-- {sizeY = 51},
 	-- {sizeZ = 52},
@@ -35,14 +37,17 @@ local random2 = math.random2
 local components = {Entity, unpack(_archetype)}--{Entity, Transform, Renderer, Physics}
 function RenderSystem:start()
 	local archetype = self.EntityManager:newArchetype(_archetype)
-	for i = 1, 8000, 1 do
+	for i = 1, 2, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 	self.EntityManager:forEach(self, components, function(data, entity, renderer, transform, physics)
-		local x = data[transform]
-		local y = data[transform + 1]
-		x = random2(-200, 200)
-		y = random2(-200, 200)
+		for k, v in pairs(data) do print(k, v) if k >= 10 then break end end
+		-- Feint.Log.log("entity %02d: transform[x: %0.4f, y: %0.4f]\n", entity, data[transform], data[transform + 1])
+		print("", entity, renderer, transform)
+		-- local x = data[transform]
+		-- local y = data[transform + 1]
+		local x = random2(Feint.Graphics.G_SCREEN_SIZE.x / 2)
+		local y = random2(Feint.Graphics.G_SCREEN_SIZE.y / 2)
 
 		data[transform] = x
 		data[transform + 1] = y
@@ -64,18 +69,14 @@ function RenderSystem:update(dt)
 	end
 
 	self.EntityManager:forEach(self, components, function(data, entity, renderer, transform, physics)
-		-- each argument is the index offset for the start of each component
-		-- every component object has a table for each component field's index offset
-		-- local transform = components.Transform
-		-- local renderer = components.Renderer
-		-- local physics = components.Physics
-		-- Feint.Log.logln(data[transform])
-		-- Feint.Log.log("%s %s %s\n", data[renderer], data[renderer + 1], data[transform])
 		local x = data[transform]
 		local y = data[transform + 1]
+		local sizeX = data[transform + 2]
+		local sizeY = data[transform + 3]
 
 		local rect = Feint.Graphics.rectangle
-		rect(x, y, 0, "fill", x, y, 50, 50)
+		local size = 50
+		rect(x - sizeX / 2, y - sizeY / 2, 0, "fill", x - sizeX / 2, y - sizeY / 2, sizeX, sizeY)
 
 		-- data[transform] = x
 		-- data[transform + 1] = y
