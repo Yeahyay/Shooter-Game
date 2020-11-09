@@ -33,9 +33,6 @@ function Component:new(name, data, ...)
 	setmetatable(instance, {
 		__index = self,
 	})
-	-- for k, v in pairs(data) do
-	-- 	Feint.Log.logln(k .. "\t" .. tostring(v))
-	-- end
 	self.init(instance, data, ...)
 	getmetatable(instance).__newindex = function(t, k, v)
 		error("No.")

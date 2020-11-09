@@ -43,6 +43,9 @@ function private.LoadModule(name)
 	if module then
 		log("Loading module %s\n", name)
 		module.setup()
+		if module.init then
+			module.init()
+		end
 	else
 		log("Failed to load module %s\n", name)
 	end
