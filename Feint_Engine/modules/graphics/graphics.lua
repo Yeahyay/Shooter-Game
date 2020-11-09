@@ -15,7 +15,9 @@ setmetatable(graphics, {
 	-- __mode = "kv",
 })
 
-function private.rectangle(lx, ly, lr, mode, x, y, width, height)
+local rect = love.graphics.newMesh{{0,0, 0,0}, {1,0, 0,0}, {1,1, 0,0}, {0,1, 0,0}}
+
+function private.rectangle(lx, ly, lr, mode, x, y, angle, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
 	local size = graphics.drawQueueSize
 	local obj = graphics.drawQueue[size]
