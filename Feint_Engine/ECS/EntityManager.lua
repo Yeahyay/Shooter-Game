@@ -47,10 +47,9 @@ function EntityManager:getNextArchetypeChunk(archetype)
 
 	local currentArchetypeChunk = currentArchetypeChunkTable[currentArchetypeChunkTableCount]
 	if currentArchetypeChunk:isFull() then
-		Feint.Log.logln(currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes)
-			Feint.Log.logln((currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes) / 1024)
+		-- Feint.Log.logln(currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes)
+		-- Feint.Log.logln((currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes) / 1024)
 		self:newArchetypeChunk(archetype)
-		-- error()
 	end
 	return currentArchetypeChunk
 end
@@ -69,12 +68,6 @@ function EntityManager:newArchetype(components)
 	Feint.Log.logln("Creating archetype " .. archetype.Name)
 
 	self:newArchetypeChunk(archetype)
-
-	-- for k, v in pairs(self.archetypeChunks) do
-		-- print(k.archetypeString, v[1].archetype.archetypeString)
-		-- for k, v in pairs(v) do print("asd", k, v) end
-		-- print(self.archetypeChunksCount[v.archetype])
-	-- end
 	return archetype
 end
 
@@ -146,9 +139,10 @@ function EntityManager:execute(arguments, archetype, callback)
 		local idList = archetypeChunk.entityIndexToId
 		local data = archetypeChunk.data
 
-		for i = 1, archetypeChunk.numEntities, 1 do
-			local offset = (i - 1) * archetypeChunk.entitySize + 1
+		for j = 1, archetypeChunk.numEntities, 1 do
+			local offset = (j - 1) * archetypeChunk.entitySize + 1
 			-- print("ex", offset, 1 + offset, a2[1] + offset)
+			print(i, j)
 			callback(data, idList[i], offset, a2[1] + offset)
 		end									 -- [1] is actually .size
 	end

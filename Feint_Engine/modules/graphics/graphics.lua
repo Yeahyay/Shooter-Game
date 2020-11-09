@@ -15,35 +15,73 @@ setmetatable(graphics, {
 	-- __mode = "kv",
 })
 
-local rect = love.graphics.newMesh{{0,0, 0,0}, {1,0, 0,0}, {1,1, 0,0}, {0,1, 0,0}}
+local rect = love.graphics.newMesh(
+	{{-0.5, -0.5, 0, 0}, {0.5, -0.5, 0, 0}, {0.5, 0.5, 0, 0}, {-0.5, 0.5, 0,0}},
+	"fan", "static")
+rect:setDrawRange()
 
-function private.rectangle(lx, ly, lr, mode, x, y, angle, width, height)
+local ENUM_INITIALIZER
+do
+	local enum_initializer_state = 0
+	function ENUM_INITIALIZER(new)
+		enum_initializer_state = new and 1 or enum_initializer_state + 1
+		return enum_initializer_state
+	end
+end
+
+local ENUM_INTERPOLATE_X = ENUM_INITIALIZER(true)
+local ENUM_INTERPOLATE_Y = ENUM_INITIALIZER()
+local ENUM_INTERPOLATE_A = ENUM_INITIALIZER()
+local ENUM_DRAW_CALL = ENUM_INITIALIZER()
+local ENUM_DRAW_MODE = ENUM_INITIALIZER()
+local ENUM_TRANSFORM_X = ENUM_INITIALIZER()
+local ENUM_TRANSFORM_Y = ENUM_INITIALIZER()
+local ENUM_TRANSFORM_A = ENUM_INITIALIZER()
+local ENUM_TRANSFORM_S_X = ENUM_INITIALIZER()
+local ENUM_TRANSFORM_S_Y = ENUM_INITIALIZER()
+
+function private.rectangle(x, y, angle, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
 	local size = graphics.drawQueueSize
 	local obj = graphics.drawQueue[size]
 	if not obj then
-		graphics.drawQueue[size] = {
-			"rectangle",
-			lx,
-			Feint.Graphics.G_SCREEN_SIZE.y - ly,
-			lr,
-			mode,
-			x,
-			Feint.Graphics.G_SCREEN_SIZE.y - y,
-			width,
-			height
-		}
-	else
-		obj[1] = "rectangle"
-		obj[2] = lx
-		obj[3] = Feint.Graphics.G_SCREEN_SIZE.y - ly
-		obj[4] = lr
-		obj[5] = mode
-		obj[6] = x
-		obj[7] = Feint.Graphics.G_SCREEN_SIZE.y - y
-		obj[8] = width
-		obj[9] = height
+		obj = {}
+		graphics.drawQueue[size] = obj
 	end
+	obj[ENUM_INTERPOLATE_X] = x
+	obj[ENUM_INTERPOLATE_Y] = Feint.Graphics.G_SCREEN_SIZE.y - y
+	obj[ENUM_INTERPOLATE_A] = angle
+	obj[ENUM_DRAW_CALL] = "rectangle"
+	-- obj[ENUM_DRAW_MODE] = mode
+	obj[ENUM_TRANSFORM_X] = x
+	obj[ENUM_TRANSFORM_Y] = Feint.Graphics.G_SCREEN_SIZE.y - y
+	obj[ENUM_TRANSFORM_A] = angle
+	obj[ENUM_TRANSFORM_S_X] = width
+	obj[ENUM_TRANSFORM_S_Y] = height
+end
+
+local screenSize
+function private.init()
+	screenSize = Feint.Graphics.G_SCREEN_SIZE
+end
+function private.rectangleInt(lx, ly, lr, x, y, angle, width, height)
+	graphics.drawQueueSize = graphics.drawQueueSize + 1
+	local size = graphics.drawQueueSize
+	local obj = graphics.drawQueue[size]
+	if not obj then
+		obj = {}
+		graphics.drawQueue[size] = obj
+	end
+	obj[ENUM_INTERPOLATE_X] = lx
+	obj[ENUM_INTERPOLATE_Y] = screenSize.y - ly
+	obj[ENUM_INTERPOLATE_A] = lr
+	obj[ENUM_DRAW_CALL] = "rectangle"
+	-- obj[ENUM_DRAW_MODE] = mode
+	obj[ENUM_TRANSFORM_X] = x
+	obj[ENUM_TRANSFORM_Y] = screenSize.y - y
+	obj[ENUM_TRANSFORM_A] = angle
+	obj[ENUM_TRANSFORM_S_X] = width
+	obj[ENUM_TRANSFORM_S_Y] = height
 end
 
 function private.clear()
@@ -54,19 +92,26 @@ function private.draw()
 	local loveGraphics = love.graphics
 	for i = graphics.drawQueueSize, 1, -1 do
 		local drawCall = graphics.drawQueue[i]
-		local px, py = drawCall[2], drawCall[3]
-		local tx, ty = drawCall[6], drawCall[7]
-		local dx, dy = px + interpolate * (tx - px), py + interpolate * (ty - py)
-		loveGraphics[drawCall[1]](drawCall[5], dx, dy, select(8, unpack(drawCall)))
+		local interX, interY = drawCall[ENUM_INTERPOLATE_X], drawCall[ENUM_INTERPOLATE_Y]
+		local transformX, transformY = drawCall[ENUM_TRANSFORM_X], drawCall[ENUM_TRANSFORM_Y]
+
+		local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
+		if drawCall[ENUM_DRAW_CALL] == "rectangle" then
+			-- loveGraphics[drawCall[ENUM_DRAW_CALL]]("fill", dx, dy, drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y])
+			-- print(transformX, interX, interpolate)
+			loveGraphics.draw(rect, dx, dy, drawCall[ENUM_TRANSFORM_A],
+				drawCall[ENUM_TRANSFORM_S_X],
+				drawCall[ENUM_TRANSFORM_S_Y])
+		end
 	end
 end
 
 function private.toggleInterpolation()
-	graphics.interpolateOn = not graphics.interpolateOn
+	graphics.interOn = not graphics.interOn
 end
 
 function private.updateInterpolate(value)
-	if graphics.interpolateOn then
+	if graphics.interOn then
 		interpolate = math.sqrt(value / Feint.Run.rate, 2)
 	else
 		interpolate = 0
