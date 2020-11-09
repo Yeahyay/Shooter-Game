@@ -147,9 +147,9 @@ function EntityManager:execute(arguments, archetype, callback)
 		local data = archetypeChunk.data
 
 		for i = 1, archetypeChunk.numEntities, 1 do
-			local offset = (i - 1) * archetypeChunk.entitySize
-			-- print(offset)
-			callback(data, idList[i], a2[1] + offset, a3[1] + offset)
+			local offset = (i - 1) * archetypeChunk.entitySize + 1
+			-- print("ex", offset, 1 + offset, a2[1] + offset)
+			callback(data, idList[i], offset, a2[1] + offset)
 		end									 -- [1] is actually .size
 	end
 end

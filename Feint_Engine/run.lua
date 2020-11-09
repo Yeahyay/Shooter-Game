@@ -195,6 +195,10 @@ end
 local fpsIndex = 1
 local fpsSum = 0
 
+local function getMemoryUsage()
+	return collectgarbage("count") * (1000 / 1024)
+end
+
 local ui = Feint.UI.Immediate
 ui.Initialize()
 function love.draw(dt)
@@ -256,8 +260,12 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage: %fmiB", collectgarbage("count") / 1024),
+	love.graphics.printf(string.format("Memory Usage: %fMiB", getMemoryUsage() / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
+
+	love.graphics.printf(string.format("Memory Usage: %fKiB", getMemoryUsage()),
+		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
 end
 function love.quit()
