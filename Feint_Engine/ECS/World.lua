@@ -7,9 +7,14 @@ function World:init(name)
 	self.systems = {}
 	self.systemsCount = 0
 	self.updateOrder = {}
-	self.EntityManager = EntityManager()--self.Name .. "EntityManager")
+	self.components = {}
+	self.EntityManager = EntityManager(self)--self.Name .. "EntityManager")
 end
 World.DefaultWorld = World:new("DefaultWorld")
+
+function World:addComponent(component)
+	self.components[component.Name] = component
+end
 
 function World:generateUpdateOrderList()
 	local list = {}
