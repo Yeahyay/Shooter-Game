@@ -4,6 +4,7 @@ local private = {}
 
 graphics.drawQueue = {}
 graphics.drawQueueSize = 0
+graphics.queueSize = 0
 graphics.interpolateValue = 0
 graphics.interpolateOn = true
 
@@ -15,10 +16,13 @@ setmetatable(graphics, {
 	-- __mode = "kv",
 })
 
-local rect = love.graphics.newMesh(
-	{{-0.5, -0.5, 0, 0}, {0.5, -0.5, 0, 0}, {0.5, 0.5, 0, 0}, {-0.5, 0.5, 0,0}},
-	"fan", "static")
-rect:setDrawRange()
+-- local rect = love.graphics.newMesh(
+-- 	{{0, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 0, 0}, {0, 1, 0,0}},
+-- 	"fan", "static")
+-- local rectSX, rectSY = 1, 1
+
+local rect = love.graphics.newImage("Assets/sprites/Test Texture 1.png")
+local rectSX, rectSY = rect:getDimensions()
 
 local ENUM_INITIALIZER
 do
@@ -29,6 +33,7 @@ do
 	end
 end
 
+-- luacheck: push ignore
 local ENUM_INTERPOLATE_X = ENUM_INITIALIZER(true)
 local ENUM_INTERPOLATE_Y = ENUM_INITIALIZER()
 local ENUM_INTERPOLATE_A = ENUM_INITIALIZER()
@@ -39,7 +44,12 @@ local ENUM_TRANSFORM_Y = ENUM_INITIALIZER()
 local ENUM_TRANSFORM_A = ENUM_INITIALIZER()
 local ENUM_TRANSFORM_S_X = ENUM_INITIALIZER()
 local ENUM_TRANSFORM_S_Y = ENUM_INITIALIZER()
+-- luacheck: pop ignore
 
+local screenSize
+function private.init()
+	screenSize = Feint.Graphics.G_SCREEN_SIZE
+end
 function private.rectangle(x, y, angle, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
 	local size = graphics.drawQueueSize
@@ -47,6 +57,7 @@ function private.rectangle(x, y, angle, width, height)
 	if not obj then
 		obj = {}
 		graphics.drawQueue[size] = obj
+		graphics.queueSize = graphics.queueSize + 1
 	end
 	obj[ENUM_INTERPOLATE_X] = x
 	obj[ENUM_INTERPOLATE_Y] = Feint.Graphics.G_SCREEN_SIZE.y - y
@@ -60,10 +71,6 @@ function private.rectangle(x, y, angle, width, height)
 	obj[ENUM_TRANSFORM_S_Y] = height
 end
 
-local screenSize
-function private.init()
-	screenSize = Feint.Graphics.G_SCREEN_SIZE
-end
 function private.rectangleInt(lx, ly, lr, x, y, angle, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
 	local size = graphics.drawQueueSize
@@ -100,10 +107,14 @@ function private.draw()
 			-- loveGraphics[drawCall[ENUM_DRAW_CALL]]("fill", dx, dy, drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y])
 			-- print(transformX, interX, interpolate)
 			loveGraphics.draw(rect, dx, dy, drawCall[ENUM_TRANSFORM_A],
-				drawCall[ENUM_TRANSFORM_S_X],
-				drawCall[ENUM_TRANSFORM_S_Y])
+				drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
+				rectSX / 2, rectSX / 2)
 		end
 	end
+end
+
+function private.getQueueSize()
+	return graphics.drawQueueSize
 end
 
 function private.toggleInterpolation()

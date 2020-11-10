@@ -7,7 +7,7 @@ function EntityChunk:init(archetype, ...)
 	self.Name = archetype.Name.."_ArchetypeChunk"
 	self.isFull_cached = false
 	self.capacity = 1024 - 2
-	self.capacityBytes = 131072 / 4
+	self.capacityBytes = 131072 - 40
 	self.numEntities = 0
 	self.data = Feint.Util.Table.preallocate(self.capacity * self.archetype.totalSize, 0)
 	self.dataStatus = {}
@@ -29,6 +29,7 @@ function EntityChunk:init(archetype, ...)
 	self.dead = false
 
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
+	self.data.index = Feint.Math.random2(200)--self.archetype.chunkCount
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1
@@ -61,9 +62,9 @@ function EntityChunk:newEntity(id)
 			end
 		end
 		self.numEntities = self.numEntities + 1
-		self.entityIdToIndex[id] = dataOffset / self.entitySize
-		self.entityIndexToId[dataOffset / self.entitySize] = id
-		return dataOffset / self.entitySize
+		self.entityIdToIndex[id] = self.numEntities
+		self.entityIndexToId[self.numEntities] = id
+		return self.numEntities
 	else
 		Feint.Log.logln("Archetype chunk is full")
 	end

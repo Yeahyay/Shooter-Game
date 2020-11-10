@@ -231,8 +231,10 @@ function love.draw(dt)
 
 	love.graphics.push()
 	love.graphics.translate(Feint.Graphics.G_SCREEN_SIZE.x / 2, -Feint.Graphics.G_SCREEN_SIZE.y / 2)
+	-- love.graphics.setWireframe(true)
 	Feint.Graphics.updateInterpolate(run.accum)
 	Feint.Graphics.draw()
+	-- love.graphics.setWireframe(false)
 	love.graphics.pop()
 
 	love.graphics.printf(
@@ -267,6 +269,14 @@ function love.draw(dt)
 	love.graphics.printf(string.format("Memory Usage: %fKiB", getMemoryUsage()),
 		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
+
+	local stats = love.graphics.getStats()
+	love.graphics.printf(string.format("Draw calls: %d", stats.drawcalls),
+		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
+	-- love.graphics.printf(string.format("Texture Memory: %d", stats.texturememory),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 7, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- )
 end
 function love.quit()
 	-- if currentGame then

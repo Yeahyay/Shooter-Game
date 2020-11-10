@@ -10,7 +10,7 @@ local tableUtilities = {}
 -- 	setmetatable(tableUtilities, {__index = lastEnv})
 -- end
 local loadstring_ = Feint.Util.Memoize(loadstring)
-tableUtilities.preallocate = Feint.Util.Memoize(function(arraylength, hashLength)
+tableUtilities.preallocate = --[[Feint.Util.Memoize]](function(arraylength, hashLength)
 	local t = loadstring_("return {" .. ("1, "):rep(arraylength or 0) .. ("a = 1,"):rep(hashLength or 0) .. "}")();
 	for k in pairs(t) do
 		t[k] = nil
