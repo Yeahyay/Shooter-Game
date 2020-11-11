@@ -47,7 +47,7 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
-	for i = 1, 20000, 1 do
+	for i = 1, 10000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 
@@ -55,8 +55,8 @@ function RenderSystem:start()
 		-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
 		-- local x = Data[Transform]
 		-- local y = Data[Transform + 1]
-		local x = random2(-640, 640)--random2(Feint.Graphics.G_SCREEN_SIZE.x / 2)
-		local y = random2(-360, 200)--random2(Feint.Graphics.G_SCREEN_SIZE.y / 2)
+		local x = random2(Feint.Graphics.ScreenSize.x / 2)
+		local y = random2(-Feint.Graphics.ScreenSize.y / 2, Feint.Graphics.ScreenSize.y / 2 - 300)
 		local sizeX = Data[Transform + 3]
 		local sizeY = Data[Transform + 4]
 		local scaleX = Data[Transform + 5]

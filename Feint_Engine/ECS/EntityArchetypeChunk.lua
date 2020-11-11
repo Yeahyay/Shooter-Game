@@ -29,7 +29,7 @@ function EntityChunk:init(archetype, ...)
 	self.dead = false
 
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
-	self.data.index = Feint.Math.random2(200)--self.archetype.chunkCount
+	self.index = Feint.Math.random2(200)--self.archetype.chunkCount
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1

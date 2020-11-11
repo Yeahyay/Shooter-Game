@@ -36,7 +36,7 @@ function love.mousereleased(...)
 end
 
 function love.threaderror(thread, message)
-	error(string.format("Thread (%s): Error \"%s\"\n", thread, message))
+	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 1)
 end
 function love.load()
 	-- World.DefaultWorld:registerSystem(Feint.ECS.System:new("testSystem1"))
@@ -86,7 +86,7 @@ function love.load()
 		})
 	end
 
-	--[[
+	-- [[
 	for i = 1, 10, 1 do
 		Feint.Thread.newWorker(i, nil)
 	end
@@ -239,7 +239,7 @@ function love.draw(dt)
 	-- end
 
 	love.graphics.push()
-	love.graphics.translate(Feint.Graphics.G_SCREEN_SIZE.x / 2, -Feint.Graphics.G_SCREEN_SIZE.y / 2)
+	love.graphics.translate(Feint.Graphics.ScreenSize.x / 2, -Feint.Graphics.ScreenSize.y / 2)
 	-- love.graphics.setWireframe(true)
 	Feint.Graphics.updateInterpolate(run.accum)
 	Feint.Graphics.draw()
@@ -248,45 +248,45 @@ function love.draw(dt)
 
 	love.graphics.printf(
 		string.format("FPS:      %7.2f, DT:      %7.4fms\n",
-		run.G_FPS, 1000 * run.G_FPS_DELTA), 0, 0, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5)
+		run.G_FPS, 1000 * run.G_FPS_DELTA), 0, 0, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 	love.graphics.printf(
 		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", run.G_AVG_FPS, 1000 * run.G_AVG_FPS_DELTA),
-		0, DEFAULT_FONT_HEIGHT / 2, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	love.graphics.printf(
 		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.dt, 1000 * run.dt),
-		0, DEFAULT_FONT_HEIGHT / 2 * 2, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 2, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 	-- love.graphics.printf(
 	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", run.G_TPS, 1000 * run.G_TPS_DELTA),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 	-- love.graphics.printf(
 	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", run.G_AVG_TPS, 1000 * run.G_AVG_TPS_DELTA),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 	-- love.graphics.printf(
 	-- 	string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.rate, 1000 * run.rate),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage (MiB): %12f MiB", getMemoryUsageKiB() / 1024),
-		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	love.graphics.printf(string.format("Memory Usage (MiB):   %12d", getMemoryUsageKiB() / 1024),
+		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	love.graphics.printf(string.format("Memory Usage (KiB): %12f KiB", getMemoryUsageKiB()),
-		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	love.graphics.printf(string.format("Memory Usage (KiB):   %12d", getMemoryUsageKiB()),
+		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	love.graphics.printf(string.format("Memory Usage (bytes): %12f KiB", getMemoryUsageKb() * 1000),
-		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	love.graphics.printf(string.format("Memory Usage (bytes): %12d", getMemoryUsageKiB() * 1024),
+		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 	local stats = love.graphics.getStats()
 	love.graphics.printf(string.format("Draw calls: %d", stats.drawcalls),
-		0, DEFAULT_FONT_HEIGHT / 2 * 7, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 7, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	love.graphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
-		0, DEFAULT_FONT_HEIGHT / 2 * 8, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 8, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 end
 function love.quit()

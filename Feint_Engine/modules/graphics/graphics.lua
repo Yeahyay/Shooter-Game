@@ -48,7 +48,7 @@ local ENUM_TRANSFORM_S_Y = ENUM_INITIALIZER()
 
 local screenSize
 function private.init()
-	screenSize = Feint.Graphics.G_SCREEN_SIZE
+	screenSize = Feint.Graphics.ScreenSize
 end
 function private.rectangle(x, y, angle, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
@@ -60,12 +60,12 @@ function private.rectangle(x, y, angle, width, height)
 		graphics.queueSize = graphics.queueSize + 1
 	end
 	obj[ENUM_INTERPOLATE_X] = x
-	obj[ENUM_INTERPOLATE_Y] = Feint.Graphics.G_SCREEN_SIZE.y - y
+	obj[ENUM_INTERPOLATE_Y] = Feint.Graphics.ScreenSize.y - y
 	obj[ENUM_INTERPOLATE_A] = angle
 	obj[ENUM_DRAW_CALL] = "rectangle"
 	-- obj[ENUM_DRAW_MODE] = mode
 	obj[ENUM_TRANSFORM_X] = x
-	obj[ENUM_TRANSFORM_Y] = Feint.Graphics.G_SCREEN_SIZE.y - y
+	obj[ENUM_TRANSFORM_Y] = Feint.Graphics.ScreenSize.y - y
 	obj[ENUM_TRANSFORM_A] = angle
 	obj[ENUM_TRANSFORM_S_X] = width
 	obj[ENUM_TRANSFORM_S_Y] = height

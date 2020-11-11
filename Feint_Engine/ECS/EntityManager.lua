@@ -58,7 +58,7 @@ end
 
 function EntityManager:CreateEntity(archetype)
 	-- print(archetype)
-	Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
+	-- Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
 	return archetypeChunk:newEntity(self:getNewEntityId())
 end
@@ -92,7 +92,7 @@ function EntityManager:newArchetypeChunk(archetype)
 	self.archetypeChunksCount[archetype] = self.archetypeChunksCount[archetype] + 1
 	currentArchetypeChunkTable[self.archetypeChunksCount[archetype]] = archetypeChunk
 
-	Feint.Log.logln("Creating archetype chunk " .. archetypeChunk.Name)
+	-- Feint.Log.logln("Creating archetype chunk " .. archetypeChunk.Name)
 	return archetypeChunk
 end
 
@@ -115,7 +115,7 @@ function EntityManager:execute(arguments, archetype, callback)
 	local a1, a2, a3, a4, a5, a6 = unpack(arguments)--arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]
 
 	for i = 1, self.archetypeChunksCount[archetype], 1 do
-		local archetypeChunk = self.archetypeChunks[archetype][i]
+		local archetypeChunk = archetypeChunks[archetype][i]
 		local idList = archetypeChunk.entityIndexToId
 		local data = archetypeChunk.data
 
@@ -137,18 +137,6 @@ function EntityManager:getArchetype(arguments)
 	return table.concat(stringTable)
 end
 Feint.Util.Memoize(EntityManager.getArchetype)
-
-local getArchetypeUn = Feint.Util.Memoize(function(...)
-	local arguments = {...}
-	local stringTable = {}
-	for i = 1, #arguments do
-		local v = arguments[i]
-		if v.componentData then
-			stringTable[#stringTable + 1] = v.Name
-		end
-	end
-	return table.concat(stringTable)
-end)
 
 local componentCache = {}
 local argumentCache = {}
