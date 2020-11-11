@@ -6,7 +6,8 @@ local tickModule = {
 	dt = 0,
 	accum = 0,
 	tick = 1,
-	frame = 1
+	frame = 1,
+	pause = false
 }
 
 local timer = love.timer
@@ -31,6 +32,9 @@ love.run = function()
 		timer.step()
 		tickModule.dt = timer.getDelta() * tickModule.timescale
 		tickModule.accum = tickModule.accum + tickModule.dt
+		if tickModule.accum > tickModule.rate then
+			tickModule.accum = tickModule.rate
+		end
 
 		if graphics and graphics.isActive() then
 			graphics.clear(graphics.getBackgroundColor())

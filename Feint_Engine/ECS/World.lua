@@ -9,11 +9,16 @@ function World:init(name)
 	self.updateOrder = {}
 	self.components = {}
 	self.EntityManager = EntityManager(self)--self.Name .. "EntityManager")
+	self.PhysicsWorld = love.physics.newWorld(0, 9.82, true)
 end
 World.DefaultWorld = World:new("DefaultWorld")
 
 function World:addComponent(component)
 	self.components[component.Name] = component
+end
+
+function World:getComponent(name)
+	return self.components[name]
 end
 
 function World:generateUpdateOrderList()

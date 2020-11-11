@@ -57,7 +57,8 @@ function EntityManager:getNextArchetypeChunk(archetype)
 end
 
 function EntityManager:CreateEntity(archetype)
-	-- Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
+	-- print(archetype)
+	Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
 	return archetypeChunk:newEntity(self:getNewEntityId())
 end
@@ -95,11 +96,6 @@ function EntityManager:newArchetypeChunk(archetype)
 	return archetypeChunk
 end
 
--- local function getEntity()
--- 	local entity = nil
--- 	return entity
--- end
-
 local getEntities = --Feint.Util.Memoize(function(query)
 (function(query)
 	-- printf("Getting Entities from Query\n")
@@ -114,35 +110,35 @@ function EntityManager:buildQuery(arguments, componentsCount)
 end
 
 function EntityManager:execute(arguments, archetype, callback)
-
-	-- IT'S ONLY EXECUTING THE LATEST ARCHETYPE CHUNK
-
-
 	-- printf("Calling function on entities\n")
 	local archetypeChunks = self.archetypeChunks
 	local a1, a2, a3, a4, a5, a6 = unpack(arguments)--arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]
-	for k, v in pairs(self.archetypeChunks[archetype]) do
-		-- print(k, v.data.index)
-		-- print(archetypeChunks[k].data.index)
-	end
+
 	for i = 1, self.archetypeChunksCount[archetype], 1 do
 		local archetypeChunk = self.archetypeChunks[archetype][i]
 		local idList = archetypeChunk.entityIndexToId
 		local data = archetypeChunk.data
 
-		-- print(data.index, i)
-
 		for j = 1, archetypeChunk.numEntities, 1 do
 			local offset = (j - 1) * archetypeChunk.entitySize + 1
-			-- print("ex", offset, 1 + offset, a2[1] + offset)
-			-- print(i, j, idList[j])
-			-- print(a1, a2, a3.Name, a4.Name)
 			callback(data, idList[j], offset, a3[1] + offset)
 		end									 -- [1] is actually .size
 	end
 end
 
-local getArchetype = Feint.Util.Memoize(function(...)
+function EntityManager:getArchetype(arguments)
+	local stringTable = {}
+	for i = 1, #arguments do
+		local v = arguments[i]
+		if v.componentData then
+			stringTable[#stringTable + 1] = v.Name
+		end
+	end
+	return table.concat(stringTable)
+end
+Feint.Util.Memoize(EntityManager.getArchetype)
+
+local getArchetypeUn = Feint.Util.Memoize(function(...)
 	local arguments = {...}
 	local stringTable = {}
 	for i = 1, #arguments do
@@ -154,35 +150,36 @@ local getArchetype = Feint.Util.Memoize(function(...)
 	return table.concat(stringTable)
 end)
 
-local cache = {}
-function EntityManager:forEach(id, arguments, callback, ...)
-	-- if not cache[id] then
-	-- 	cache[id] = {}
-	-- 	-- for k, v in pairs(debug.getinfo(callback)) do
-	-- 	-- 	print(k, v)
-	-- 	-- end
-	--
-	-- 	local funcInfo = debug.getinfo(callback)
-	-- 	local i = 1
-	-- 	for j = 1, funcInfo.nparams, 1 do
-	-- 		-- print(debug.getlocal(callback, i))
-	-- 		local componentName = debug.getlocal(callback, j)
-	-- 		if componentName ~= "Data" and componentName ~= "Entity" then
-	-- 			local component = self.World.components[componentName]
-	-- 			assert(component, 2, string.format("arg %d (%s) is not a component", i, componentName))
-	-- 			cache[id][i] = component
-	-- 			i = i + 1
-	-- 		else
-	-- 			cache[id][i] = componentName
-	-- 			i = i + 1
-	-- 		end
-	-- 	end
-	-- end
+local componentCache = {}
+local argumentCache = {}
+function EntityManager:forEach(id, callback)
+	if not componentCache[id] then
+		componentCache[id] = {}
+		argumentCache[id] = {}
 
-	local archetypeString = getArchetype(unpack(arguments))
-	self:execute(arguments, self.archetypes[archetypeString], callback)
-	-- self:execute(query:getArchetypeChunks(self.archetypeChunks), callback)
-	-- printf("Finished forEach\n\n")
+		local funcInfo = debug.getinfo(callback)
+		local i = 1
+		for j = 1, funcInfo.nparams, 1 do
+			-- print(debug.getlocal(callback, i))
+			local componentName = debug.getlocal(callback, j)
+			-- argumentCache[id][j] = argumentName
+			if componentName ~= "Data" and componentName ~= "Entity" then
+				local component = self.World.components[componentName]
+				if component.componentData then
+					assert(component, 2, string.format("arg %d (%s) is not a component", i, componentName))
+					componentCache[id][i] = component
+					i = i + 1
+				end
+			else
+				componentCache[id][i] = componentName
+				i = i + 1
+			end
+		end
+	end
+
+	local archetypeString = self:getArchetype(componentCache[id])
+	self:execute(componentCache[id], self.archetypes[archetypeString], callback)
+
 end
 -- Feint.Util.Memoize(EntityManager.forEach)
 
