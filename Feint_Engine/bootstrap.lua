@@ -14,7 +14,7 @@ Feint.LoadModule("UI")
 printf("\n")
 log("Initializing Feint Engine\n\n")
 
-Feint.Run.framerate = 120 -- framerate cap
+Feint.Run.framerate = -1 -- framerate cap
 Feint.Run.rate = 1 / 60 -- update dt
 Feint.Run.sleep = 0.001
 

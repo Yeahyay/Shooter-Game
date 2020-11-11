@@ -73,9 +73,11 @@ Feint.Paths.Add("Graphics", Feint.Paths.Modules .. "graphics")
 Feint.AddModule("Graphics", function(self)
 	self.require(Feint.Paths.Graphics .. "graphics")
 	do
-		local screenHeight = 720
+		local width, height, flags = love.window.getMode()
+		local screenHeight = height
 		local screenWidth = screenHeight * (16 / 9)
-		self.G_SCREEN_SIZE = Feint.Math.Vec2.new(screenWidth, screenHeight)
+		print(width, height, screenWidth, screenHeight)
+		self.ScreenSize = Feint.Math.Vec2.new(screenWidth, screenHeight)
 	end
 	self.Finalize()
 end)

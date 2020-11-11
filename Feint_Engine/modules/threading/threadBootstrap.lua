@@ -68,8 +68,8 @@ end
 do
 	local printOld = print
 	function print(...)
-		-- printf("%s_OLD: ", _NAME)
-		printOld("as'dsda\n", ...)
+		printf("%s_OLD: ", _NAME)
+		-- printOld("as'dsda\n", ...)
 	end
 end
 

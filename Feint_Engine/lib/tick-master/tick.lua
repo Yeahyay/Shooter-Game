@@ -32,8 +32,8 @@ love.run = function()
 		timer.step()
 		tickModule.dt = timer.getDelta() * tickModule.timescale
 		tickModule.accum = tickModule.accum + tickModule.dt
-		if tickModule.accum > tickModule.rate then
-			tickModule.accum = tickModule.rate
+		if tickModule.accum > tickModule.rate * 5 then
+			tickModule.accum = tickModule.rate * 5
 		end
 
 		if graphics and graphics.isActive() then
