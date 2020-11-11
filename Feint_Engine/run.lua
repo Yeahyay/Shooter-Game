@@ -14,6 +14,11 @@ function love.keypressed(key, ...)
 			Feint.Run.rate = 0
 		end
 	end
+	if key == "q" then
+		local world = World.DefaultWorld
+		local entityManager = world.EntityManager
+		entityManager:CreateEntity(entityManager:getArchetype({"Data", "Entity", "Renderer", "Transform"}))
+	end
 	if key == "z" then
 		Feint.Graphics.toggleInterpolation()
 	end
@@ -195,9 +200,13 @@ end
 local fpsIndex = 1
 local fpsSum = 0
 
-local function getMemoryUsage()
+local function getMemoryUsageKiB()
 	return collectgarbage("count") * (1000 / 1024)
 end
+local function getMemoryUsageKb()
+	return collectgarbage("count")
+end
+
 
 local ui = Feint.UI.Immediate
 ui.Initialize()
@@ -262,21 +271,23 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage: %fMiB", getMemoryUsage() / 1024),
+	love.graphics.printf(string.format("Memory Usage (MiB): %12f MiB", getMemoryUsageKiB() / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
-
-	love.graphics.printf(string.format("Memory Usage: %fKiB", getMemoryUsage()),
+	love.graphics.printf(string.format("Memory Usage (KiB): %12f KiB", getMemoryUsageKiB()),
 		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
+	love.graphics.printf(string.format("Memory Usage (bytes): %12f KiB", getMemoryUsageKb() * 1000),
+		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
 
 	local stats = love.graphics.getStats()
 	love.graphics.printf(string.format("Draw calls: %d", stats.drawcalls),
-		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 7, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
 	)
-	-- love.graphics.printf(string.format("Texture Memory: %d", stats.texturememory),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 7, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
-	-- )
+	love.graphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
+		0, DEFAULT_FONT_HEIGHT / 2 * 8, Feint.Graphics.G_SCREEN_SIZE.x, "left", 0, 0.5, 0.5
+	)
 end
 function love.quit()
 	-- if currentGame then
