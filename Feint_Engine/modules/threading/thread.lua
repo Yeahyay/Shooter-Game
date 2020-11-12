@@ -2,12 +2,12 @@ local thread = {}
 
 local workers = {}
 
-require("love.system")
+-- require("love.system")
 
 thread.MAX_CORES = love.system.getProcessorCount()
 
 function thread.newWorker(id)
-	log("Creating new worker thread \"THREAD_%02d\"\n", id)
+	Feint.Log.log("Creating new worker thread \"THREAD_%02d\"\n", id)
 	local newThread = {
 		thread = love.thread.newThread(Feint.Paths.SlashDelimited(Feint.Paths.Thread) .. "threadBootstrap.lua"),
 		id = not workers[id] and id or #workers + 1,

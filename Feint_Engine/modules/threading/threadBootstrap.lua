@@ -36,6 +36,7 @@ local channel = love.thread.getChannel("thread_data_" .. self.id)
 
 -- print(love.timer)
 love.timer = require("love.timer")
+love.system = require("love.system")
 
 require("Feint_Engine.feintAPI", {Audio = true})
 
@@ -69,11 +70,19 @@ do
 	local printOld = print
 	function print(...)
 		printf("%s_OLD: ", _NAME)
-		-- printOld("as'dsda\n", ...)
+		printOld(...)
 	end
 end
 
-local loop = coroutine.create(function(data, ...)
+-- function printf(format, ...)
+-- 	if format then
+-- 		io.write(string.format(format or "", ...))
+-- 	else
+-- 		io.write("")
+-- 	end
+-- end
+
+local loop = coroutine.wrap(function(data, ...)
 	while true do
 		local func = loadJob(data.func, data.type)
 		func("poop")
@@ -81,16 +90,23 @@ local loop = coroutine.create(function(data, ...)
 	end
 end)
 
+Feint.Log.logln("thread done")
+-- send response to main thread
+channel:push(true)
+
+local status = channel:demand()
+-- wait for acknowledgement
+Feint.Log.logln(status)
+
 while true do
 	local data = false
-	print("WAITING FOR FUNCTION")
+	Feint.Log.logln("WAITING FOR FUNCTION")
 	repeat
 		data = channel:demand()
 	until data
+	Feint.Log.logln(data)
 
 	if data.go then
-		coroutine.resume(loop, data)
+		loop.resume(data)
 	end
 end
-
-channel.push(true)

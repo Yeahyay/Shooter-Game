@@ -2,19 +2,7 @@ local args = {...}
 
 local FEINT_ROOT = args[1]:gsub("feintAPI", "")
 
---[[ CREATE A MODULE SYSTEM
-eacg module can have submodules
-every module, including submodules, can have dependencies
-Feint.AddModule("Log", function(self) end) -- last argument is the module initializer
-Feint.AddModule("Util")
-Feint.AddModule("Util", "Core") -- every argument except the second to last is the heirarchy
-Feint.AddModule("Util", "Debug")
-
-Feint.AddModule("Test")
-Feint.AddModule("Test", "Level1")
-Feint.AddModule("Test", "Level1", "Level2")
-Feint.AddModule("Paths")
---]]
+-- local excludedModules = args[2] or {}
 
 Feint = require(FEINT_ROOT .. "modules.core")
 
@@ -108,8 +96,8 @@ end)
 Feint.Paths.Add("Log", Feint.Paths.Root .. "logs")
 Feint.AddModule("Log", function(self)
 	self.require(Feint.Paths.Modules.. "log")
-	self.Finalize()
 end)
+Feint.Log.Finalize()
 
 -- PARSING
 Feint.Paths.Add("Parsing", Feint.Paths.Modules .. "parsing")
@@ -184,7 +172,7 @@ end
 
 -- DEFAULT MODULES
 Feint.LoadModule("Util")
+Feint.LoadModule("Thread")
 Feint.LoadModule("Math")
 Feint.LoadModule("Log")
 Feint.LoadModule("Run")
-Feint.LoadModule("Thread")

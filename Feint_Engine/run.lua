@@ -60,10 +60,12 @@ function love.load()
 		end
 	end
 
+	Feint.Log.log("\n%s update order:\n", World.DefaultWorld.Name)
 	World.DefaultWorld:generateUpdateOrderList()
 	for k, v in ipairs(World.DefaultWorld.updateOrder) do
-		log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
+		Feint.Log.log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
 	end
+	Feint.Log.logln()
 
 	World.DefaultWorld:start()
 
@@ -87,15 +89,25 @@ function love.load()
 	end
 
 	-- [[
-	for i = 1, 10, 1 do
+	for i = 1, 1, 1 do
 		Feint.Thread.newWorker(i, nil)
 	end
 	love.timer.sleep(0.1)
-	for i = 1, 10, 1 do
-		Feint.Thread.startWorker(i, {})
+	for i = 1, 1, 1 do
+		Feint.Log.logln("STARTING THREAD %d", i)
+		Feint.Thread.startWorker(i)
 		local channel = love.thread.getChannel("thread_data_"..i)
-		printf("STARTING THREAD %d\n", i)
-		channel:push({
+		channel:push(threadData)
+
+		Feint.Log.logln("WAITING FOR THREAD %d", i)
+		local wait = false
+		while not wait and wait ~= threadData do
+			wait = channel:demand()
+			Feint.Log.logln("RECIEVED", wait)
+		end
+		Feint.Log.logln("DONE WAITING FOR THREAD %d", i)
+
+		local threadData = {
 			go = true,
 			-- func = string.dump(function(test)
 			-- 	print("yo", test)
@@ -114,13 +126,7 @@ function love.load()
 				end
 			end),
 			type = "string",
-		})
-		local wait = false
-		print("WAITING FOR THREAD "..i)
-		while not wait do
-			wait = channel:demand()
-		end
-		print("DONE WAITING FOR THREAD "..i)
+		}
 	end
 	--]]
 end
@@ -271,13 +277,13 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 
-	love.graphics.printf(string.format("Memory Usage (MiB):   %12d", getMemoryUsageKiB() / 1024),
+	love.graphics.printf(string.format("Memory Usage (MiB):   %12.2f", getMemoryUsageKiB() / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	love.graphics.printf(string.format("Memory Usage (KiB):   %12d", getMemoryUsageKiB()),
+	love.graphics.printf(string.format("Memory Usage (KiB):   %12.2f", getMemoryUsageKiB()),
 		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	love.graphics.printf(string.format("Memory Usage (bytes): %12d", getMemoryUsageKiB() * 1024),
+	love.graphics.printf(string.format("Memory Usage (bytes): %12.2f", getMemoryUsageKiB() * 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
@@ -298,4 +304,4 @@ end
 -- PRINT_ENV(_ENV, false)
 
 printf("\n")
-log("Exiting run.lua\n")
+Feint.Log.log("Exiting run.lua\n")

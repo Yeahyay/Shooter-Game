@@ -47,7 +47,7 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
-	for i = 1, 10000, 1 do
+	for i = 1, 500, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 
@@ -98,8 +98,8 @@ function RenderSystem:update(dt)
 
 			rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
 
-			Data[Transform] = x + sin(time * 2 + Entity * 0.1) * 0.5
-			Data[Transform + 1] = y + cos(time * 2 + Entity * 0.1) * 0.5
+			Data[Transform] = x + sin(time * 2 + Entity * 0.25) * 0.5
+			Data[Transform + 1] = y + cos(time * 2 + Entity * 0.25) * 0.5
 		end)
 	end
 end

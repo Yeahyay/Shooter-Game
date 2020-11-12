@@ -32,9 +32,21 @@ function printf(format, ...)
 	end
 end
 
-function log(...)
-	printf("%s: ", _ENV._NAME)
+local function log(...)
+	printf("core_%s: ", _ENV._NAME:lower())
 	printf(...)
+end
+
+function private.LoadCore(name)
+	print(name)
+	assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+	local module = private.Modules[name] -- checks if module exists
+	if module then
+		module.setup()
+		if module.init then
+			module.init()
+		end
+	end
 end
 
 function private.LoadModule(name)
