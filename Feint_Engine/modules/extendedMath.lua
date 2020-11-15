@@ -25,6 +25,14 @@ function extendedMath.clamp(x, min, max)
 	return x
 end
 
+local util = Feint.Util.Core
+function extendedMath.oscillate(amplitude, rate, offset)
+	return (math.cos(util.getTime() * rate + offset) * 0.5 + 0.5) * amplitude
+end
+function extendedMath.oscillateSigned(amplitude, rate, offset)
+	return math.cos(util.getTime() * rate + offset) * amplitude
+end
+
 function extendedMath.random2(a, b, c)
 	local ans
 	if b then
