@@ -46,9 +46,9 @@ local ENUM_TRANSFORM_S_X = ENUM_INITIALIZER()
 local ENUM_TRANSFORM_S_Y = ENUM_INITIALIZER()
 -- luacheck: pop ignore
 
-local screenSize
+local renderSize
 function private.init()
-	screenSize = Feint.Graphics.ScreenSize
+	renderSize = Feint.Graphics.RenderSize
 end
 function private.rectangle(x, y, angle, width, height)
 	graphics.drawQueueSize = graphics.drawQueueSize + 1
@@ -60,12 +60,12 @@ function private.rectangle(x, y, angle, width, height)
 		graphics.queueSize = graphics.queueSize + 1
 	end
 	obj[ENUM_INTERPOLATE_X] = x
-	obj[ENUM_INTERPOLATE_Y] = Feint.Graphics.ScreenSize.y - y
+	obj[ENUM_INTERPOLATE_Y] = renderSize.y - y
 	obj[ENUM_INTERPOLATE_A] = angle
 	obj[ENUM_DRAW_CALL] = "rectangle"
 	-- obj[ENUM_DRAW_MODE] = mode
 	obj[ENUM_TRANSFORM_X] = x
-	obj[ENUM_TRANSFORM_Y] = Feint.Graphics.ScreenSize.y - y
+	obj[ENUM_TRANSFORM_Y] = renderSize.y - y
 	obj[ENUM_TRANSFORM_A] = angle
 	obj[ENUM_TRANSFORM_S_X] = width
 	obj[ENUM_TRANSFORM_S_Y] = height
@@ -80,12 +80,12 @@ function private.rectangleInt(lx, ly, lr, x, y, angle, width, height)
 		graphics.drawQueue[size] = obj
 	end
 	obj[ENUM_INTERPOLATE_X] = lx
-	obj[ENUM_INTERPOLATE_Y] = screenSize.y - ly
+	obj[ENUM_INTERPOLATE_Y] = renderSize.y - ly
 	obj[ENUM_INTERPOLATE_A] = lr
 	obj[ENUM_DRAW_CALL] = "rectangle"
 	-- obj[ENUM_DRAW_MODE] = mode
 	obj[ENUM_TRANSFORM_X] = x
-	obj[ENUM_TRANSFORM_Y] = screenSize.y - y
+	obj[ENUM_TRANSFORM_Y] = renderSize.y - y
 	obj[ENUM_TRANSFORM_A] = angle
 	obj[ENUM_TRANSFORM_S_X] = width
 	obj[ENUM_TRANSFORM_S_Y] = height
@@ -106,7 +106,7 @@ function private.draw()
 		if drawCall[ENUM_DRAW_CALL] == "rectangle" then
 			-- loveGraphics[drawCall[ENUM_DRAW_CALL]]("fill", dx, dy, drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y])
 			-- print(transformX, interX, interpolate)
-			loveGraphics.draw(rect, dx, dy, drawCall[ENUM_TRANSFORM_A],
+			loveGraphics.draw(rect, math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
 				drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
 				rectSX / 2, rectSX / 2)
 		end

@@ -19,6 +19,14 @@ function love.keypressed(key, ...)
 		local entityManager = world.EntityManager
 		entityManager:CreateEntity(entityManager:getArchetype({"Data", "Entity", "Renderer", "Transform"}))
 	end
+	if key == "a" then
+		local graphics = Feint.Graphics
+		print(graphics.ScreenToRenderRatio)
+		graphics.RenderSize = graphics.RenderSize % Feint.Math.Vec2.new(0.5, 0.5)
+		graphics.RenderToScreenRatio = graphics.ScreenSize / graphics.RenderSize
+		graphics.ScreenToRenderRatio = graphics.RenderSize / graphics.ScreenSize
+		print(graphics.ScreenToRenderRatio)
+	end
 	if key == "z" then
 		Feint.Graphics.toggleInterpolation()
 	end
@@ -151,6 +159,13 @@ local avgTimes = 0
 function love.update(dt)
 	Feint.Graphics.clear()
 
+		local graphics = Feint.Graphics
+
+		print(((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9))
+		graphics.RenderSize = Feint.Math.Vec2.new(1280, 720) * ((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9)
+		graphics.RenderToScreenRatio = graphics.ScreenSize / graphics.RenderSize
+		graphics.ScreenToRenderRatio = graphics.RenderSize / graphics.ScreenSize
+
 	local startTime = getTime()
 
 	--[[ -- unreliable tickrate counter
@@ -213,6 +228,8 @@ local function getMemoryUsageKb()
 	return collectgarbage("count")
 end
 
+local canvas = love.graphics.newCanvas(Feint.Graphics.RenderSize.x, Feint.Graphics.RenderSize.y, {msaa = 0})
+local debug = love.graphics.newCanvas(Feint.Graphics.RenderSize.x, Feint.Graphics.RenderSize.y, {msaa = 0})
 
 local ui = Feint.UI.Immediate
 ui.Initialize()
@@ -244,13 +261,18 @@ function love.draw(dt)
 	-- 	end
 	-- end
 
+	love.graphics.setCanvas(canvas)
+	love.graphics.clear()
 	love.graphics.push()
-	love.graphics.translate(Feint.Graphics.ScreenSize.x / 2, -Feint.Graphics.ScreenSize.y / 2)
+	love.graphics.translate(Feint.Graphics.RenderSize.x / 2, -Feint.Graphics.RenderSize.y / 2)
 	-- love.graphics.setWireframe(true)
 	Feint.Graphics.updateInterpolate(run.accum)
 	Feint.Graphics.draw()
 	-- love.graphics.setWireframe(false)
 	love.graphics.pop()
+	love.graphics.setCanvas()
+	love.graphics.draw(canvas, 0, 0, 0, Feint.Graphics.RenderToScreenRatio.x, Feint.Graphics.RenderToScreenRatio.y, 0, 0)
+	-- love.graphics.draw(canvas, 0, 0, 0, 1, 1, 0, 0)
 
 	love.graphics.printf(
 		string.format("FPS:      %7.2f, DT:      %7.4fms\n",

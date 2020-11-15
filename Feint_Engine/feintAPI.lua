@@ -88,7 +88,12 @@ Feint.AddModule("Graphics", function(self)
 		local width, height, flags = love.window.getMode() -- luacheck: ignore
 		local screenHeight = height
 		local screenWidth = screenHeight * (16 / 9)
+		self.RenderSize = Feint.Math.Vec2.new(1280, 720)
 		self.ScreenSize = Feint.Math.Vec2.new(screenWidth, screenHeight)
+		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
+		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
+		print(self.ScreenToRenderRatio)
+		print(self.RenderToScreenRatio)
 	end
 	self.Finalize()
 end)

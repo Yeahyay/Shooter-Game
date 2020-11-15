@@ -37,12 +37,13 @@ end
 function private.mousemoved(x, y, dx, dy)
 	local mouse = input.mouse
 	mouse.PositionRawOld = mouse.PositionRaw
-	mouse.PositionRaw.x, mouse.PositionRaw.y = x, Feint.Graphics.ScreenSize.y-y
+	mouse.PositionRaw.x, mouse.PositionRaw.y = x, Feint.Graphics.ScreenSize.y - y
+	mouse.PositionRaw = mouse.PositionRaw % Feint.Graphics.ScreenToRenderRatio
 	mouse.PositionOld = mouse.Position
-	mouse.Position = mouse.PositionRaw - Feint.Graphics.ScreenSize / 2
+	mouse.Position = mouse.PositionRaw - Feint.Graphics.RenderSize / 2
 
 	mouse.PositionUnitOld = mouse.PositionUnit
-	mouse.PositionUnit = mouse.Position / Feint.Graphics.ScreenSize
+	mouse.PositionUnit = mouse.Position / Feint.Graphics.RenderSize
 
 	mouse.PositionDeltaOld = mouse.PositionDelta
 	-- mouse.PositionDelta = mouse.Position - mouse.PositionOld
