@@ -12,7 +12,7 @@ local function luaInfo()
 	return info
 end
 
-jit.off()
+-- jit.off()
 -- jit.on()
 
 print(luaInfo())
