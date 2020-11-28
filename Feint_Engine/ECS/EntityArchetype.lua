@@ -1,3 +1,5 @@
+local ffi = require("ffi")
+
 local ECSutils = Feint.ECS.Util
 
 local EntityArchetype = ECSutils.newClass("EntityArchetype")
@@ -16,6 +18,8 @@ function EntityArchetype:init(components, ...)
 	-- self.chunkCapacity = 32
 	self.totalSize = 0 -- the total size of every component and its fields
 	self.totalSizeBytes = 0
+	self.ffiType = nil
+
 	self:createArchetype()
 	return self
 end
@@ -32,6 +36,18 @@ function EntityArchetype:createArchetype()
 	self.archetypeString = table.concat(components)
 	self.Name = self.archetypeString -- redundant?
 	-- Feint.Log.logln(self.archetypeString)
+
+
+	self.structMembers = {}
+	for k, v in pairs(self.components) do
+		self.structMembers[k] = "struct component_" .. v.Name
+	end
+	self.ffiType = ffi.cdef(string.format([[
+		struct archetype_%s {
+			%s
+		}
+	]], self.archetypeString, table.concat(self.structMembers, ";\n") .. ";"))
+
 	return self
 end
 

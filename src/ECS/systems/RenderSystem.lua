@@ -4,11 +4,10 @@ local World = Feint.ECS.World
 
 World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
 	{visible = true},
-	-- {lastState = {}}
 }))
 
 World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
-	{x = 0},
+	{x = 0},						-- 0
 	{y = 0},						-- 1
 	{angle = 0},				-- 2
 	{sizeX = 32},				-- 3
@@ -17,16 +16,6 @@ World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
 	{scaleY = 10},				-- 6
 	{trueSizeX = 10 / 32},	-- 7
 	{trueSizeY = 10 / 32},	-- 8
-	-- {sizeX = 50},
-	-- {sizeY = 51},
-	-- {sizeZ = 52},
-	-- {sizeA = 53},
-	-- {sizeB = 54},
-	-- {sizeC = 55},
-	-- {sizeD = 56},
-	-- {sizeE = 57},
-	-- {sizeF = 58},
-	-- {sizeG = 59},
 }))
 
 local RenderSystem = System:new("RenderSystem")
@@ -35,7 +24,9 @@ end
 
 local fmath = Feint.Math
 local random2 = fmath.random2
+
 function RenderSystem:start()
+	-- print(os.capture("wmic cpu list full"), "as kdnklnsd")
 	-- for k, v in pairs(love.graphics.getSystemLimits()) do
 	-- 	print(k, v)
 	-- end

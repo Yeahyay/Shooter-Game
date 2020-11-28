@@ -1,3 +1,5 @@
+-- local ffi = require("ffi")
+
 local ECSUtils = Feint.ECS.Util
 
 local EntityManager = ECSUtils.newClass("EntityManager")
@@ -31,7 +33,7 @@ function EntityManager:getNewEntityId()
 	-- local newIDIndex = -1
 	for i = 1, self.entitiesCount do--#self.entities do
 		if self.entityIDState[i] == true then
-			-- reuseID = true
+			-- reuseID = true9
 			newID = self.entityID[i]
 			-- newIDIndex = i
 			break
@@ -114,7 +116,7 @@ end
 
 function EntityManager:CreateEntity(archetype)
 	-- print(archetype)
-	Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
+	-- Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
 	local id = self:getNewEntityId()
 	-- assosciate the entity id with its respective chunk
@@ -142,7 +144,7 @@ function EntityManager:setComponentData(entity, component, data)
 	local archetypeChunk = self:getArchetypeChunkFromEntity(entity)
 	local index = self:getArchetypeChunkEntityIndexFromEntity(entity)
 	local archetypeChunkData = archetypeChunk.data
-	-- local offset = 
+	-- local offset =
 	for i = 1, #data, 1 do
 		archetypeChunkData[index + i] = data[i]
 	end
@@ -167,8 +169,9 @@ function EntityManager:execute(arguments, archetype, callback)
 
 		for j = 1, archetypeChunk.numEntities, 1 do
 			local offset = (j - 1) * archetypeChunk.entitySize + 1
-			callback(data, idList[j], offset, a3[1] + offset)
-		end									 -- [1] is actually .size
+			-- callback(data, idList[j], offset, a3[1] + offset)
+			callback(data, idList[j], offset, a3.size + offset)
+		end											-- [1] is actually .size
 	end
 end
 

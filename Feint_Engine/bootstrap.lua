@@ -14,7 +14,7 @@ Feint.LoadModule("Audio")
 Feint.LoadModule("Tween")
 Feint.LoadModule("UI")
 
-Feint.Run.framerate = 60 -- framerate cap
+Feint.Run.framerate = -1 -- framerate cap
 Feint.Run.rate = 1 / 60 -- update dt
 Feint.Run.sleep = 0.001
 

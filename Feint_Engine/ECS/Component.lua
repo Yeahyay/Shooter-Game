@@ -1,26 +1,52 @@
 local ECSUtils = Feint.ECS.Util
 local Component = ECSUtils.newClass("Component")
 
--- local ffi = require("ffi")
+local ffi = require("ffi")
 
 function Component:init(data, ...)
 	self.keys = {}
 	self.values = {}
 	self.size = #data
-	self.sizeBytes = 40 -- all tables are hash tables
 
-	for k, v in ipairs(data) do
-		for k, v in pairs(v) do
-			self.keys[#self.keys + 1] = k
-			self.values[#self.values + 1] = v
-			if type(k) == number then
-				self.sizeBytes = self.sizeBytes + 16 -- array
-			else
-				self.sizeBytes = self.sizeBytes + 40 -- hash table
+	if jit.status() then
+		self.structMembers = {}
+		for k, v in ipairs(data) do
+			for k, v in pairs(v) do
+				local dataType = type(v)
+				dataType = dataType == "number" and "double" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
+				self.keys[#self.keys + 1] = k
+				self.values[#self.values + 1] = v
+
+				self.structMembers[#self.structMembers + 1] = dataType .. " " .. k
 			end
 		end
+
+		ffi.cdef(string.format([[
+			#pragma pack(1)
+			struct component_%s {
+				%s
+			}
+			#pragma pack(0)
+		]], self.Name, table.concat(self.structMembers, ";\n") .. ";"))
+		self.ffiType = ffi.typeof("struct component_" .. self.Name)
+
+		self.sizeBytes = ffi.sizeof(self.ffiType)
+		print(self.sizeBytes)
+	else
+		self.sizeBytes = 40 -- all tables are hash tables
+		for k, v in ipairs(data) do
+			for k, v in pairs(v) do
+				self.keys[#self.keys + 1] = k
+				self.values[#self.values + 1] = v
+				if type(k) == "number" then
+					self.sizeBytes = self.sizeBytes + 16 -- array
+				else
+					self.sizeBytes = self.sizeBytes + 40 -- hash table
+				end
+			end
+		end
+		-- self[1] = self.size
 	end
-	self[1] = self.size
 end
 function Component:setData(data)
 end

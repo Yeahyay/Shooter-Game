@@ -6,7 +6,6 @@ function EntityChunk:init(archetype, ...)
 	self.archetype = archetype
 	self.Name = archetype.Name.."_ArchetypeChunk"
 	self.isFull_cached = false
-
 	self.capacity = 1024 - 2
 	self.capacityBytes = 131072 - 40
 	self.numEntities = 0
@@ -20,20 +19,24 @@ function EntityChunk:init(archetype, ...)
 	self.entityIdToIndex = {}
 	self.entityIndexToId = {}
 
+	for i = 1, self.capacity do
+		-- self.data[i] = nil -- presize the table's hash portion
+		self.dataStatus[i] = false
+	end
+
 	self:preallocate(64)
 
-	-- self.dead = false
+	self.dead = false
 
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
-	self.index = self.archetype.chunkCount
-	self.id = string.format("%s_chunk%02d", self.archetype.archetypeString, self.index)
+	self.index = Feint.Math.random2(200)--self.archetype.chunkCount
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1
 	for k, v in pairs(self) do
 		self[k] = nil
 	end
-	-- self.dead = true
+	self.dead = true
 end
 function EntityChunk:isFull()
 	return self.numEntities * self.entitySizeBytes >= self.capacityBytes - self.entitySizeBytes
