@@ -17,7 +17,41 @@ function love.keypressed(key, ...)
 	if key == "q" then
 		local world = World.DefaultWorld
 		local entityManager = world.EntityManager
-		entityManager:CreateEntity(entityManager:getArchetype({"Data", "Entity", "Renderer", "Transform"}))
+		local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
+		local archetype = entityManager:getArchetype({Renderer, Transform})
+		local entity = entityManager:CreateEntity(archetype)
+
+		entityManager:setComponentData(entity, {
+			{x = Feint.Math.random2(Feint.Graphics.RenderSize.x / 2)},
+			{y = Feint.Math.random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)},
+											-- 1
+			{angle = 0},				-- 2
+			{sizeX = 32},				-- 3
+			{sizeY = 32},				-- 4
+			{scaleX = 10},				-- 5
+			{scaleY = 10},				-- 6
+			{trueSizeX = 10 / 32},	-- 7
+			{trueSizeY = 10 / 32},	-- 8
+		})
+			--
+			-- entityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
+			-- 	-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
+			-- 	-- local x = Data[Transform]
+			-- 	-- local y = Data[Transform + 1]
+			-- 	local x = Feint.Math.random2(Feint.Graphics.RenderSize.x / 2)
+			-- 	local y = Feint.Math.random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)
+			-- 	local sizeX = Data[Transform + 3]
+			-- 	local sizeY = Data[Transform + 4]
+			-- 	local scaleX = Data[Transform + 5]
+			-- 	local scaleY = Data[Transform + 6]
+			-- 	local trueSizeX = scaleX / sizeX
+			-- 	local trueSizeY = scaleY / sizeY
+			--
+			-- 	Data[Transform] = x
+			-- 	Data[Transform + 1] = y
+			-- 	Data[Transform + 7] = trueSizeX
+			-- 	Data[Transform + 8] = trueSizeY
+			-- end)
 	end
 	if key == "a" then
 		local graphics = Feint.Graphics
@@ -161,8 +195,8 @@ function love.update(dt)
 
 		local graphics = Feint.Graphics
 
-		print(((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9))
-		graphics.RenderSize = Feint.Math.Vec2.new(1280, 720) * ((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9)
+		-- print(((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9))
+		graphics.RenderSize = Feint.Math.Vec2.new(1280, 720)-- * ((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9)
 		graphics.RenderToScreenRatio = graphics.ScreenSize / graphics.RenderSize
 		graphics.ScreenToRenderRatio = graphics.RenderSize / graphics.ScreenSize
 

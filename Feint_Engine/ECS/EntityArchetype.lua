@@ -12,6 +12,7 @@ function EntityArchetype:init(components, ...)
 	self.componentData_fieldName = {}
 	self.archetypeString = nil
 	self.chunkCount = 0
+	self.numInstances = 0
 	-- self.chunkCapacity = 32
 	self.totalSize = 0 -- the total size of every component and its fields
 	self.totalSizeBytes = 0
