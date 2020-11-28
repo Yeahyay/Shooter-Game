@@ -9,14 +9,14 @@ World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
 
 World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
 	{x = 0},
-	{y = 0},				-- 1
-	{angle = 0},		-- 2
-	{sizeX = 32},		-- 3
-	{sizeY = 32},		-- 4
-	{scaleX = 10},		-- 5
-	{scaleY = 10},		-- 6
-	{trueSizeX = 0},	-- 7
-	{trueSizeY = 0},	-- 8
+	{y = 0},						-- 1
+	{angle = 0},				-- 2
+	{sizeX = 32},				-- 3
+	{sizeY = 32},				-- 4
+	{scaleX = 10},				-- 5
+	{scaleY = 10},				-- 6
+	{trueSizeX = 10 / 32},	-- 7
+	{trueSizeY = 10 / 32},	-- 8
 	-- {sizeX = 50},
 	-- {sizeY = 51},
 	-- {sizeZ = 52},
@@ -47,7 +47,7 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
-	for i = 1, 500, 1 do
+	for i = 1, 40000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 
@@ -98,6 +98,9 @@ function RenderSystem:update(dt)
 
 			rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
 
+			angle = angle + 1 / 60 * pi + Entity
+
+			Data[Transform + 2] = angle
 			Data[Transform] = x + sin(time * 2 + Entity * 0.25) * 0.5
 			Data[Transform + 1] = y + cos(time * 2 + Entity * 0.25) * 0.5
 		end)

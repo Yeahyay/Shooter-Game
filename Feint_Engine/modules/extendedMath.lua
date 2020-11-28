@@ -15,14 +15,15 @@ function extendedMath.round(num, numDecimalPlaces)
 end
 
 function extendedMath.clamp(x, min, max)
-	min = min or - math.huge
-	max = max or math.huge
-	if (x < min) then
-		x = min
-	elseif (x > max) then
-		x = max
-	end
-	return x
+	-- min = min or - math.huge
+	-- max = max or math.huge
+	-- if (x < min) then
+	-- 	x = min
+	-- elseif (x > max) then
+	-- 	x = max
+	-- end
+	-- return x
+	return math.max(math.min(min, x), max)
 end
 
 local util = Feint.Util.Core
