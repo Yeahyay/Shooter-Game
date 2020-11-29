@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local PhysicsSystem = System:new("PhysicsSystem", {"generic", Physics, Transform})
 function PhysicsSystem:init(world)
 	self.physicsTimes = 1

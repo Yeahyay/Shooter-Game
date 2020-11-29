@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local AssetManager = ECSUtils.newClass("AssetManager")--, {"General"})
 function AssetManager:init()
 	self.Assets = {}

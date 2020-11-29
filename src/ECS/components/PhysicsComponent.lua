@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local Physics = Component:new("Physics", function(self)
 	-- self.velocity = vMath.Vec3(0, 0, 0)
 	self.world = false

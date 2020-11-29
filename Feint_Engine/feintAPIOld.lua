@@ -2,19 +2,7 @@ local args = {...}
 
 local FEINT_ROOT = args[1]:gsub("feintAPI", "")
 
---[[ CREATE A MODULE SYSTEM
-eacg module can have submodules
-every module, including submodules, can have dependencies
-Feint.AddModule("Log", function(self) end) -- last argument is the module initializer
-Feint.AddModule("Util")
-Feint.AddModule("Util", "Core") -- every argument except the second to last is the heirarchy
-Feint.AddModule("Util", "Debug")
-
-Feint.AddModule("Test")
-Feint.AddModule("Test", "Level1")
-Feint.AddModule("Test", "Level1", "Level2")
-Feint.AddModule("Paths")
---]]
+-- local excludedModules = args[2] or {}
 
 Feint = require(FEINT_ROOT .. "modules.core")
 
@@ -58,8 +46,6 @@ end)
 -- ECS
 Feint.Paths.Add("ECS", Feint.Paths.Root .. "ECS") -- add path
 Feint.AddModule("ECS", function(self)
-	self.FFI_OPTIMIZATIONS = true
-
 	self.Util = require(Feint.Paths.ECS .. "ECSUtils") -- require components into table
 	self.EntityArchetype = require(Feint.Paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(Feint.Paths.ECS .. "EntityArchetypeChunk")
@@ -90,12 +76,7 @@ Feint.AddModule("Graphics", function(self)
 		local width, height, flags = love.window.getMode() -- luacheck: ignore
 		local screenHeight = height
 		local screenWidth = screenHeight * (16 / 9)
-		self.RenderSize = Feint.Math.Vec2.new(1280, 720)
 		self.ScreenSize = Feint.Math.Vec2.new(screenWidth, screenHeight)
-		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
-		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
-		-- print(self.ScreenToRenderRatio)
-		-- print(self.RenderToScreenRatio)
 	end
 	self.Finalize()
 end)
@@ -115,8 +96,8 @@ end)
 Feint.Paths.Add("Log", Feint.Paths.Root .. "logs")
 Feint.AddModule("Log", function(self)
 	self.require(Feint.Paths.Modules.. "log")
-	self.Finalize()
 end)
+Feint.Log.Finalize()
 
 -- PARSING
 Feint.Paths.Add("Parsing", Feint.Paths.Modules .. "parsing")
@@ -191,7 +172,7 @@ end
 
 -- DEFAULT MODULES
 Feint.LoadModule("Util")
+Feint.LoadModule("Thread")
 Feint.LoadModule("Math")
 Feint.LoadModule("Log")
 Feint.LoadModule("Run")
-Feint.LoadModule("Thread")

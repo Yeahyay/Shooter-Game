@@ -1,29 +1,44 @@
 local coreUtilities = {logLevel = 0}
+-- do
+-- 	local lastEnv = getfenv(1)
+-- 	-- 	coreUtilities._ENV = coreUtilities
+-- 	-- 	coreUtilities._ENV_LAST = lastEnv
+-- 	-- 	coreUtilities._TYPE = "MODULE"
+-- 	-- 	coreUtilities._LAYER = lastEnv._LAYER and lastEnv._LAYER + 1 or 0
+-- 	-- 	coreUtilities._NAME = "CORE UTILITIES"
+-- 	-- 	-- set the table coreUtilities to refer to the main program's _G
+-- 	setmetatable(coreUtilities, {__index = lastEnv})
+-- end
+
+-- love.timer = require("love.timer")
+
 do
-	local lastEnv = getfenv(1)
-	-- 	coreUtilities._ENV = coreUtilities
-	-- 	coreUtilities._ENV_LAST = lastEnv
-	-- 	coreUtilities._TYPE = "MODULE"
-	-- 	coreUtilities._LAYER = lastEnv._LAYER and lastEnv._LAYER + 1 or 0
-	-- 	coreUtilities._NAME = "CORE UTILITIES"
-	-- 	-- set the table coreUtilities to refer to the main program's _G
-	setmetatable(coreUtilities, {__index = lastEnv})
+	local socket = require("socket")
+	local startTime = love.timer.getTime() - (socket.gettime() % 1)
+	function coreUtilities.getTime()
+		return love.timer.getTime() - startTime
+	end
 end
 
-function math.round(num, numDecimalPlaces)
-	local mult = 10^(numDecimalPlaces or 0)
-	return math.floor(num * mult + 0.5) / mult
-end
-
-function loveType(obj)
+function coreUtilities.loveType(obj)
 	if type(obj) == "userdata" and obj.type then
 		return obj:type()
 	end
 	return nil
 end
 
+function coreUtilities.type(obj)
+	local type = type(obj)
+	if type == "userdata" and obj.type then
+		return obj:type()
+	else
+		return type
+	end
+end
+
 -- make this better lmao
-function overloaded()
+-- luacheck: push ignore
+function coreUtilities.overloaded()
 	local functionSignatures = {}
 	local mt = {}
 
@@ -45,14 +60,14 @@ function overloaded()
 		local signature = {}
 		local signatureSize = 0
 		local function __newindex(self, key, value)
-			print(key, type(key), value, type(value))
+			printf("%s, %s, %s\n", key, type(key), value, type(value))
 			signatureSize = signatureSize + 1
 			signature[signatureSize] = key
 			functionSignatures[table.concat(signature, ",")] = value
-			print("bind", table.concat(signature, ", "))
+			printf("bind %s\n", table.concat(signature, ", "))
 		end
 		local function __index(self, key)
-			print("I", key, type(key))
+			printf("I %s, %s\n", key, type(key))
 			signatureSize = signatureSize + 1
 			signature[signatureSize] = key
 			return setmetatable({}, { __index = __index, __newindex = __newindex })
@@ -70,48 +85,7 @@ function overloaded()
 
 	return setmetatable({ default = oerror }, mt)
 end
-
-coreUtilities.PRINT_ENV_Level = 3
-function PRINT_ENV(env, verbose, restrict)
-	if true then
-		local restrict = restrict or defaultGlobal
-		restrict["_ENV"] = env._ENV
-		restrict["_ENV_LAST"] = env._ENV_LAST
-		restrict["_TYPE"] = env._TYPE
-		restrict["_LAYER"] = env._LAYER
-		restrict["_REQUIRE_SILENT"] = true
-		restrict["_NAME"] = env._NAME
-		if coreUtilities.logLevel >= coreUtilities.PRINT_ENV_Level then
-			printf("_ENV: %s (%s)\n", env._ENV._NAME, env._ENV)
-			printf("_ENV_LAST: %s (%s)\n", env._ENV_LAST._NAME, env._ENV_LAST)
-			printf("_TYPE: %s\n", env._TYPE)
-			printf("_LAYER: %s\n", env._LAYER)
-			printf("_REQUIRE_SILENT: %s\n", env._REQUIRE_SILENT)
-			printf("_NAME: %s\n", env._NAME)
-		end
-
-		if verbose then
-			local empty = true;
-			for _ in pairs(env) do
-				empty = false
-				break
-			end
-			if not empty then
-				printf("__ELEMENTS__\n")
-				for k, v in pairs(env) do
-					if not restrict or not restrict[k] then
-						printf("   %s\t%s\n", k, v)
-					end
-				end
-				printf("__ELEMENTS__\n")
-			else
-				printf("__EMPTY__\n")
-			end
-		end
-
-		printf()
-	end
-end
+-- luacheck: pop ignore
 
 do
 	local _require = require
@@ -121,7 +95,6 @@ do
 	function require(path, ...)
 		-- printf("Entering %s.lua\n", path)
 		-- local m = path:match("%/")
-		-- print(m)
 		-- if m then
 		-- 	error("use a period")
 		-- end
@@ -129,6 +102,18 @@ do
 		local data = coreUtilities.requireEnv(_G, path, ...)
 
 		return data--unpack(ret)
+	end
+end
+
+do
+	local _assert = assert
+	function assert(condition, level, message)
+		if type(level) ~= "number" then
+			error(Feint.Util.Exceptions.BAD_ARG_ERROR(1, "level", "number", type(level)), 2)
+		end
+		if not condition then
+			error(message, level)
+		end
 	end
 end
 --[[
@@ -171,6 +156,7 @@ function require(directory, env, quiet)
 end
 --]]
 
+--[[
 coreUtilities.newSourceEnvLevel = 2
 function coreUtilities.newSourceEnv(name, parent, lastEnv)
 	local env = {}
@@ -190,23 +176,7 @@ function coreUtilities.newSourceEnv(name, parent, lastEnv)
 	end
 	return env
 end
-
-coreUtilities.DEBUG_PRINT_TABLE_Level = 1
-function DEBUG_PRINT_TABLE(table, format)
-	if coreUtilities.logLevel >= coreUtilities.DEBUG_PRINT_TABLE_Level then
-		printf("---\n")
-		for k, v in pairs(table) do
-			-- printf("%s ", k)
-			-- printf("%s\n", v)
-			printf(format or "%.10s,  %s (%s)\n", k, v, type(v))
-			-- print_old(k, tostring(v))
-			-- if type(v) == "table" then
-			-- 	print_old(k, v.__tostring and v.__tostring())
-			-- end
-		end
-		printf("---\n")
-	end
-end
+--]]
 
 coreUtilities.newSourceEnvLevel = 2
 function coreUtilities.requireEnv(env, directory, ...)
@@ -217,12 +187,12 @@ function coreUtilities.requireEnv(env, directory, ...)
 			loader = loaderFunction(directory)
 			if type(loader) == "function" then break end
 		end
-		assert(type(loader) == "function", loader or "cannot find file")
+		assert(type(loader) == "function", 2, loader or "cannot find file")
 		local status, msg = pcall(function()
 			setfenv(loader, env)
 		end)
 		if not status then
-			printf("Error requiring into %s: %s\n", _ENV._NAME, msg)
+			log("Error in requireEnv: %s. It's probably a thread.\n", msg)
 		end
 		data = loader(directory, ...)
 		-- data = coreUtilities.loadChunk(env, directory)()

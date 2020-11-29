@@ -1,10 +1,12 @@
-local Messenger = ECSUtils.newClass("Messenger")
-function Messenger:init(lenient)
+-- luacheck: ignore
+
+local EventManager = ECSUtils.newClass("EventManager")
+function EventManager:init(lenient)
 	self.events = {}
 	self.lenient = lenient or false
 end
-function Messenger:dispatch(message, ...)
-	assert(message and type(message) == "string", util.BAD_ARG_ERROR(1, "Messenger:dispatch", "String", type(filter)))
+function EventManager:dispatch(message, ...)
+	assert(message and type(message) == "string", util.BAD_ARG_ERROR(1, "EventManager:dispatch", "String", type(filter)))
 
 	local args = {...}
 	local listeners = self.events[message]
@@ -23,16 +25,16 @@ end
 	["message1"] = {size = 1}
 }
 ]]
-function Messenger:newEvent(messageName)
+function EventManager:newEvent(messageName)
 	assert(not self.events[messageName])
 	self.events[messageName] = {size = 0}
 end
-function Messenger:listen(object, messageName, funcName)
-	-- assert(type(object) == "", util.BAD_ARG_ERROR(2, "Messenger:listen", "function", type(func)))
+function EventManager:listen(object, messageName, funcName)
+	-- assert(type(object) == "", util.BAD_ARG_ERROR(2, "EventManager:listen", "function", type(func)))
 	if not self.lenient then
 		assert(self.events[messageName], string.format("attempt to listen to nil event %s", messageName))
 	end
-	assert(type(funcName) == "string", util.BAD_ARG_ERROR(3, "Messenger:listen (funcName)", "string", type(funcName)))
+	assert(type(funcName) == "string", util.BAD_ARG_ERROR(3, "EventManager:listen (funcName)", "string", type(funcName)))
 
 	local func = object[funcName]
 
@@ -45,13 +47,13 @@ function Messenger:listen(object, messageName, funcName)
 		events[messageName][events[messageName].size] = {self = object, func = func}
 	end
 end
-function Messenger:listenCallback(messageName, callback)
+function EventManager:listenCallback(messageName, callback)
 	assert(self.events[messageName], string.format("attempt to listen to nil event %s", messageName))
-	assert(type(callback) == "function", util.BAD_ARG_ERROR(2, "Messenger:listen", "function", type(callback)))
+	assert(type(callback) == "function", util.BAD_ARG_ERROR(2, "EventManager:listen", "function", type(callback)))
 	self.events[messageName][#self.events[messageName] + 1] = callback
 end
 
-util.makeTableReadOnly(Messenger, function(self, k)
+util.makeTableReadOnly(EventManager, function(self, k)
 	return util.READ_ONLY_MODIFICATION_ERROR(self, k)
 end)
-return Messenger
+return EventManager

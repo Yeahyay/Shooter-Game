@@ -1,3 +1,5 @@
+-- luacheck: ignore
+
 local CameraSystem = System:new("CameraSystem", {"camera", Camera, Transform}, {"cameraSensor", Camera, Transform})
 function CameraSystem:init(...)
 	self.idCount = 0
