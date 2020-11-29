@@ -156,33 +156,56 @@ function EntityManager:buildQuery(arguments, componentsCount)
 	return query
 end
 
-function EntityManager:execute(arguments, archetype, callback)
-	-- printf("Calling function on entities\n")
-	local archetypeChunks = self.archetypeChunks
-	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-	--local a1, a2, a3, a4, a5, a6 = arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]
+if Feint.ECS.FFI_OPTIMIZATIONS then
+	function EntityManager:execute(arguments, archetype, callback)
+		-- printf("Calling function on entities\n")
+		local archetypeChunks = self.archetypeChunks
+		local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
 
-	for i = 1, self.archetypeChunksCount[archetype], 1 do
-		local archetypeChunk = archetypeChunks[archetype][i]
-		local idList = archetypeChunk.entityIndexToId
-		local data = archetypeChunk.data
+		for i = 1, self.archetypeChunksCount[archetype], 1 do
+			local archetypeChunk = archetypeChunks[archetype][i]
+			local idList = archetypeChunk.entityIndexToId
+			local data = archetypeChunk.data
 
-		for j = 1, archetypeChunk.numEntities, 1 do
-			local offset = (j - 1) * archetypeChunk.entitySize + 1
-			-- callback(data, idList[j], offset, a3[1] + offset)
-			callback(data, idList[j], offset, a3.size + offset)
-		end											-- [1] is actually .size
+			-- printf("chunk %d: %s\n", i, archetypeChunk.data[19].Transform.x)
+			for j = 0, archetypeChunk.numEntities - 1, 1 do
+				local id = idList[j + 1]
+				-- printf("  x: %f\n  index: %s, id: %s\n", data[j][a4.Name].x, j, id)
+				callback(data, id, data[j][a3.Name], data[j][a4.Name])
+			end
+		end
+	end
+else
+	function EntityManager:execute(arguments, archetype, callback)
+		-- printf("Calling function on entities\n")
+		local archetypeChunks = self.archetypeChunks
+		local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
+		--local a1, a2, a3, a4, a5, a6 = arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]
+
+		for i = 1, self.archetypeChunksCount[archetype], 1 do
+			local archetypeChunk = archetypeChunks[archetype][i]
+			local idList = archetypeChunk.entityIndexToId
+			local data = archetypeChunk.data
+
+			for j = 1, archetypeChunk.numEntities, 1 do
+				local offset = (j - 1) * archetypeChunk.entitySize + 1
+				-- callback(data, idList[j], offset, a3[1] + offset)
+				callback(data, idList[j], offset, a3.size + offset)
+			end											-- [1] is actually .size
+		end
 	end
 end
 
 local componentCache = {}
 -- local argumentCache = {}
 function EntityManager:forEach(id, callback)
+	-- get the function arguments and store them as an array of strings
 	if not componentCache[id] then
 		componentCache[id] = {}
 		-- argumentCache[id] = {}
 
 		local funcInfo = debug.getinfo(callback)
+		-- for k, v in pairs(funcInfo) do print(k, v) end
 		local i = 1
 		for j = 1, funcInfo.nparams, 1 do
 			-- print(debug.getlocal(callback, i))
@@ -202,7 +225,9 @@ function EntityManager:forEach(id, callback)
 		end
 	end
 
+	-- convert the array of strings into an archetypeString
 	local archetypeString = self:getArchetypeString(componentCache[id])
+	-- use the string to execute the callback on its respective archetype chunks
 	self:execute(componentCache[id], self.archetypes[archetypeString], callback)
 
 end

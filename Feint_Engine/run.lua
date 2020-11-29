@@ -130,7 +130,7 @@ function love.load()
 		})
 	end
 
-	-- [[
+	--[[
 	for i = 1, 1, 1 do
 		Feint.Thread.newWorker(i, nil)
 	end

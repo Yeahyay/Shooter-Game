@@ -58,6 +58,8 @@ end)
 -- ECS
 Feint.Paths.Add("ECS", Feint.Paths.Root .. "ECS") -- add path
 Feint.AddModule("ECS", function(self)
+	self.FFI_OPTIMIZATIONS = true
+
 	self.Util = require(Feint.Paths.ECS .. "ECSUtils") -- require components into table
 	self.EntityArchetype = require(Feint.Paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(Feint.Paths.ECS .. "EntityArchetypeChunk")
@@ -92,8 +94,8 @@ Feint.AddModule("Graphics", function(self)
 		self.ScreenSize = Feint.Math.Vec2.new(screenWidth, screenHeight)
 		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
 		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
-		print(self.ScreenToRenderRatio)
-		print(self.RenderToScreenRatio)
+		-- print(self.ScreenToRenderRatio)
+		-- print(self.RenderToScreenRatio)
 	end
 	self.Finalize()
 end)
