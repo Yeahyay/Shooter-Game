@@ -8,10 +8,10 @@ function EntityArchetype:init(components, ...)
 	assert(type(components) ~= "string", 1)
 	-- holds components for the archetype
 	self.components = components
-	self.componentData = {}
-	self.componentData_componentName = {}
-	self.componentData_fieldCount = {}
-	self.componentData_fieldName = {}
+	-- self.componentData = {}
+	-- self.componentData_componentName = {}
+	-- self.componentData_fieldCount = {}
+	-- self.componentData_fieldName = {}
 	self.archetypeString = nil
 	self.chunkCount = 0
 	self.numInstances = 0

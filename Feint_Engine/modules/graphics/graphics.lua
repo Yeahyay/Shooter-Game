@@ -17,12 +17,14 @@ setmetatable(graphics, {
 })
 
 -- local rect = love.graphics.newMesh(
--- 	{{0, 0, 0, 0}, {1, 0, 0, 0}, {1, 1, 0, 0}, {0, 1, 0,0}},
+-- 	{{0, 0, 0, 0}, {32, 0, 0, 0}, {32, 32, 0, 0}, {0, 32, 0,0}},
 -- 	"fan", "static")
 -- local rectSX, rectSY = 1, 1
 
 local rect = love.graphics.newImage("Assets/sprites/Test Texture 1.png")
 local rectSX, rectSY = rect:getDimensions()
+
+local rectBatch = love.graphics.newSpriteBatch(rect, nil, "stream")
 
 local ENUM_INITIALIZER
 do
@@ -93,6 +95,7 @@ end
 
 function private.clear()
 	graphics.drawQueueSize = 0
+	-- rectBatch:clear()
 end
 
 function private.draw()
@@ -109,8 +112,12 @@ function private.draw()
 			loveGraphics.draw(rect, math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
 				drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
 				rectSX / 2, rectSX / 2)
+			-- rectBatch:add(math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
+			-- 	drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
+			-- 	rectSX / 2, rectSX / 2)
 		end
 	end
+	love.graphics.draw(rectBatch, 0, 0, 0, 1, 1)
 end
 
 function private.getQueueSize()

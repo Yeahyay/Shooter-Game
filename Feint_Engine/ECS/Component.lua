@@ -3,10 +3,20 @@ local Component = ECSUtils.newClass("Component")
 
 local ffi = require("ffi")
 
+local typeSize = {
+	bool = ffi.sizeof("bool"),
+	int8_t = ffi.sizeof("int8_t"),
+	int16_t = ffi.sizeof("int16_t"),
+	int32_t = ffi.sizeof("int32_t"),
+	float = ffi.sizeof("float"),
+	double = ffi.sizeof("double")
+}
 function Component:init(data, ...)
 	self.keys = {}
 	self.values = {}
 	self.size = #data
+	self.sizeBytes = 0
+	self.trueSizeBytes = 0
 
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		local structMembers = {}
@@ -17,16 +27,24 @@ function Component:init(data, ...)
 				self.keys[#self.keys + 1] = k
 				self.values[#self.values + 1] = v
 
+				self.trueSizeBytes = self.trueSizeBytes + typeSize[dataType]
+
 				structMembers[#structMembers + 1] = dataType .. " " .. k
 			end
 		end
+
+		local padding = 0--math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
+		-- self.sizeBytes = ffi.sizeof(self.ffiType)
+		self.sizeBytes = self.trueSizeBytes + padding
+		-- print(self.trueSizeBytes, padding, self.sizeBytes)
 
 		ffi.cdef(string.format([[
 			#pragma pack(1)
 			struct component_%s {
 				%s
+				char padding[%s];
 			}
-		]], self.Name, table.concat(structMembers, ";\n") .. ";"))
+		]], self.Name, table.concat(structMembers, ";\n") .. ";", padding))
 		local ffiType = ffi.typeof("struct component_" .. self.Name)
 		self.ffiType = ffi.metatype(ffiType, {
 			__pairs = function(t)
@@ -40,22 +58,24 @@ function Component:init(data, ...)
 			end
 		})
 
-		self.sizeBytes = ffi.sizeof(self.ffiType)
 		-- print(self.sizeBytes)
 	else
-		self.sizeBytes = 40 -- all tables are hash tables
+		self.trueSizeBytes = 40 -- all tables are hash tables
 		for k, v in ipairs(data) do
 			for k, v in pairs(v) do
 				self.keys[#self.keys + 1] = k
 				self.values[#self.values + 1] = v
 				if type(k) == "number" then
-					self.sizeBytes = self.sizeBytes + 16 -- array
+					self.trueSizeBytes = self.trueSizeBytes + 16 -- array
 				else
-					self.sizeBytes = self.sizeBytes + 40 -- hash table
+					self.trueSizeBytes = self.trueSizeBytes + 40 -- hash table
 				end
 			end
 		end
 		-- self[1] = self.size
+		local padding = math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
+		self.sizeBytes = self.trueSizeBytes + padding
+		print(self.trueSizeBytes, padding, self.sizeBytes)
 	end
 end
 

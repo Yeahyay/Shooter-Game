@@ -12,7 +12,7 @@ function EntityChunk:init(archetype, ...)
 	self.entitySize = self.archetype.totalSize
 	self.entitySizeBytes = self.archetype.totalSizeBytes
 
-	self.capacityBytes = 131072 - 40
+	self.capacityBytes = 16384
 	self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
 	self.numEntities = 0
 
@@ -27,21 +27,30 @@ function EntityChunk:init(archetype, ...)
 		self.data = ffi.new(tp, self.archetype.initializer)
 	else
 		self.data = Feint.Util.Table.preallocate(self.capacity * self.archetype.totalSize, 0)
-	end
-	self.dataStatus = {}
-	self.dataAlive = 0
-
-	for i = 1, self.capacity do
-		-- self.data[i] = nil -- presize the table's hash portion
-		self.dataStatus[i] = false
+		self.dataStatus = Feint.Util.Table.preallocate(self.capacity)
+		self:preallocate(self.capacity)
 	end
 
-	self:preallocate(64)
+	-- self.dataStatus = {}
+	-- self.dataAlive = 0
 
 	self.dead = false
 
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
 	self.index = Feint.Math.random2(200)--self.archetype.chunkCount
+
+	local s = 40
+	for k, v in pairs(self) do
+		if type(k) == "string" then
+			s = s + 40
+		elseif type(k) == "number" then
+			s = s + 16
+		end
+	end
+	self.capacityBytes = self.capacityBytes - s
+	self.capacityBytes = math.floor(self.capacityBytes / 64) * 64
+	self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
+	-- print(self.capacityBytes, self.capacity * self.entitySizeBytes, self.capacity)
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1
@@ -51,8 +60,10 @@ function EntityChunk:remove()
 	self.dead = true
 end
 function EntityChunk:isFull()
-	-- return self.numEntities * self.entitySizeBytes >= self.capacityBytes - self.entitySizeBytes
 	return self.numEntities >= self.capacity
+end
+function EntityChunk:isFullBytes()
+	return self.numEntities * self.entitySizeBytes >= self.capacityBytes - self.entitySizeBytes
 end
 function EntityChunk:isEmpty()
 	return self.numEntities <= 0
@@ -70,17 +81,6 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 			Feint.Log.logln("Archetype chunk is full")
 		end
 		return nil
-	end
-	function EntityChunk:preallocate(num)
-		for j = 1, math.min(num, self.capacity), 1 do
-
-			-- for k, t, field in pairs(self.data[j]) do
-				-- print(k, t, field)
-			-- end
-
-			self.dataAlive = self.dataAlive + 1
-			self.dataStatus[self.dataAlive] = true
-		end
 	end
 else
 	function EntityChunk:newEntity(id)
@@ -126,8 +126,8 @@ else
 			-- self.entityIdToIndex[id] = dataOffset / self.entitySize
 			-- self.entityIndexToId[dataOffset / self.entitySize] = id
 			-- return dataOffset / self.archetype.entitySize
-			self.dataAlive = self.dataAlive + 1
-			self.dataStatus[self.dataAlive] = true
+			-- self.dataAlive = self.dataAlive + 1
+			-- self.dataStatus[self.dataAlive] = true
 		end
 	end
 end

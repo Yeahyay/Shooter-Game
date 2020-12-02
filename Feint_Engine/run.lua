@@ -33,25 +33,6 @@ function love.keypressed(key, ...)
 			{trueSizeX = 10 / 32},	-- 7
 			{trueSizeY = 10 / 32},	-- 8
 		})
-			--
-			-- entityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
-			-- 	-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
-			-- 	-- local x = Data[Transform]
-			-- 	-- local y = Data[Transform + 1]
-			-- 	local x = Feint.Math.random2(Feint.Graphics.RenderSize.x / 2)
-			-- 	local y = Feint.Math.random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)
-			-- 	local sizeX = Data[Transform + 3]
-			-- 	local sizeY = Data[Transform + 4]
-			-- 	local scaleX = Data[Transform + 5]
-			-- 	local scaleY = Data[Transform + 6]
-			-- 	local trueSizeX = scaleX / sizeX
-			-- 	local trueSizeY = scaleY / sizeY
-			--
-			-- 	Data[Transform] = x
-			-- 	Data[Transform + 1] = y
-			-- 	Data[Transform + 7] = trueSizeX
-			-- 	Data[Transform + 8] = trueSizeY
-			-- end)
 	end
 	if key == "a" then
 		local graphics = Feint.Graphics
@@ -84,7 +65,6 @@ function love.load()
 	-- World.DefaultWorld:registerSystem(Feint.ECS.System:new("testSystem1"))
 	-- World.DefaultWorld:registerSystem(Feint.ECS.System:new("testSystem2"))
 	-- World.DefaultWorld:generateUpdateOrderList()
-
 
 	Feint.Paths.Add("Game_ECS_Files", "src.ECS")
 	Feint.Paths.Add("Game_ECS_Bootstrap", Feint.Paths.Game_ECS_Files.."bootstrap", "file")
@@ -234,17 +214,18 @@ function love.update(dt)
 		end
 	end
 	--]]
-	if false and Feint.Run.rate > 0 then
-		local endTime = getTime() - startTime
-		Feint.Log.log("TIME: %9.6fms, %9.6f%% of frame time\n", endTime * 1000, endTime / (1 / 60) * 100)
-		avg = avg + endTime
-		avgTimes = avgTimes + 1
-		Feint.Log.log("AVG:  %9.6fms, %9.6f%% of frame time\n", avg / avgTimes * 1000, endTime / (1 / 60) * 100)
-	end
+
+	local endTime = getTime()
+
+	run.G_UPDATE_DT = endTime - startTime
+
+	run.G_UPDATE_TIME = run.G_UPDATE_TIME + (run.G_UPDATE_DT - run.G_UPDATE_TIME) * (1 - run.G_UPDATE_TIME_SMOOTHNESS)
+
+	run.G_UPDATE_TIME_PERCENT_FRAME = run.G_UPDATE_TIME / (run.rate) * 100
 end
 
 
-local DEFAULT_FONT = love.graphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 32)
+local DEFAULT_FONT = love.graphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
 local DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
 love.graphics.setFont(DEFAULT_FONT)
 
@@ -258,19 +239,19 @@ local fpsSum = 0
 local function getMemoryUsageKiB()
 	return collectgarbage("count") * (1000 / 1024)
 end
-local function getMemoryUsageKb()
-	return collectgarbage("count")
-end
+-- local function getMemoryUsageKb()
+-- 	return collectgarbage("count")
+-- end
 
 local canvas = love.graphics.newCanvas(Feint.Graphics.RenderSize.x, Feint.Graphics.RenderSize.y, {msaa = 0})
-local debug = love.graphics.newCanvas(Feint.Graphics.RenderSize.x, Feint.Graphics.RenderSize.y, {msaa = 0})
+-- local debug = love.graphics.newCanvas(Feint.Graphics.RenderSize.x, Feint.Graphics.RenderSize.y, {msaa = 0})
 
 local ui = Feint.UI.Immediate
 ui.Initialize()
 function love.draw(dt)
 	do
 		run.G_FPS_DELTA = run.G_FPS_DELTA + (run.dt - run.G_FPS_DELTA) * (1 - run.G_FPS_DELTA_SMOOTHNESS)
-		run.G_FPS = 1/ run.G_FPS_DELTA
+		run.G_FPS = 1 / run.G_FPS_DELTA
 	end
 
 	do
@@ -295,6 +276,8 @@ function love.draw(dt)
 	-- 	end
 	-- end
 
+	local startTime = getTime()
+
 	love.graphics.setCanvas(canvas)
 	love.graphics.clear()
 	love.graphics.push()
@@ -308,6 +291,16 @@ function love.draw(dt)
 	love.graphics.draw(canvas, 0, 0, 0, Feint.Graphics.RenderToScreenRatio.x, Feint.Graphics.RenderToScreenRatio.y, 0, 0)
 	-- love.graphics.draw(canvas, 0, 0, 0, 1, 1, 0, 0)
 
+	local endTime = getTime()
+
+	run.G_RENDER_DT = endTime - startTime
+
+	run.G_RENDER_TIME = run.G_RENDER_TIME + (run.G_RENDER_DT - run.G_RENDER_TIME) * (1 - run.G_RENDER_TIME_SMOOTHNESS)
+
+	run.G_RENDER_TIME_PERCENT_FRAME = run.G_RENDER_TIME / (run.rate) * 100
+
+
+	-- FPS
 	love.graphics.printf(
 		string.format("FPS:      %7.2f, DT:      %7.4fms\n",
 		run.G_FPS, 1000 * run.G_FPS_DELTA), 0, 0, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
@@ -319,6 +312,34 @@ function love.draw(dt)
 		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.dt, 1000 * run.dt),
 		0, DEFAULT_FONT_HEIGHT / 2 * 2, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
+
+	-- UPDATE TIME
+	love.graphics.printf(
+		string.format("UPDATE:     %8.4fms, %%%6.2f Frame\n", 1000 * run.G_UPDATE_TIME, run.G_UPDATE_TIME_PERCENT_FRAME),
+		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+	love.graphics.printf(
+		string.format("UPDATE AVG: %8.4fms, %%%6.2f Frame\n", 0, 0),
+		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+	love.graphics.printf(
+		string.format("UPDATE TRUE:%8.4fms, %%%6.2f Frame\n", 1000 * run.G_UPDATE_DT, run.G_UPDATE_DT / (run.rate) * 100),
+		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+	-- RENDER TIME
+	love.graphics.printf(
+		string.format("RENDER:     %8.4fms, %%%6.2f Frame\n", 1000 * run.G_RENDER_TIME, run.G_RENDER_TIME_PERCENT_FRAME),
+		350, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+	love.graphics.printf(
+		string.format("RENDER AVG: %8.4fms, %%%6.2f Frame\n", 0, 0),
+		350, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+	love.graphics.printf(
+		string.format("RENDER TRUE:%8.4fms, %%%6.2f Frame\n", 1000 * run.G_RENDER_DT, run.G_RENDER_DT / (run.rate) * 100),
+		350, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+
 
 	-- love.graphics.printf(
 	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", run.G_TPS, 1000 * run.G_TPS_DELTA),
@@ -333,22 +354,24 @@ function love.draw(dt)
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 
+	-- MEMORY
 	love.graphics.printf(string.format("Memory Usage (MiB):   %12.2f", getMemoryUsageKiB() / 1024),
-		0, DEFAULT_FONT_HEIGHT / 2 * 4, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 8, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	love.graphics.printf(string.format("Memory Usage (KiB):   %12.2f", getMemoryUsageKiB()),
-		0, DEFAULT_FONT_HEIGHT / 2 * 5, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 9, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	love.graphics.printf(string.format("Memory Usage (bytes): %12.2f", getMemoryUsageKiB() * 1024),
-		0, DEFAULT_FONT_HEIGHT / 2 * 6, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 10, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
+	-- DRAWING
 	local stats = love.graphics.getStats()
 	love.graphics.printf(string.format("Draw calls: %d", stats.drawcalls),
-		0, DEFAULT_FONT_HEIGHT / 2 * 7, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 12, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	love.graphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
-		0, DEFAULT_FONT_HEIGHT / 2 * 8, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 13, Feint.Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 end
 function love.quit()

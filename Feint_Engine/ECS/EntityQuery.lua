@@ -3,6 +3,7 @@ local EntityQuery = {}
 function EntityQuery:init(with, withCount, withall, withallCount, without, withoutCount)
 	self.components = withall
 
+	--[[
 	-- printf("Built entity query with %d elements\n", #self.components)
 	local componentNames = {}
 	for i = 1, #self.components, 1 do
@@ -14,8 +15,12 @@ function EntityQuery:init(with, withCount, withall, withallCount, without, witho
 		-- table.concat(self.componentsExclude, ", ")
 	):gsub("0", "_")
 	printf(string)
+	--]]
 end
 function EntityQuery:getArchetypeChunks(archetypeChunks)
+	for k, v in pairs(archetypeChunks) do
+		print(k.archetypeString, v)
+	end
 	-- for k, v in pairs(self.components) do print(k, v) end
 	-- print(#self.components)
 end

@@ -150,9 +150,9 @@ function EntityManager:setComponentData(entity, component, data)
 	end
 end
 
-function EntityManager:buildQuery(arguments, componentsCount)
+function EntityManager:buildQuery(components, componentsCount)
 	local queryBuilder = self.EntityQueryBuilder
-	local query = queryBuilder:withAll(arguments):build();
+	local query = queryBuilder:withAll(components):build();
 	return query
 end
 
@@ -161,6 +161,7 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 		-- printf("Calling function on entities\n")
 		local archetypeChunks = self.archetypeChunks
 		local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
+		local a3Name, a4Name = a3.Name, a4.Name
 
 		for i = 1, self.archetypeChunksCount[archetype], 1 do
 			local archetypeChunk = archetypeChunks[archetype][i]
@@ -169,9 +170,8 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 
 			-- printf("chunk %d: %s\n", i, archetypeChunk.data[19].Transform.x)
 			for j = 0, archetypeChunk.numEntities - 1, 1 do
-				local id = idList[j + 1]
 				-- printf("  x: %f\n  index: %s, id: %s\n", data[j][a4.Name].x, j, id)
-				callback(data, id, data[j][a3.Name], data[j][a4.Name])
+				callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
 			end
 		end
 	end
@@ -224,6 +224,9 @@ function EntityManager:forEach(id, callback)
 			end
 		end
 	end
+
+	local query = self:buildQuery(componentCache[id])
+	query:getArchetypeChunks(self.archetypeChunks)
 
 	-- convert the array of strings into an archetypeString
 	local archetypeString = self:getArchetypeString(componentCache[id])

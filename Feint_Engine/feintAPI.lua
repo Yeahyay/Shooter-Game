@@ -158,6 +158,16 @@ do
 		self.G_DEBUG = false
 		-- G_TIMER = 0
 
+		self.G_UPDATE_TIME_PERCENT_FRAME = 0
+		self.G_UPDATE_DT = 0
+		self.G_UPDATE_TIME = 0
+		self.G_UPDATE_TIME_SMOOTHNESS = 0.975
+
+		self.G_RENDER_TIME_PERCENT_FRAME = 0
+		self.G_RENDER_DT = 0
+		self.G_RENDER_TIME = 0
+		self.G_RENDER_TIME_SMOOTHNESS = 0.975
+
 		self.G_FPS = 0
 		self.G_FPS_DELTA = 0
 		self.G_FPS_DELTA_SMOOTHNESS = 0.975
