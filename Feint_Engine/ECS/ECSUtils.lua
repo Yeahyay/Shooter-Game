@@ -49,7 +49,7 @@ function ECSUtils.new(super, objType, --[[name,]] ...)
 			return newInstance:new(--[[name,]] ...)
 		end,
 		__tostring = function()
-			return string.format("%s %s (%s)", objType, --[[newInstance.Name]] "null", newInstance.string)
+			return string.format("%s %s (%s)", objType, --[[newInstance.Name]] "nil", newInstance.string)
 		end
 	})
 

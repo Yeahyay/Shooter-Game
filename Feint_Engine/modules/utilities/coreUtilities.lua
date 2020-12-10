@@ -36,6 +36,13 @@ function coreUtilities.type(obj)
 	end
 end
 
+function coreUtilities.getMemoryUsageKiB()
+	return collectgarbage("count") * (1000 / 1024)
+end
+function coreUtilities.getMemoryUsageKb()
+	return collectgarbage("count")
+end
+
 -- make this better lmao
 -- luacheck: push ignore
 function coreUtilities.overloaded()

@@ -7,7 +7,7 @@ local tickModule = {
 	accum = 0,
 	tick = 1,
 	frame = 1,
-	pause = false
+	pause = true
 }
 
 local timer = love.timer

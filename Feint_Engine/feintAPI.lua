@@ -144,11 +144,14 @@ end)
 
 -- LIB
 do
+	-- Feint.AddModule("UI", function(self)
+	-- end)
 	local Slab = require(Feint.Paths.Lib .. "Slab-0_6_3.Slab")
 	Feint.AddModule("UI", function(self)
 		self.Immediate = setmetatable({}, {
 			__index = Slab
 		})
+		-- self.require(Feint.Paths.Lib .. "Slab-0_6_3.Slab")
 		self.Finalize()
 	end)
 
