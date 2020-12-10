@@ -57,7 +57,7 @@ end
 
 function EntityManager:getArchetypeString(arguments)
 	local stringTable = {}
-	assert(arguments, 3, "no arguments")
+	assert(arguments, "no arguments", 3)
 	for i = 1, #arguments do
 		local v = arguments[i]
 		if v.componentData then
@@ -90,8 +90,8 @@ end
 function EntityManager:getNextArchetypeChunk(archetype)
 	local currentArchetypeChunkTable = self:getArchetypeChunkTable(archetype)
 	-- print(archetype)
-	assert(self.archetypes[archetype.archetypeString], 2,
-		string.format("Archetype %s does not exist", archetype.archetypeString))
+	assert(self.archetypes[archetype.archetypeString],
+		string.format("Archetype %s does not exist", archetype.archetypeString), 2)
 	local currentArchetypeChunkTableCount = self.archetypeChunksCount[archetype]
 
 	local currentArchetypeChunk = currentArchetypeChunkTable[currentArchetypeChunkTableCount]
@@ -118,7 +118,9 @@ function EntityManager:CreateEntity(archetype)
 	-- print(archetype)
 	-- Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
+	assert(archetypeChunk)
 	local id = self:getNewEntityId()
+	assert(id)
 	-- assosciate the entity id with its respective chunk
 	self.entities[id] = {archetypeChunk, archetypeChunk.entityIdToIndex[id]}
 	archetypeChunk:newEntity(id)
@@ -142,6 +144,16 @@ end
 
 function EntityManager:setComponentData(entity, component, data)
 	local archetypeChunk = self:getArchetypeChunkFromEntity(entity)
+	print(archetypeChunk.data)
+	for i = 1, archetypeChunk.numEntities, 1 do
+		for k, v in pairs(archetypeChunk.archetype.components) do
+			print(archetypeChunk.data)
+		end
+	end
+	print(entity)
+	for k, v in pairs(self.entities[entity]) do
+		print(k, v)
+	end
 	local index = self:getArchetypeChunkEntityIndexFromEntity(entity)
 	local archetypeChunkData = archetypeChunk.data
 	-- local offset =
@@ -214,7 +226,7 @@ function EntityManager:forEach(id, callback)
 			if componentName ~= "Data" and componentName ~= "Entity" then
 				local component = self.World.components[componentName]
 				if component.componentData then
-					assert(component, 2, string.format("arg %d (%s) is not a component", i, componentName))
+					assert(component, string.format("arg %d (%s) is not a component", i, componentName), 2)
 					componentCache[id][i] = component
 					i = i + 1
 				end

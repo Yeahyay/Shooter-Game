@@ -50,7 +50,7 @@ function private.LoadCore(name)
 end
 
 function private.LoadModule(name)
-	assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+	assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)), 2)
 	local module = private.Modules[name] -- checks if module exists
 	if module then
 		log("Loading module %s\n", name)
@@ -75,7 +75,7 @@ function private.AddModule(name, setupFunc)
 		if getmetatable(newPrivate) then
 			error(string.format("Module '%s' is already loaded with data", name))
 		else
-			assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
+			assert(type(name) == "string", exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)), 2)
 			newPrivate.private = require(name, ...)
 			setmetatable(newPrivate, {
 				__index = newPrivate.private,

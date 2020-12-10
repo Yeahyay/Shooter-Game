@@ -4,7 +4,7 @@ local ECSutils = Feint.ECS.Util
 
 local EntityChunk = ECSutils.newClass("EntityChunk")
 function EntityChunk:init(archetype, ...)
-	assert(Feint.Util.Core.type(archetype) == "table", 1, "EntityArchetypeChunk needs an archetype")
+	assert(Feint.Util.Core.type(archetype) == "table", "EntityArchetypeChunk needs an archetype", 1)
 	self.archetype = archetype
 	self.Name = archetype.Name.."_ArchetypeChunk"
 	self.isFull_cached = false
@@ -72,7 +72,7 @@ end
 if Feint.ECS.FFI_OPTIMIZATIONS then
 	function EntityChunk:newEntity(id)
 		if not self:isFull() then
-			assert(type(id) == "number" and id >= 0, 3, "new entity expects a number")
+			assert(type(id) == "number" and id >= 0, "new entity expects a number", 3)
 			self.numEntities = self.numEntities + 1
 			self.entityIdToIndex[id] = self.numEntities
 			self.entityIndexToId[self.numEntities] = id
@@ -85,7 +85,7 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 else
 	function EntityChunk:newEntity(id)
 		if not self:isFull() then
-			assert(type(id) == "number" and id >= 0, 3, "new entity expects a number")
+			assert(type(id) == "number" and id >= 0, "new entity expects a number", 3)
 			local dataOffset = self.numEntities * self.entitySize
 			for archetyeComponentIndex = 1, #self.archetype.components, 1 do
 				local component = self.archetype.components[archetyeComponentIndex]

@@ -5,7 +5,7 @@ local ECSutils = Feint.ECS.Util
 local EntityArchetype = ECSutils.newClass("EntityArchetype")
 
 function EntityArchetype:init(components, ...)
-	assert(type(components) ~= "string", 1)
+	assert(type(components) ~= "string", nil, 1)
 	-- holds components for the archetype
 	self.components = components
 	-- self.componentData = {}

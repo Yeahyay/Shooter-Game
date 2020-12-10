@@ -107,12 +107,12 @@ end
 
 do
 	local _assert = assert
-	function assert(condition, level, message)
-		if type(level) ~= "number" then
+	function assert(condition, message, level)
+		if level ~= nil and type(level) ~= "number" then
 			error(Feint.Util.Exceptions.BAD_ARG_ERROR(1, "level", "number", type(level)), 2)
 		end
 		if not condition then
-			error(message, level)
+			error(message, level or 1)
 		end
 	end
 end
@@ -187,7 +187,7 @@ function coreUtilities.requireEnv(env, directory, ...)
 			loader = loaderFunction(directory)
 			if type(loader) == "function" then break end
 		end
-		assert(type(loader) == "function", 2, loader or "cannot find file")
+		assert(type(loader) == "function", loader or "cannot find file", 1)
 		local status, msg = pcall(function()
 			setfenv(loader, env)
 		end)

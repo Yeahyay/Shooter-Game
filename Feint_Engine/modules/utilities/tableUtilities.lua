@@ -45,7 +45,7 @@ end
 -- luacheck: pop ignore
 
 function tableUtilities.makeTableReadOnly(table, callback)
-	assert(getmetatable(table), 2, "table must have a metatable")
+	assert(getmetatable(table), "table must have a metatable", 2)
 	local mt = getmetatable(table)
 	if mt then
 		mt.__newindex = function(t, k, v)
