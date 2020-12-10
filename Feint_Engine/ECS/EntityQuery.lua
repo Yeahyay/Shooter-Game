@@ -18,9 +18,9 @@ function EntityQuery:init(with, withCount, withall, withallCount, without, witho
 	--]]
 end
 function EntityQuery:getArchetypeChunks(archetypeChunks)
-	for k, v in pairs(archetypeChunks) do
-		print(k.archetypeString, v)
-	end
+	-- for k, v in pairs(archetypeChunks) do
+	-- 	print(k.archetypeString, v)
+	-- end
 	-- for k, v in pairs(self.components) do print(k, v) end
 	-- print(#self.components)
 end

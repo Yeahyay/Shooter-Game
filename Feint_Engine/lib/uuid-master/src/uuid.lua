@@ -41,7 +41,7 @@ local MATRIX_OR = {{0,1},{1,1}}
 local HEXES = '0123456789abcdef'
 
 local math_floor = math.floor
-local math_random = love.math.random
+local math_random = math.random
 local math_abs = math.abs
 local string_sub = string.sub
 local to_number = tonumber

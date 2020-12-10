@@ -12,25 +12,34 @@ local typeSize = {
 	double = ffi.sizeof("double")
 }
 function Component:init(data, ...)
-	self.keys = {}
-	self.values = {}
 	self.size = #data
 	self.sizeBytes = 0
 	self.trueSizeBytes = 0
 
 	if Feint.ECS.FFI_OPTIMIZATIONS then
+		self.data = data
 		local structMembers = {}
-		for k, v in ipairs(data) do
-			for k, v in pairs(v) do
-				local dataType = type(v)
+		for k, v in pairs(data) do
+			-- for k, v in pairs(v) do
+			local dataType = type(v)
+			if dataType == "string" then
+				dataType = "char"
+				local arraySize = v:len()
+
+				self.trueSizeBytes = self.trueSizeBytes + arraySize
+				structMembers[#structMembers + 1] = dataType .. " " .. k .. "[" .. arraySize .. "]"
+				print(structMembers[#structMembers])
+			else
 				dataType = dataType == "number" and "float" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
-				self.keys[#self.keys + 1] = k
-				self.values[#self.values + 1] = v
-
 				self.trueSizeBytes = self.trueSizeBytes + typeSize[dataType]
-
 				structMembers[#structMembers + 1] = dataType .. " " .. k
 			end
+			-- 	self.keys[#self.keys + 1] = k
+			-- 	self.values[#self.values + 1] = v
+			--
+			--
+			-- end
+			-- print(k, v)
 		end
 
 		local padding = 0--math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
@@ -40,11 +49,11 @@ function Component:init(data, ...)
 
 		ffi.cdef(string.format([[
 			#pragma pack(1)
-			struct component_%s {
+			struct %s {
 				%s
 				char padding[%s];
 			}
-		]], self.Name, table.concat(structMembers, ";\n") .. ";", padding))
+		]], self.ComponentName, table.concat(structMembers, ";\n") .. ";", padding))
 		local ffiType = ffi.typeof("struct component_" .. self.Name)
 		self.ffiType = ffi.metatype(ffiType, {
 			__pairs = function(t)
@@ -60,6 +69,8 @@ function Component:init(data, ...)
 
 		-- print(self.sizeBytes)
 	else
+		self.keys = {}
+		self.values = {}
 		self.trueSizeBytes = 40 -- all tables are hash tables
 		for k, v in ipairs(data) do
 			for k, v in pairs(v) do
@@ -82,6 +93,7 @@ end
 function Component:new(name, data, ...)
 	local instance = {
 		Name = name or "?",
+		ComponentName = "component_" .. (name or "?"),
 		componentData = true,
 	}
 	setmetatable(instance, {

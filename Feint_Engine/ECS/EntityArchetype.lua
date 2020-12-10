@@ -68,11 +68,11 @@ function EntityArchetype:createArchetype()
 		self.initValues = {}
 		for i = 1, #self.components, 1 do
 			local name = self.components[i].Name
-			self.initValues[name] = {}
-			for k, v in ipairs(self.components[i].values) do
-				local field = self.components[i].keys[k]
-				self.initValues[name][field] = v
-			end
+			self.initValues[name] = self.components[i].data --{}
+			-- for k, v in ipairs(self.components[i].values) do
+			-- 	local field = self.components[i].keys[k]
+			-- 	self.initValues[name][field] = v
+			-- end
 		end
 		self.initializer = ffi.new("struct archetype_" .. self.archetypeString, self.initValues)
 	end

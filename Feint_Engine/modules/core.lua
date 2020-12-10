@@ -14,12 +14,20 @@ local private = {
 	Modules = {},
 }
 setmetatable(private, {
-	__index = private.Modules
+	__index = function(t, k)
+		local v = private.Modules[k]
+		if v.Loaded then
+			return v
+		else
+			error(string.format("Module \"%s\" is not loaded\n", k), 2)
+		end
+	end
 })
 setmetatable(core, {
 	__index = private,
 	-- __mode = "kv"
 })
+
 
 local exceptions = require("Feint_Engine.modules.utilities.exceptions")
 
@@ -33,6 +41,7 @@ function printf(format, ...)
 end
 
 local function log(...)
+	print(getfenv(2))
 	printf("core_%s: ", _ENV._NAME:lower())
 	printf(...)
 end
@@ -40,7 +49,7 @@ end
 function private.LoadCore(name)
 	print(name)
 	assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
-	local module = private.Modules[name] -- checks if module exists
+	local module = private.GetModule(name) -- checks if module exists
 	if module then
 		module.setup()
 		if module.init then
@@ -54,6 +63,7 @@ function private.LoadModule(name)
 	local module = private.Modules[name] -- checks if module exists
 	if module then
 		log("Loading module %s\n", name)
+		module.Loaded = true
 		module.setup()
 		if module.init then
 			module.init()
@@ -63,11 +73,16 @@ function private.LoadModule(name)
 	end
 end
 
+function private.GetModule(name)
+	return private.Modules[name]
+end
+
 function private.AddModule(name, setupFunc)
 	assert(type(name) == "string", 2, exceptions.BAD_ARG_ERROR(1, "name", "string", type(name)))
 	-- log("Adding module %s\n", name)
 	local newModule = {
 		Name = name,
+		Loaded = false,
 	}
 
 	local newPrivate = {} -- closure to a module's private state

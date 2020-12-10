@@ -2,6 +2,26 @@ local args = {...}
 
 local FEINT_ROOT = args[1]:gsub("feintAPI", "")
 
+-- require("love.audio")
+-- require("love.data")
+-- require("love.event")
+-- require("love.filesystem")
+-- require("love.font")
+-- require("love.graphics")
+-- require("love.image")
+-- require("love.joystick")
+-- require("love.keyboard")
+-- require("love.math")
+-- require("love.mouse")
+-- require("love.physics")
+-- require("love.sound")
+-- require("love.system")
+-- require("love.thread")
+-- require("love.timer")
+-- require("love.touch")
+-- require("love.video")
+-- require("love.window")
+
 --[[ CREATE A MODULE SYSTEM
 eacg module can have submodules
 every module, including submodules, can have dependencies
@@ -33,6 +53,7 @@ Feint.LoadModule("Paths")
 -- UTIL
 Feint.Paths.Add("Util", Feint.Paths.Modules .. "utilities")
 Feint.AddModule("Util", function(self)
+	require("love.timer")
 	-- UTIL LIBRARIES
 	self.Class = require(Feint.Paths.Lib .. "30log-master.30log-clean")
 	self.Memoize = require(Feint.Paths.Lib .. "memoize-master.memoize")
@@ -51,6 +72,7 @@ end)
 -- THREADING
 Feint.Paths.Add("Thread", Feint.Paths.Modules .. "threading")
 Feint.AddModule("Thread", function(self)
+	require("love.system")
 	self.require(Feint.Paths.Thread .. "thread")
 	self.Finalize()
 end)
@@ -85,6 +107,8 @@ end)
 -- GRAPHICS
 Feint.Paths.Add("Graphics", Feint.Paths.Modules .. "graphics")
 Feint.AddModule("Graphics", function(self)
+	require("love.window")
+	require("love.graphics")
 	self.require(Feint.Paths.Graphics .. "graphics")
 	do
 		local width, height, flags = love.window.getMode() -- luacheck: ignore
@@ -194,17 +218,34 @@ do
 	end)
 end
 
-getmetatable(Feint).__newindex = function(t, k, v)
+local mt = getmetatable(Feint)
+mt.__newindex = function(t, k, v)
 	if t[k] then
 		t[k] = v
 	else
 		error(string.format("Module \"%s\" does not exist in Feint\n", k))
 	end
 end
+-- local getModule = Feint.GetModule
+-- mt.__index = function(t, k)
+-- 	local tb = getModule(k)
+-- 	print(tb, t, k, rawget(t, k))
+-- 	if tb then
+-- 		if tb.Loaded then
+-- 			return rawget(t, k)
+-- 		else
+-- 			error(string.format("Module \"%s\" is not loaded\n", k))
+-- 		end
+-- 	else
+-- 		return rawget(t, k)
+-- 	end
+-- end
+
+-- print(Feint.Graphics)
 
 -- DEFAULT MODULES
 Feint.LoadModule("Util")
-Feint.LoadModule("Math")
 Feint.LoadModule("Log")
 Feint.LoadModule("Run")
+Feint.LoadModule("Math")
 Feint.LoadModule("Thread")

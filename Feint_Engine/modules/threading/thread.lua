@@ -31,7 +31,7 @@ end
 function thread.startWorker(threadID, ...)
 	-- print(workers[threadID].thread)
 	local threadObject = workers[threadID]
-	threadObject.thread:start(threadObject, ...)
+	threadObject.thread:start(string.dump(_G.initEnv), threadObject, ...)
 end
 
 return thread

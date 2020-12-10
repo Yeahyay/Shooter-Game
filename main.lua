@@ -19,53 +19,55 @@ print(luaInfo())
 print(love.getVersion())
 print()
 
--- luacheck: globals defaultGlobals defaultPackages defaultAll
-defaultGlobals = {}
-for k, v in pairs(_G) do
-	defaultGlobals[k] = v
-end
-defaultPackages = {}
-for k, v in pairs(package.loaded) do
-	defaultPackages[k] = v
-end
-defaultAll = {}
-for k, v in pairs(_G) do
-	if string.match(k, "default") then
-		-- print(k)
-		for k, v in pairs(v) do
-			defaultAll[k] = v
-		end
-	end
-end
-
 local PATH = love.filesystem.getSource()
 local SAVEDIR = love.filesystem.getSaveDirectory()
 print("PATH: "..PATH)
 print("SAVEDIR: "..SAVEDIR)
 print()
 
--- require("PepperFishProfiler")
-PROFILER = nil--newProfiler()
-
--- luacheck: new globals
-DEBUG_LEVEL = 0
-_ENV = _G
-_ENV_LAST = _G
-_TYPE = "SOURCE" -- or MODULE
-_LAYER = 0
-_REQUIRE_SILENT = false
-_NAME = "THREAD_00"
-
-function math.clamp(x, min, max)
-	return math.max(math.min(x, max), min)
+-- luacheck: globals initEnv
+function initEnv(id)
+	local fenv = getfenv(2)
+	fenv.defaultGlobals = {}
+	for k, v in pairs(_G) do
+		fenv.defaultGlobals[k] = v
+	end
+	fenv.defaultPackages = {}
+	for k, v in pairs(package.loaded) do
+		fenv.defaultPackages[k] = v
+	end
+	fenv.defaultAll = {}
+	for k, v in pairs(_G) do
+		if string.match(k, "default") then
+			-- print(k)
+			for k, v in pairs(v) do
+				fenv.defaultAll[k] = v
+			end
+		end
+	end
+	fenv._DEBUG_LEVEL = 0
+	fenv._ENV = _G
+	fenv._ENV_LAST = _G
+	fenv._TYPE = "SOURCE" -- or MODULE
+	fenv._LAYER = 0
+	fenv._REQUIRE_SILENT = false
+	fenv._NAME = string.format("THREAD_%02d", id)
 end
+
+-- require("PepperFishProfiler")
+-- PROFILER = nil--newProfiler()
+
+initEnv(0)
 
 do
 	local printOld = print
-	function print(...)
+	function print(...) -- luacheck: ignore
 		printOld("OLD PRINT", ...)
 	end
 end
 
 -- BOOTSTRAP
-FeintEngine = require("Feint_Engine.bootstrap")
+
+require("Feint_Engine.init")
+
+require(Feint.Paths.Root.."run")

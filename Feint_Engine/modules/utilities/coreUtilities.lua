@@ -199,7 +199,7 @@ function coreUtilities.requireEnv(env, directory, ...)
 			setfenv(loader, env)
 		end)
 		if not status then
-			log("Error in requireEnv: %s. It's probably a thread.\n", msg)
+			printf("Error in requireEnv: %s. It's probably a thread.\n", msg)
 		end
 		data = loader(directory, ...)
 		-- data = coreUtilities.loadChunk(env, directory)()
