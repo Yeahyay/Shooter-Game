@@ -2,21 +2,38 @@
 local System = Feint.ECS.System
 local World = Feint.ECS.World
 
-World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
-	{visible = true},
-}))
-
-World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
-	{x = 100},						-- 0
-	{y = 0},						-- 1
-	{angle = 0},				-- 2
-	{sizeX = 32},				-- 3
-	{sizeY = 32},				-- 4
-	{scaleX = 10},				-- 5
-	{scaleY = 10},				-- 6
-	{trueSizeX = 10 / 32},	-- 7
-	{trueSizeY = 10 / 32},	-- 8
-}))
+if Feint.ECS.FFI_OPTIMIZATIONS then
+	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
+		visible = true,
+		id = Feint.Util.UUID.new()
+	}))
+	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
+		x = 0,						-- 0
+		y = 0,						-- 1
+		angle = 0,					-- 2
+		sizeX = 32,					-- 3
+		sizeY = 32,					-- 4
+		scaleX = 16,				-- 5
+		scaleY = 16,				-- 6
+		trueSizeX = 16 / 32,		-- 7
+		trueSizeY = 16 / 32,		-- 8
+	}))
+else
+	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
+		{visible = true},
+	}))
+	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
+		{x = 0},						-- 0
+		{y = 0},						-- 1
+		{angle = 0},				-- 2
+		{sizeX = 32},				-- 3
+		{sizeY = 32},				-- 4
+		{scaleX = 16},				-- 5
+		{scaleY = 16},				-- 6
+		{trueSizeX = 16 / 32},	-- 7
+		{trueSizeY = 16 / 32},	-- 8
+	}))
+end
 
 local RenderSystem = System:new("RenderSystem")
 function RenderSystem:init(...)
@@ -38,10 +55,11 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
-	for i = 1, 10000, 1 do
+	for i = 1, 1000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 
+	local rect = Feint.Graphics.rectangle
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- print(Data[Entity], Entity)
@@ -49,6 +67,10 @@ function RenderSystem:start()
 			Transform.y = random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)
 			Transform.trueSizeX = Transform.scaleX / Transform.sizeX
 			Transform.trueSizeY = Transform.scaleY / Transform.sizeY
+
+			local trueSizeX = Transform.trueSizeX
+			local trueSizeY = Transform.trueSizeY
+			rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
 		end)
 	else
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
@@ -57,6 +79,7 @@ function RenderSystem:start()
 			-- local y = Data[Transform + 1]
 			local x = random2(Feint.Graphics.RenderSize.x / 2)
 			local y = random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)
+			local angle = Data[Transform + 2]
 			local sizeX = Data[Transform + 3]
 			local sizeY = Data[Transform + 4]
 			local scaleX = Data[Transform + 5]
@@ -68,6 +91,8 @@ function RenderSystem:start()
 			Data[Transform + 1] = y
 			Data[Transform + 7] = trueSizeX
 			Data[Transform + 8] = trueSizeY
+
+			rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
 		end)
 	end
 end
@@ -81,7 +106,7 @@ function RenderSystem:update(dt)
 		px, py = input.mouse.Position.x, input.mouse.Position.y
 		local angle = Feint.Util.Core.getTime()
 		local rect = Feint.Graphics.rectangleInt
-		rect(lx, ly, angle, px, py, angle, 1, 1)
+		-- rect(lx, ly, angle, px, py, angle, 1, 1)
 		-- local rect = Feint.Graphics.rectangle
 		-- rect(px, py, angle, 1, 1)
 	end
@@ -96,10 +121,10 @@ function RenderSystem:update(dt)
 				Transform.x = Transform.x + sin(time * 2 + Entity * 0.25) * 0.5
 				Transform.y = Transform.y + cos(time * 2 + Entity * 0.25) * 0.5
 
-				local trueSizeX = Transform.trueSizeX
-				local trueSizeY = Transform.trueSizeY
+				-- local trueSizeX = Transform.trueSizeX
+				-- local trueSizeY = Transform.trueSizeY
 
-				rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
+				-- rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
 			end)
 		else
 			local sin, cos, pi = math.sin, math.cos, math.pi
@@ -109,10 +134,10 @@ function RenderSystem:update(dt)
 					local x = Data[Transform]
 					local y = Data[Transform + 1]
 					local angle = Data[Transform + 2]
-					local trueSizeX = Data[Transform + 7]
-					local trueSizeY = Data[Transform + 8]
+					-- local trueSizeX = Data[Transform + 7]
+					-- local trueSizeY = Data[Transform + 8]
 
-					rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
+					-- rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
 
 					angle = angle + 1 / 60 * pi + Entity
 

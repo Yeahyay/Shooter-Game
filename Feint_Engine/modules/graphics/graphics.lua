@@ -2,6 +2,10 @@ local graphics = {}
 
 local private = {}
 
+graphics.addQueue = {}
+graphics.addQueueSize = 0
+graphics.removeQueue = {}
+graphics.removeQueueSize = 0
 graphics.drawQueue = {}
 graphics.drawQueueSize = 0
 graphics.queueSize = 0
@@ -22,7 +26,7 @@ setmetatable(graphics, {
 -- local rectSX, rectSY = 1, 1
 
 local rect = love.graphics.newImage("Assets/sprites/Test Texture 1.png")
-local rectSX, rectSY = rect:getDimensions()
+local rectSX, rectSY = rect:getWidth() / 2, rect:getHeight() / 2
 
 local rectBatch = love.graphics.newSpriteBatch(rect, nil, "stream")
 
@@ -53,12 +57,12 @@ function private.init()
 	renderSize = Feint.Graphics.RenderSize
 end
 function private.rectangle(x, y, angle, width, height)
-	graphics.drawQueueSize = graphics.drawQueueSize + 1
-	local size = graphics.drawQueueSize
-	local obj = graphics.drawQueue[size]
+	graphics.addQueueSize = graphics.addQueueSize + 1
+	local size = graphics.addQueueSize
+	local obj = graphics.addQueue[size]
 	if not obj then
 		obj = {}
-		graphics.drawQueue[size] = obj
+		graphics.addQueue[size] = obj
 		graphics.queueSize = graphics.queueSize + 1
 	end
 	obj[ENUM_INTERPOLATE_X] = x
@@ -74,12 +78,12 @@ function private.rectangle(x, y, angle, width, height)
 end
 
 function private.rectangleInt(lx, ly, lr, x, y, angle, width, height)
-	graphics.drawQueueSize = graphics.drawQueueSize + 1
-	local size = graphics.drawQueueSize
-	local obj = graphics.drawQueue[size]
+	graphics.addQueueSize = graphics.addQueueSize + 1
+	local size = graphics.addQueueSize
+	local obj = graphics.addQueue[size]
 	if not obj then
 		obj = {}
-		graphics.drawQueue[size] = obj
+		graphics.addQueue[size] = obj
 	end
 	obj[ENUM_INTERPOLATE_X] = lx
 	obj[ENUM_INTERPOLATE_Y] = renderSize.y - ly
@@ -94,29 +98,58 @@ function private.rectangleInt(lx, ly, lr, x, y, angle, width, height)
 end
 
 function private.clear()
-	graphics.drawQueueSize = 0
+	-- graphics.drawQueueSize = 0
 	-- rectBatch:clear()
 end
 
-function private.draw()
+function private.processAddQueue()
 	local loveGraphics = love.graphics
+	for i = 1, graphics.addQueueSize, 1 do
+		local drawCall = graphics.addQueue[i]
+		local interX, interY = drawCall[ENUM_INTERPOLATE_X], drawCall[ENUM_INTERPOLATE_Y]
+		local transformX, transformY = drawCall[ENUM_TRANSFORM_X], drawCall[ENUM_TRANSFORM_Y]
+
+		-- local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
+		local dx, dy = transformX, transformY
+
+		-- loveGraphics.draw(rect, math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
+		-- 	drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
+		-- 	rectSX, rectSX)
+		rectBatch:add(math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
+			drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
+			rectSX, rectSX)
+
+		graphics.drawQueueSize = graphics.drawQueueSize + 1
+		graphics.drawQueue[graphics.drawQueueSize] = graphics.addQueue[i]
+		graphics.addQueue[i] = nil
+	end
+	graphics.addQueueSize = 0
+end
+
+function private.processQueue()
+	local loveGraphics = love.graphics
+	local time = Feint.Util.Core.getTime()
+	local oscillate = Feint.Math.oscillateManualSigned
 	for i = graphics.drawQueueSize, 1, -1 do
 		local drawCall = graphics.drawQueue[i]
 		local interX, interY = drawCall[ENUM_INTERPOLATE_X], drawCall[ENUM_INTERPOLATE_Y]
 		local transformX, transformY = drawCall[ENUM_TRANSFORM_X], drawCall[ENUM_TRANSFORM_Y]
 
-		local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
-		if drawCall[ENUM_DRAW_CALL] == "rectangle" then
-			-- loveGraphics[drawCall[ENUM_DRAW_CALL]]("fill", dx, dy, drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y])
-			-- print(transformX, interX, interpolate)
-			loveGraphics.draw(rect, math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
-				drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
-				rectSX / 2, rectSX / 2)
-			-- rectBatch:add(math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
-			-- 	drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
-			-- 	rectSX / 2, rectSX / 2)
-		end
+		-- local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
+		
+		local dx, dy = transformX + oscillate(time, 50, 2, i), transformY + oscillate(time, 50, 2, (i * i) % (2 * math.pi))
+
+		-- loveGraphics.draw(rect, math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
+		-- 	drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
+		-- 	rectSX, rectSX)
+		rectBatch:set(i, math.floor(dx), math.floor(dy), drawCall[ENUM_TRANSFORM_A],
+			drawCall[ENUM_TRANSFORM_S_X], drawCall[ENUM_TRANSFORM_S_Y],
+			rectSX, rectSX)
 	end
+
+end
+
+function private.draw()
 	love.graphics.draw(rectBatch, 0, 0, 0, 1, 1)
 end
 
