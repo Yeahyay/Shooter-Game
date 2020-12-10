@@ -15,23 +15,21 @@ function extendedMath.round(num, numDecimalPlaces)
 end
 
 function extendedMath.clamp(x, min, max)
-	-- min = min or - math.huge
-	-- max = max or math.huge
-	-- if (x < min) then
-	-- 	x = min
-	-- elseif (x > max) then
-	-- 	x = max
-	-- end
-	-- return x
 	return math.max(math.min(min, x), max)
 end
 
 local util = Feint.Util.Core
+function extendedMath.oscillateManual(time, amplitude, rate, offset)
+	return (math.cos(time * rate + offset) * 0.5 + 0.5) * amplitude
+end
+function extendedMath.oscillateManualSigned(time, amplitude, rate, offset)
+	return math.cos(time * rate + offset) * amplitude
+end
 function extendedMath.oscillate(amplitude, rate, offset)
-	return (math.cos(util.getTime() * rate + offset) * 0.5 + 0.5) * amplitude
+	return extendedMath.oscillateManual(util.getTime(), amplitude, rate, offset)
 end
 function extendedMath.oscillateSigned(amplitude, rate, offset)
-	return math.cos(util.getTime() * rate + offset) * amplitude
+	return extendedMath.oscillateManualSigned(util.getTime(), amplitude, rate, offset)
 end
 
 function extendedMath.random2(a, b, c)
