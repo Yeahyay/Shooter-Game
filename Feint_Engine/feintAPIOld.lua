@@ -2,7 +2,39 @@ local args = {...}
 
 local FEINT_ROOT = args[1]:gsub("feintAPI", "")
 
--- local excludedModules = args[2] or {}
+-- require("love.audio")
+-- require("love.data")
+-- require("love.event")
+-- require("love.filesystem")
+-- require("love.font")
+-- require("love.graphics")
+-- require("love.image")
+-- require("love.joystick")
+-- require("love.keyboard")
+-- require("love.math")
+-- require("love.mouse")
+-- require("love.physics")
+-- require("love.sound")
+-- require("love.system")
+-- require("love.thread")
+-- require("love.timer")
+-- require("love.touch")
+-- require("love.video")
+-- require("love.window")
+
+--[[ CREATE A MODULE SYSTEM
+eacg module can have submodules
+every module, including submodules, can have dependencies
+Feint.AddModule("Log", function(self) end) -- last argument is the module initializer
+Feint.AddModule("Util")
+Feint.AddModule("Util", "Core") -- every argument except the second to last is the heirarchy
+Feint.AddModule("Util", "Debug")
+
+Feint.AddModule("Test")
+Feint.AddModule("Test", "Level1")
+Feint.AddModule("Test", "Level1", "Level2")
+Feint.AddModule("Paths")
+--]]
 
 Feint = require(FEINT_ROOT .. "modules.core")
 
@@ -21,6 +53,7 @@ Feint.LoadModule("Paths")
 -- UTIL
 Feint.Paths.Add("Util", Feint.Paths.Modules .. "utilities")
 Feint.AddModule("Util", function(self)
+	require("love.timer")
 	-- UTIL LIBRARIES
 	self.Class = require(Feint.Paths.Lib .. "30log-master.30log-clean")
 	self.Memoize = require(Feint.Paths.Lib .. "memoize-master.memoize")
@@ -39,6 +72,7 @@ end)
 -- THREADING
 Feint.Paths.Add("Thread", Feint.Paths.Modules .. "threading")
 Feint.AddModule("Thread", function(self)
+	require("love.system")
 	self.require(Feint.Paths.Thread .. "thread")
 	self.Finalize()
 end)
@@ -46,6 +80,8 @@ end)
 -- ECS
 Feint.Paths.Add("ECS", Feint.Paths.Root .. "ECS") -- add path
 Feint.AddModule("ECS", function(self)
+	self.FFI_OPTIMIZATIONS = true
+
 	self.Util = require(Feint.Paths.ECS .. "ECSUtils") -- require components into table
 	self.EntityArchetype = require(Feint.Paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(Feint.Paths.ECS .. "EntityArchetypeChunk")
@@ -71,12 +107,19 @@ end)
 -- GRAPHICS
 Feint.Paths.Add("Graphics", Feint.Paths.Modules .. "graphics")
 Feint.AddModule("Graphics", function(self)
+	require("love.window")
+	require("love.graphics")
 	self.require(Feint.Paths.Graphics .. "graphics")
 	do
 		local width, height, flags = love.window.getMode() -- luacheck: ignore
 		local screenHeight = height
 		local screenWidth = screenHeight * (16 / 9)
+		self.RenderSize = Feint.Math.Vec2.new(1280, 720)
 		self.ScreenSize = Feint.Math.Vec2.new(screenWidth, screenHeight)
+		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
+		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
+		-- print(self.ScreenToRenderRatio)
+		-- print(self.RenderToScreenRatio)
 	end
 	self.Finalize()
 end)
@@ -96,8 +139,8 @@ end)
 Feint.Paths.Add("Log", Feint.Paths.Root .. "logs")
 Feint.AddModule("Log", function(self)
 	self.require(Feint.Paths.Modules.. "log")
+	self.Finalize()
 end)
-Feint.Log.Finalize()
 
 -- PARSING
 Feint.Paths.Add("Parsing", Feint.Paths.Modules .. "parsing")
@@ -125,11 +168,14 @@ end)
 
 -- LIB
 do
+	-- Feint.AddModule("UI", function(self)
+	-- end)
 	local Slab = require(Feint.Paths.Lib .. "Slab-0_6_3.Slab")
 	Feint.AddModule("UI", function(self)
 		self.Immediate = setmetatable({}, {
 			__index = Slab
 		})
+		-- self.require(Feint.Paths.Lib .. "Slab-0_6_3.Slab")
 		self.Finalize()
 	end)
 
@@ -138,6 +184,16 @@ do
 
 		self.G_DEBUG = false
 		-- G_TIMER = 0
+
+		self.G_UPDATE_TIME_PERCENT_FRAME = 0
+		self.G_UPDATE_DT = 0
+		self.G_UPDATE_TIME = 0
+		self.G_UPDATE_TIME_SMOOTHNESS = 0.975
+
+		self.G_RENDER_TIME_PERCENT_FRAME = 0
+		self.G_RENDER_DT = 0
+		self.G_RENDER_TIME = 0
+		self.G_RENDER_TIME_SMOOTHNESS = 0.975
 
 		self.G_FPS = 0
 		self.G_FPS_DELTA = 0
@@ -162,17 +218,34 @@ do
 	end)
 end
 
-getmetatable(Feint).__newindex = function(t, k, v)
+local mt = getmetatable(Feint)
+mt.__newindex = function(t, k, v)
 	if t[k] then
 		t[k] = v
 	else
 		error(string.format("Module \"%s\" does not exist in Feint\n", k))
 	end
 end
+-- local getModule = Feint.GetModule
+-- mt.__index = function(t, k)
+-- 	local tb = getModule(k)
+-- 	print(tb, t, k, rawget(t, k))
+-- 	if tb then
+-- 		if tb.Loaded then
+-- 			return rawget(t, k)
+-- 		else
+-- 			error(string.format("Module \"%s\" is not loaded\n", k))
+-- 		end
+-- 	else
+-- 		return rawget(t, k)
+-- 	end
+-- end
+
+-- print(Feint.Graphics)
 
 -- DEFAULT MODULES
 Feint.LoadModule("Util")
-Feint.LoadModule("Thread")
-Feint.LoadModule("Math")
 Feint.LoadModule("Log")
 Feint.LoadModule("Run")
+Feint.LoadModule("Math")
+Feint.LoadModule("Thread")
