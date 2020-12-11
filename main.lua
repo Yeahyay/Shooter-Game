@@ -59,13 +59,6 @@ end
 
 initEnv(0)
 
-do
-	local printOld = print
-	function print(...) -- luacheck: ignore
-		printOld("OLD PRINT", ...)
-	end
-end
-
 -- BOOTSTRAP
 
 require("Feint_Engine.init")
