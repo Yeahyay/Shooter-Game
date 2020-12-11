@@ -161,7 +161,6 @@ function love.load()
 
 		channel:push(threadData)
 
-		love.timer.sleep(0.1)
 		Feint.Log.logln("WAITING FOR THREAD %d", i)
 		local wait = false
 		wait = channel:demand()
