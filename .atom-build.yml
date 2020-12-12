@@ -58,11 +58,11 @@ targets:
       - "--no-time-travel"
       - "--highlight-dirs"
       - "--key" # file extension key
-      - "-a 0.1" # auto skip
-      - "-s 0.5" # seconds per day
+      - "-a 0.005" # auto skip
+      - "-s 0.25" # seconds per day
       - "-c 0.5" # time scale
       - "-e 0.05" # node elasticity
-      - "-p 0.001" # start position
+      - "-p 0.0005" # start position
       - "--camera-mode track"
       - "--follow-user Yeahyay"
       - "--max-user-speed 250"

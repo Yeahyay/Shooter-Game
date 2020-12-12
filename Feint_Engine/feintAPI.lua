@@ -35,10 +35,11 @@ local moduleLoadQueue = {}
 -- local modulesQueued = {}
 local root = FEINT_ROOT:gsub("%.", "/") .. "modules"
 local parents = {}
+local dependencies = {}--setmetatable({}, {__mode = "kv"})
 local func
 local funcSpace = function(num)
 	for i = 1, num, 1 do
-		io.write("   ")
+		io.write("    ")
 	end
 end
 func = function(dir, parent, level)
@@ -47,24 +48,37 @@ func = function(dir, parent, level)
 		local dir = dir .. "/" .. item
 
 		funcSpace(level)
-		io.write(string.format("- %s, %d\n", item, level))
+		print(string.format("- %s, %d", item, level))
 
 		if item == "module.lua" then
 			goto continue
 		end
 
 		local path = dir .. "/module"
-		-- print(dir .. "/module")
+		if not love.filesystem.getInfo(path .. ".lua") then
+			funcSpace(level + 1)
+			print(string.format("! Module %s Error: module.lua not found", item))
+			goto continue
+		end
+
+		-- import the module
 		local module = require(path)
 		if not module.Name then
 			module.Name = item
 		end
 		modules[module.Name] = module
+		if module.depends then
+			for k, dependency in pairs(module.depends) do
+				funcSpace(level + 1)
+				print(string.format("* %s depends on %s", module.Name, dependency))
+			end
+		end
+		dependencies[module.Name] = module.depends or {}
 
 		if parent and love.filesystem.getInfo(dir).type == "directory" then
 			if level > 0 then
-				funcSpace(level)
-				print("   : " .. parent .. " is parent of " .. item)
+				funcSpace(level + 1)
+				print(string.format("~ %s is parent of %s", parent, item))
 				parents[item] = parent
 			end
 		end
@@ -84,15 +98,27 @@ end
 Feint.Modules = modules
 print("Module Structure:")
 func(root, nil, 0)
+print()
 
+print("Dependencies")
+for Module, _dependencies in pairs(dependencies) do
+	print(Module)
+	for k, dependency in ipairs(_dependencies) do
+		funcSpace(1)
+		print(k, dependency)
+	end
+end
+print()
+
+print("Module Load Order:")
 for k, entry in pairs(modules) do
 end
 for k, entry in pairs(moduleLoadQueue) do
 	local module = entry.Module
 	print(module.Name, k, entry.Priority)
 	if module.depends then
-		for k, dependencies in pairs(module.depends) do
-			print("  depends on:", dependencies)
+		for k, dependency in pairs(module.depends) do
+			print("  depends on:", dependency)
 		end
 	end
 end
