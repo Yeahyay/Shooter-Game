@@ -85,8 +85,6 @@ func = function(dir, parent, level)
 
 		-- print(item, parent)
 		-- print(moduleLoadQueue[1].Priority)
-		local priority = moduleLoadQueue[1] and moduleLoadQueue[1].Priority + 1 or 1
-		table.insert(moduleLoadQueue, 1, {Module = module, Priority = priority})
 		-- modulesQueued[module.Name] = true
 
 		if love.filesystem.getInfo(dir).type == "directory" then
@@ -107,20 +105,23 @@ for Module, _dependencies in pairs(dependencies) do
 		funcSpace(1)
 		print(k, dependency)
 	end
+	local module = modules[Module]
+	local priority = moduleLoadQueue[1] and moduleLoadQueue[1].Priority + 1 or 1
+	table.insert(moduleLoadQueue, 1, {Module = module, Priority = priority})
 end
 print()
 
 print("Module Load Order:")
-for k, entry in pairs(modules) do
-end
+-- for k, entry in pairs(modules) do
+-- end
 for k, entry in pairs(moduleLoadQueue) do
 	local module = entry.Module
 	print(module.Name, k, entry.Priority)
-	if module.depends then
-		for k, dependency in pairs(module.depends) do
-			print("  depends on:", dependency)
-		end
-	end
+	-- if module.depends then
+	-- 	for k, dependency in pairs(module.depends) do
+	-- 		print("  depends on:", dependency)
+	-- 	end
+	-- end
 end
 
 -- for k, entry in ipairs(moduleLoadQueue) do
