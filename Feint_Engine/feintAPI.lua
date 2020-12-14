@@ -34,13 +34,17 @@ local modules = {} -- luacheck: ignore
 local moduleLoadQueue = {}
 -- local modulesQueued = {}
 local root = FEINT_ROOT:gsub("%.", "/") .. "modules"
--- local parents = {}
 local dependencies = {}--setmetatable({}, {__mode = "kv"})
+local dependenciesIndex = {}
+local priorities = {}
+local parents = {}
+local numDependencies = {}
+local function getDependency(name)
+	return dependencies[dependenciesIndex[name]]
+end
 -- local func
 local funcSpace = function(num)
-	for i = 1, num, 1 do
-		io.write("    ")
-	end
+	io.write(("    "):rep(num))
 end
 -- func = function(dir, parent, level)
 -- 	for _, item in pairs(love.filesystem.getDirectoryItems(dir)) do
@@ -94,93 +98,130 @@ end
 -- 	end
 -- end
 function Feint:importModules(root)
-	local moduleStack = {}
-	local moduleStackPointer = 0
-	local function push(dir)
-		moduleStackPointer = moduleStackPointer + 1
-		moduleStack[moduleStackPointer] = dir
+	local moduleQueue = {}
+	local moduleQueuePointer = 0
+	local function insert(dir)
+		moduleQueuePointer = moduleQueuePointer + 1
+		moduleQueue[moduleQueuePointer] = dir
 	end
 	local function pop()
-		assert(moduleStackPointer >= 0, "too many pops")
-		moduleStackPointer = moduleStackPointer - 1
-		return moduleStack[moduleStackPointer + 1]
+		assert(moduleQueuePointer >= 0, "too many pops")
+		-- print("Popping " .. moduleQueue[moduleQueuePointer])
+		local item = moduleQueue[moduleQueuePointer]
+		moduleQueue[moduleQueuePointer] = nil
+		moduleQueuePointer = moduleQueuePointer - 1
+		return item
 	end
-	-- local function peek()
-	-- 	return moduleStack[moduleStackPointer]
-	-- end
+	local function peek()
+		return moduleQueue[moduleQueuePointer]
+	end
 
-	push(root)
+	insert(root)
 
 	local dir = pop()
 	local lim = 0
-	local level = 0
 	while (dir and love.filesystem.getDirectoryItems(dir) and lim < 100) do
 		lim = lim + 1
+		-- print(dir)
 		local items = love.filesystem.getDirectoryItems(dir)
 		table.sort(items, function(a, b)
-			return a > b
+			return a:upper() > b:upper()
 		end)
 		-- level = level - 1
+		-- print(items[1])
+		-- print("Current Modules:")
+		-- for k, v in pairs(modules) do
+		-- 	print(k)
+		-- end
+		-- print()
 		for i = 1, #items, 1 do
 			local item = items[i]
 			local path = dir .. "/" .. item
-			push(path)
-
-			-- funcSpace(level)
-			-- print(string.format("- %s, %d", item, level))
-			print(string.format("importing %s", path))
 
 			if item == "module.lua" then
 				goto continue
 			end
 
+			insert(path)
+
+			--[[
+			print("QUEUE STATE:")
+			for i = moduleQueuePointer, 1, -1 do
+				local v = moduleQueue[i]
+				if i == moduleQueuePointer then
+					io.write("*")
+				end
+				print(moduleQueuePointer + 1 - i, v)
+			end
+			print()
+			--]]
+
+			local moduleName = item
+			local name = path:gsub(root .. "/", ""):gsub("/", ".")
+
+			print(string.format("importing %s: %s", moduleName, name))
+
 			local modulePath = path .. "/module"
 			if not love.filesystem.getInfo(modulePath .. ".lua") then
-				-- funcSpace(level)
 				print(string.format("! Module Error: %s/module.lua not found", item))
 				goto continue
 			end
 
 			-- import the module
 			local module = require(modulePath)
+			assert(type(module) == "table", "Malformed module, got " .. type(module) .. "(expected string)", 2)
 			if not module.Name then
-				module.Name = item
+				module.ModuleName = moduleName
 			end
+			if not module.Name then
+				module.Name = name
+			end
+
+			-- print(module.Name)
+			local basePriority = 0
+			module.Name:gsub("%a+", function()
+				basePriority = basePriority + 1
+			end)
+
+			-- print(priority > 1 and module.Name:reverse():match("%a+.(%a+)"):reverse())
+			local parentString = module.Name:gsub(module.Name:reverse():match("([%a%d]+.)"):reverse(), "")
+			assert(not parents[module.Name])
+			parents[module.Name] = basePriority > 1 and parentString or nil
+
+			local priority = basePriority-- + 1 + (priorities[parentString] or 0)
+
+			assert(not priorities[module.Name])
+			priorities[module.Name] = priority
+			-- table.insert(moduleLoadQueue, 1, module.Name)
+
+			assert(not modules[module.Name]) -- every assert makes sure that every entry is unique
 			modules[module.Name] = module
 			if module.depends then
 				for k, dependency in pairs(module.depends) do
 					-- funcSpace(level)
+					numDependencies[dependency] = (numDependencies[dependency] or 0) + 1
 					print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
 				end
 			end
-			dependencies[module.Name] = module.depends or {}
+			if basePriority > 1 then
+				numDependencies[parentString] = (numDependencies[parentString] or 0) + 1
+				print(string.format("* Module Parent Dependency: %s depends on %s", module.Name, parentString))
+			end
+			-- print(basePriority, parentString)
+			local index = #dependencies + 1
+			assert(not dependencies[index])
+			dependencies[index] = module.depends or {}
+			assert(not dependenciesIndex[module.Name])
+			dependenciesIndex[module.Name] = index
+
+			table.insert(moduleLoadQueue, #moduleLoadQueue + 1, module)
 
 			::continue::
 		end
 
-
 		dir = pop()
-		level = level + 1
-
-
-		-- funcSpace(moduleStackPointer - 1)
-		-- print(string.format("- %s, %d", item, moduleStackPointer))
-		--
-		-- if item == "module.lua" then
-		-- 	goto continue
-		-- end
-		--
-		-- local path = dir .. "/module"
-		-- if not love.filesystem.getInfo(path .. ".lua") then
-		-- 	funcSpace(moduleStackPointer + 1)
-		-- 	print(string.format("! Module %s Error: module.lua not found", item))
-		-- 	goto continue
-		-- end
-
-		-- if love.filesystem.getInfo(dir).type == "directory" then
-		-- end
-		-- ::continue::
 	end
+	return moduleQueue
 end
 Feint.Modules = modules
 print("Module Structure:")
@@ -188,38 +229,82 @@ print("Module Structure:")
 Feint:importModules(root)
 print()
 
-print("Dependencies")
-for Module, _dependencies in pairs(dependencies) do
-	print(Module)
-	for k, dependency in ipairs(_dependencies) do
-		funcSpace(1)
-		print(k, dependency)
-	end
-	local module = modules[Module]
-	local priority = moduleLoadQueue[1] and moduleLoadQueue[1].Priority + 1 or 1
-	table.insert(moduleLoadQueue, 1, {Module = module, Priority = priority})
+-- print("Priorities:")
+-- for k, v in pairs(priorities) do
+-- 	print(k, v)
+-- end
+-- print()
+
+print("Num Dependencies:")
+for k, v in pairs(numDependencies) do
+	print(k, v)
 end
 print()
 
-print("Module Load Order:")
--- for k, entry in pairs(modules) do
--- end
+print("Dependencies:")
+local notYet = {}
+local moduleLoadQueueIndex = {}
+for i = 1, 10, 1 do
+	moduleLoadQueueIndex[i] = nil
+end
+for k, v in pairs(dependenciesIndex) do
+	print(k, v)
+	for _, module in pairs(dependencies[v]) do
+		notYet[module] = module
+		print("  -NotYet", module)
+	end
+	local insertIndex = #moduleLoadQueue + 1
+
+	-- table.insert(moduleLoadQueue, insertIndex, k)
+end
+print()
+
+table.sort(moduleLoadQueue, function(a, b)
+	print(a.Name, b.Name)
+	local _a, _b = numDependencies[a.Name] or 0, numDependencies[b.Name] or 0
+	return _a > _b
+end)
+print()
+
+print("Module Load Order (Pre sort):")
 for k, entry in pairs(moduleLoadQueue) do
-	local module = entry.Module
-	print(module.Name, k, entry.Priority)
-	module:load()
-	-- if module.depends then
-	-- 	for k, dependency in pairs(module.depends) do
-	-- 		print("  depends on:", dependency)
-	-- 	end
-	-- end
+	print(k, entry.Name)
+	-- funcSpace(1)
+	-- print(parents[entry], priorities[parents[entry]])
+end
+print()
+
+print("Loading Modules")
+for k, module in pairs(moduleLoadQueue) do
+	-- print(k, module.Name)
+	print(module.Name)
+	if string.find(module.Name, "%.") then
+		local current = Feint
+		for word in string.gmatch(module.Name, "(%a+).?") do
+			print("", word)
+			current = current[word]
+			print(current)
+			if not current then break end
+		end
+	else
+		Feint[module.ModuleName] = module
+	end
+	print("Loaded module " .. module.ModuleName)
+	-- module:load()
+	-- funcSpace(1)
+	-- print(parents[entry], priorities[parents[entry]])
+end
+print()
+
+print("Feint Layout:")
+for k, v in pairs(Feint) do
+	print(k, v)
 end
 
 -- for k, entry in ipairs(moduleLoadQueue) do
 -- 	local module = entry.Module
 -- 	print(module.Name)
 -- 	module:load()
--- 	-- Feint[module.Name] = module
 -- end
 
 -- PATHS
