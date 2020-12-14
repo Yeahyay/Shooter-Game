@@ -260,13 +260,19 @@ end
 print()
 
 table.sort(moduleLoadQueue, function(a, b)
-	print(a.Name, b.Name)
 	local _a, _b = numDependencies[a.Name] or 0, numDependencies[b.Name] or 0
+	-- print(_a, _b)
+	if _a == _b then
+		-- print("SAME")
+		_a, _b = priorities[b.Name] or 0, priorities[a.Name] or 0
+		-- print(_a, _b)
+	end
+
 	return _a > _b
 end)
 print()
 
-print("Module Load Order (Pre sort):")
+print("Module Load Order:")
 for k, entry in pairs(moduleLoadQueue) do
 	print(k, entry.Name)
 	-- funcSpace(1)
@@ -277,22 +283,16 @@ print()
 print("Loading Modules")
 for k, module in pairs(moduleLoadQueue) do
 	-- print(k, module.Name)
-	print(module.Name)
-	if string.find(module.Name, "%.") then
-		local current = Feint
-		for word in string.gmatch(module.Name, "(%a+).?") do
-			print("", word)
+	print("^^", "Loading module " .. module.Name)
+	local current = Feint
+	if string.find(module.Name, "%.") then -- if there is a dot in the name, it is a chil
+		for word in string.gmatch(module.Name, "(%a+).?") do -- traverse to the end and add the module
+			if not current[word] then break end
 			current = current[word]
-			print(current)
-			if not current then break end
 		end
-	else
-		Feint[module.ModuleName] = module
 	end
-	print("Loaded module " .. module.ModuleName)
-	-- module:load()
-	-- funcSpace(1)
-	-- print(parents[entry], priorities[parents[entry]])
+	current[module.ModuleName] = module
+	print("VV", "Loaded module " .. module.ModuleName)
 end
 print()
 
@@ -300,7 +300,17 @@ print("Feint Layout:")
 for k, v in pairs(Feint) do
 	print(k, v)
 end
+print()
+for k, v in pairs(Feint.Core) do
+	print(k, v)
+end
 
+print()
+for k, v in pairs(Feint.Core.Util) do
+	print(k, v)
+end
+print()
+print(Feint.Core.Util.Test)
 -- for k, entry in ipairs(moduleLoadQueue) do
 -- 	local module = entry.Module
 -- 	print(module.Name)
