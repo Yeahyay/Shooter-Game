@@ -82,13 +82,14 @@ function Feint:importModules(root)
 
 			local modulePath = path .. "/module"
 			if not love.filesystem.getInfo(modulePath .. ".lua") then
-				print(string.format("! Module Error: %s/module.lua not found", item))
+				-- print(string.format("! Module Error: %s/module.lua not found", item))
+				print(string.format("* Module Folder: module.lua not found, assumed to be resource folder", item))
 				goto continue
 			end
 
 			-- import the module
 			local module = require(modulePath)
-			assert(type(module) == "table", "Malformed module, got " .. type(module) .. "(expected string)", 2)
+			assert(type(module) == "table", "! Module Error: got " .. type(module) .. "(expected string)", 2)
 			if not module.Name then
 				module.ModuleName = moduleName
 			end
