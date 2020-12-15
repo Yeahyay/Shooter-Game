@@ -124,6 +124,9 @@ function Feint:importModules(root)
 			if depth > 1 then
 				numDependencies[parentString] = (numDependencies[parentString] or 0) + 1
 				print(string.format("* Module Parent Dependency: %s depends on %s", module.Name, parentString))
+			else
+				numDependencies["Core"] = (numDependencies["Core"] or 0) + 1
+				print("CORE DEP")
 			end
 
 			-- insert each module in a default order
@@ -185,7 +188,7 @@ for k, module in pairs(moduleLoadQueue) do
 	module:load()
 	-- io.write(string.format("VV Loaded module %s VV\n", module.ModuleName))
 end
-print()
+io.write("Loaded Modules\n\n")
 
 -- print("Feint Layout:")
 -- for k, v in pairs(Feint) do

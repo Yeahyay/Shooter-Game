@@ -1,10 +1,10 @@
 -- CORE FILE
 
 -- load Feint Engine modules
-Feint.LoadModule("ECS")
-Feint.LoadModule("Graphics")
-Feint.LoadModule("Input")
-Feint.LoadModule("UI")
+-- Feint.LoadModule("ECS")
+-- Feint.LoadModule("Graphics")
+-- Feint.LoadModule("Input")
+-- Feint.LoadModule("UI")
 -- Feint.LoadModule("Parsing")
 -- Feint.LoadModule("Serialize")
 -- Feint.LoadModule("Audio")
@@ -13,7 +13,7 @@ Feint.LoadModule("UI")
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
 
-local graphics = Feint.Graphics
+local graphics = Feint.Core.Graphics
 -- local oldRate = Feint.Run.rate
 function love.keypressed(key, ...)
 	if key == "space" then
@@ -182,7 +182,7 @@ Feint.Util.Debug.PRINT_ENV(_G, false)
 -- local avgTimes = 0
 local getTime = love.timer.getTime
 
-local run = Feint.Run
+local run = Feint.Core.Run
 local lgraphics = love.graphics
 function love.update(dt)
 	graphics.clear()
