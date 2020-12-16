@@ -1,5 +1,5 @@
 local coreUtil = {
-	depends = {}
+	-- depends = {}
 }
 
 function coreUtil:load()
@@ -11,14 +11,14 @@ function coreUtil:load()
 		end
 	end
 
-	function coreUtil.loveType(obj)
+	function self:loveType(obj)
 		if type(obj) == "userdata" and obj.type then
 			return obj:type()
 		end
 		return nil
 	end
 
-	function coreUtil.type(obj)
+	function self:type(obj)
 		local type = type(obj)
 		if type == "userdata" and obj.type then
 			return obj:type()
@@ -27,10 +27,10 @@ function coreUtil:load()
 		end
 	end
 
-	function coreUtil.getMemoryUsageKiB()
+	function self:getMemoryUsageKiB()
 		return collectgarbage("count") * (1000 / 1024)
 	end
-	function coreUtil.getMemoryUsageKb()
+	function self:getMemoryUsageKb()
 		return collectgarbage("count")
 	end
 end

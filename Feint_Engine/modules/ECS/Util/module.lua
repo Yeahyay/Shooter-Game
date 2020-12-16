@@ -1,5 +1,9 @@
-local ECSUtils = {}
+local ECSUtils = {
+	depends = {"ECS.Util.Test"}
+}
 
+function ECSUtils:load()
+print("jiom;knljo")
 function ECSUtils.newClass(name)
 	local Class = {}
 	Class.Name = name or "?"
@@ -63,4 +67,7 @@ end
 -- util.makeTableReadOnly(ECSUtils, function(self, k)
 -- 	return util.READ_ONLY_MODIFICATION_ERROR(self, k)
 -- end)
+
+end
+
 return ECSUtils

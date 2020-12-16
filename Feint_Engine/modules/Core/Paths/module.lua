@@ -70,6 +70,10 @@ function paths:load()
 			end
 		end
 	end
+
+	self.Add("Modules", self.Root .. "modules")
+	self.Add("Lib", self.Root .. "lib")
+	self.Add("Archive", self.Root .. "archive")
 end
 
 return paths

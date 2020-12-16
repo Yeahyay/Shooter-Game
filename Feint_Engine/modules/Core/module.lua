@@ -1,4 +1,6 @@
-local core = {}
+local core = {
+	depends = {"Core.Paths"}
+}
 
 function core:load()
 	self.Name = "Core"
@@ -55,12 +57,12 @@ function core:load()
 				loader = loaderFunction(directory)
 				if type(loader) == "function" then break end
 			end
-			assert(type(loader) == "function", loader or "cannot find file", 3)
+			assert(type(loader) == "function", loader or "cannot find file", 4)
 			local status, msg = pcall(function()
 				setfenv(loader, env)
 			end)
 			if not status then
-				printf("Error in requireEnv: %s. It's probably a thread.\n", msg)
+				printf("Error in requireEnv: %s. It's probably a thread or socket library.\n", msg)
 			end
 			data = loader(directory, ...)
 			-- data = coreUtilities.loadChunk(env, directory)()
