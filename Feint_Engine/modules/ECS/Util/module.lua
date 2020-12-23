@@ -3,7 +3,19 @@ local ECSUtils = {
 }
 
 function ECSUtils:load()
-print("jiom;knljo")
+-- print("jiom;knljo")
+
+-- print()
+-- print(Feint.Core)
+-- for k, v in pairs(Feint.Core) do
+-- 	print(k, v)
+-- end
+-- print(Feint.Core.Paths)
+-- for k, v in pairs(Feint.Core.Paths) do
+-- 	print(k, v)
+-- end
+-- print()
+
 function ECSUtils.newClass(name)
 	local Class = {}
 	Class.Name = name or "?"

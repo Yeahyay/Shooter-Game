@@ -1,5 +1,5 @@
 local ECS = {
-	depends = {"Core.Paths", "ECS.Util", "Core.Run", "Core.Graphics"}
+	depends = {"Core.Paths", "ECS.Util", "Core.Run", "Core.Graphics", "Util.Table"}
 }
 
 local paths
@@ -14,7 +14,14 @@ function ECS:load()
 	-- 	print(k, v)
 	-- end
 
-	print(Feint.ECS.Util)
+	-- print(Feint.ECS.Util)
+	-- for k, v in pairs(Feint.ECS.Util) do
+	-- 	print(k, v)
+	-- end
+
+
+	print(Feint.Util)
+	print(Feint.Util.Table)
 
 	self.EntityArchetype = require(paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(paths.ECS .. "EntityArchetypeChunk")

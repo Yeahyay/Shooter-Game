@@ -2,6 +2,8 @@ local core = {
 	depends = {"Core.Paths"}
 }
 
+local printPrefixStack = {"PRINT: "}
+local printPrefixStackPointer = 1
 function core:load()
 	self.Name = "Core"
 	self.Modules = {}
@@ -9,7 +11,11 @@ function core:load()
 	do
 		local printOld = print
 		function print(...) -- luacheck: ignore
-			printOld("OLD PRINT", ...)
+			if select("#", ...) > 0 then
+				printOld(printPrefixStack[printPrefixStackPointer], ...)
+			else
+				printOld()
+			end
 		end
 	end
 	function printf(format, ...)
@@ -19,6 +25,18 @@ function core:load()
 			io.write("")
 		end
 	end
+	function pushPrintPrefix(string)
+		printPrefixStackPointer = printPrefixStackPointer + 1
+		printPrefixStack[printPrefixStackPointer] = string
+	end
+	function popPrintPrefix()
+		assert(printPrefixStackPointer > 1)
+		local item = printPrefixStack[printPrefixStackPointer]
+		printPrefixStack[printPrefixStackPointer] = nil
+		printPrefixStackPointer = printPrefixStackPointer - 1
+		return item
+	end
+
 
 	-- luacheck: push ignore
 	do

@@ -45,6 +45,9 @@ local numDependencies = {}
 local funcSpace = function(num)
 	io.write(("    "):rep(num))
 end
+local function countOccurences(source, string)
+	return select(2, source:gsub(string, ""))
+end
 function Feint:importModules(root)
 	local moduleQueue = {}
 	local moduleQueuePointer = 0
@@ -59,11 +62,7 @@ function Feint:importModules(root)
 		return item
 	end
 	local function getModuleDepth(fullName)
-		local depth = 0
-		fullName:gsub("%a+", function()
-			depth = depth + 1
-		end)
-		return depth
+		return countOccurences(fullName, "[%a%d]+")
 	end
 
 	insert(root)
@@ -120,20 +119,21 @@ function Feint:importModules(root)
 			-- record how many times each module is depended on
 			assert(not modules[module.Name])
 
-			funcSpace(1)
-			print("DEPTH:", depth)
+			-- funcSpace(1)
+			-- print("DEPTH:", depth)
 			modules[module.Name] = module
 			if module.depends then
 				for k, dependency in pairs(module.depends) do
 					numDependencies[dependency] = (numDependencies[dependency] or 0) + 1
-					local dependencyDepth = getModuleDepth(dependency)
 
-					funcSpace(1)
-					print("DEPENDENCY DEPTH:", dependencyDepth)
+					-- local dependencyDepth = getModuleDepth(dependency)
+					-- funcSpace(1)
+					-- print("DEPENDENCY DEPTH:", dependencyDepth)
 
 					funcSpace(1)
 					print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
 				end
+				numDependencies[moduleName] = (numDependencies[moduleName] or 0) - #module.depends
 			end
 
 			-- print(depth > 1 and module.Name:reverse():match("%a+.(%a+)"):reverse())
@@ -202,51 +202,170 @@ for k, entry in pairs(moduleLoadQueue) do
 end
 print()
 
-local function qualifyModule(module)
-	local current = Feint.Modules
-	if string.find(module.Name, "%.") then -- if there is a dot in the name, it is a chil
-		for word in string.gmatch(module.Name, "(%a+).?") do -- traverse to the end and add the module
-			io.write(string.format("%s exists: %s\n", word, current[word] and true or false))
-			if not current[word] then
-				-- io.write(string.format("!! Parent %s does not exist, creating\n", word))
-				break
-			end
-			current = current[word]
-			-- ::continue::
+-- local function qualifyModule(module)
+-- 	local current = Feint.Modules
+-- 	if string.find(module.Name, "%.") then -- if there is a dot in the name, it is a chil
+-- 		for word in string.gmatch(module.Name, "([%a%d]+).?") do -- traverse to the end and add the module
+-- 			io.write(string.format("%s exists: %s\n", word, current[word] and true or false))
+-- 			if not current[word] then
+-- 				-- io.write(string.format("!! Parent %s does not exist, creating\n", word))
+-- 				break
+-- 			end
+-- 			current = current[word]
+-- 			-- ::continue::
+-- 		end
+-- 	end
+-- 	return current
+-- 	-- current[module.Name] = module
+-- end
+
+-- local function moveTableMember(table1, member, table2)
+-- 	table2[member] = table1[member]
+-- 	table1[member] = nil
+-- end
+
+local function mergeTables(t1, t2)
+	for k, v in pairs(t2) do
+		if (type(v) == "table") and (type(t1[k] or false) == "table") then
+			mergeTables(t1[k], t2[k])
+		else
+			t1[k] = v
 		end
 	end
-	return current
-	-- current[module.Name] = module
+	return t1
 end
+
+Feint.LoadedModules = {}
+local fakeParents = {}
 
 print("Loading Modules")
 for k, module in pairs(moduleLoadQueue) do
-	io.write(string.format("^^ Loading module %s ^^\n", module.Name))
+	local moduleFullName = module.Name
+	local moduleName = module.ModuleName
+	io.write(string.format("^^  Loading module %s ^^\n", moduleFullName))
 	-- Feint.Modules[module.ModuleName] = module
 	local current = Feint.Modules
-	local parent = nil
-	local missingAncestry = {}
-	local function addFakeIntermediary(name, table)
-		table[name] = {}
-	end
 
-	if string.find(module.Name, "%.") then -- if there is a dot in the name, it is a chil
-		for word in string.gmatch(module.Name, "(%a+).?") do -- traverse to the end and add the module
+	local accum = ""--string.match(moduleFullName, "([%a%d]+)")
+
+	-- if moduleFullName == "ECS" then
+	-- 	funcSpace(1)
+	-- 	io.write(string.format("EHHH %s\n", Feint.ECS.Util))
+	-- 	for k, v in pairs(Feint.ECS.Util) do
+	-- 		print(k, v)
+	-- 	end
+	-- end
+
+	local count = countOccurences(moduleFullName, "([%a%d]+).?")
+	local i = 0
+	-- print("---", string.match(moduleFullName, ("[%a%d]+.?"):rep(count - 1) .. "[%a%d]+"))
+	if count > 0 then -- if there is a dot in the name, it is a child
+		for word in string.gmatch(moduleFullName, "([%a%d]+).?") do -- traverse to the end and add the module
+			i = i + 1
+			funcSpace(1)
 			io.write(string.format("%s exists: %s\n", word, current[word] and true or false))
-			if not current[word] then
-				-- io.write(string.format("!! Parent %s does not exist, creating\n", word))
-				break
+			-- local preAccum = accum
+			-- if fakeParents[accum] then
+			-- 	if not Feint.LoadedModules[accum] then
+			-- 		io.write(string.format("!!!!! MODULE %s IS ETHEREAL\n", accum))
+			-- 	end
+			-- end
+			if current[word] and current[word].Ethereal then
+				funcSpace(2)
+				io.write(string.format("!!  ETHEREAL TABLE %s\n", tostring(current[word])))
 			end
-			parent = current
+			-- funcSpace(1)
+			-- print("pre", accum)
+			-- funcSpace(1)
+			print(count, i)
+			accum = accum:len() > 0 and accum .. "." .. word or word
+			-- funcSpace(1)
+			-- print("post", accum)
+
+			if not current[word] then
+				if count > i then
+					funcSpace(1)
+					io.write(string.format("!!  Parent %s does not exist, creating ethereal table\n", word))
+					local etherealTable = {Name = "Ethereal " .. accum, Ethereal = true}
+					etherealTable.Table = tostring(etherealTable)
+					function etherealTable:deEtherize(table2)
+						-- mergeTables(table2, self)
+						-- self.Name = nil
+						-- self.Ethereal = false
+						-- self.Table = nil
+						-- setmetatable(self, getmetatable(table2))
+					end
+					setmetatable(etherealTable, {
+						__tostring = function()
+							return "Ethereal: " .. etherealTable.Table:gsub("table: ", "")
+						end
+					})
+					current[word] = etherealTable
+					fakeParents[accum] = etherealTable
+				else
+					funcSpace(1)
+					io.write(string.format("*   Module %s does not exist, terminal\n", word))
+					break
+				end
+			end
+
+			if true then
+				print()
+				print("__DEBUG__")
+				print()
+				print("word", word) -- luacheck: ignore
+				print("current", current)
+				print()
+				local f
+				f = function(v, d)
+					for _k, _v in pairs(v) do
+						if d > 0 or _k == "Modules" then
+							if type(_v) == "table" then
+								print(("   "):rep(d - 1) .. (" - "):rep(math.min(d, 1)) .. _k, _v)
+								if next(v) and d < 100 then
+									f(_v, d + 1)
+								end
+							else
+								print(("   "):rep(d) .. _k, _v)
+							end
+						end
+					end
+				end
+				f(Feint, 0)
+				print()
+				print("__DEBUG__")
+				print()
+			end
+			-- parent = current
 			current = current[word]
 			-- ::continue::
 		end
 	end
-	-- current[module.ModuleName] = module
-	Feint.Module[module.Name] = module
+	if fakeParents[accum] then
+		-- for k, v in pairs(fakeParents) do
+		-- 	print(k, v)
+		-- end
+		io.write(string.format("Deetherizing module %s\n", fakeParents[accum].Name))
+		fakeParents[accum]:deEtherize(module)
+		fakeParents[accum] = nil
+	end
+	current[module.ModuleName] = module
+	-- if not Feint.Modules[moduleFullName] then
+	-- 	Feint.Modules[moduleFullName] = {}
+	-- end
+	-- local moduleStore = Feint.Modules[moduleFullName]
+	-- moduleStore[#modules + 1] = module
 
+	if Feint.LoadedModules["Core"] then
+		pushPrintPrefix(moduleFullName .. " debug: ")
+	end
 	module:load()
-	io.write(string.format("VV Loaded  module %s VV\n", module.Name))
+	if Feint.LoadedModules["Core"] then
+		popPrintPrefix()
+	end
+
+	Feint.LoadedModules[moduleFullName] = module
+	io.write(string.format("VV  Loaded  module %s VV\n", module.Name))
 end
 io.write("Loaded Modules\n\n")
 

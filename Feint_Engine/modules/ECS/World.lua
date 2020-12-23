@@ -1,5 +1,9 @@
 local ECSUtils = Feint.ECS.Util
 local EntityManager = Feint.ECS.EntityManager
+-- print(Feint.ECS, "kml")
+for k, v in pairs(Feint.ECS) do
+	print(k, v)
+end
 
 local World = ECSUtils.newClass("World")
 function World:init(name)
