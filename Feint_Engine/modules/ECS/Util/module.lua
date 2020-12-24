@@ -1,6 +1,4 @@
-local ECSUtils = {
-	depends = {"ECS.Util.Test"}
-}
+local ECSUtils = {}
 
 function ECSUtils:load()
 -- print("jiom;knljo")

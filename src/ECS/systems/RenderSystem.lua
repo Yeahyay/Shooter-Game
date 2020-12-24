@@ -97,25 +97,25 @@ function RenderSystem:start()
 	end
 end
 
-local input = Feint.Core.Input
-local px, py = 0, 0
-local lx, ly = 0, 0
+-- local input = Feint.Core.Input
+-- local px, py = 0, 0
+-- local lx, ly = 0, 0
 function RenderSystem:update(dt)
-	do
-		lx, ly = px, py
-		px, py = input.mouse.Position.x, input.mouse.Position.y
-		local angle = Feint.Core.Util.getTime()
-		local rect = Feint.Core.Graphics.rectangleInt
-		-- rect(lx, ly, angle, px, py, angle, 1, 1)
-		-- local rect = Feint.Core.Graphics.rectangle
-		-- rect(px, py, angle, 1, 1)
-	end
+	-- do
+	-- 	lx, ly = px, py
+	-- 	px, py = input.mouse.Position.x, input.mouse.Position.y
+	-- 	local angle = Feint.Core.Util.getTime()
+	-- 	local rect = Feint.Core.Graphics.rectangleInt
+	-- 	rect(lx, ly, angle, px, py, angle, 1, 1)
+	-- 	local rect = Feint.Core.Graphics.rectangle
+	-- 	rect(px, py, angle, 1, 1)
+	-- end
 
+	local sin, cos, pi = math.sin, math.cos, math.pi
+	-- local rect = Feint.Core.Graphics.rectangle
+	local time = Feint.Core.Util.getTime()
 	for i = 1, 1, 1 do
 		if Feint.ECS.FFI_OPTIMIZATIONS then
-			local sin, cos, pi = math.sin, math.cos, math.pi
-			local rect = Feint.Core.Graphics.rectangle
-			local time = Feint.Core.Util.getTime()
 			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
 				Transform.angle = Transform.angle + 1 / 60 * pi -- + Entity * 6
 				Transform.x = Transform.x + sin(time * 2 + Entity * 0.25) * 0.5
@@ -127,24 +127,21 @@ function RenderSystem:update(dt)
 				-- rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
 			end)
 		else
-			local sin, cos, pi = math.sin, math.cos, math.pi
-			local rect = Feint.Core.Graphics.rectangle
-				local time = Feint.Core.Util.getTime()
-				self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
-					local x = Data[Transform]
-					local y = Data[Transform + 1]
-					local angle = Data[Transform + 2]
-					-- local trueSizeX = Data[Transform + 7]
-					-- local trueSizeY = Data[Transform + 8]
+			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
+				local x = Data[Transform]
+				local y = Data[Transform + 1]
+				local angle = Data[Transform + 2]
+				-- local trueSizeX = Data[Transform + 7]
+				-- local trueSizeY = Data[Transform + 8]
 
-					-- rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
+				-- rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
 
-					angle = angle + 1 / 60 * pi + Entity
+				angle = angle + 1 / 60 * pi + Entity
 
-					Data[Transform + 2] = angle
-					Data[Transform] = x + sin(time * 2 + Entity * 0.25) * 0.5
-					Data[Transform + 1] = y + cos(time * 2 + Entity * 0.25) * 0.5
-				end)
+				Data[Transform + 2] = angle
+				Data[Transform] = x + sin(time * 2 + Entity * 0.25) * 0.5
+				Data[Transform + 1] = y + cos(time * 2 + Entity * 0.25) * 0.5
+			end)
 		end
 	end
 end
