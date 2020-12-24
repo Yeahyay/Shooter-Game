@@ -236,9 +236,28 @@ local function mergeTables(t1, t2)
 end
 
 Feint.LoadedModules = {}
-local fakeParents = {}
 
 print("Loading Modules")
+for k, module in pairs(moduleLoadQueue) do
+	local moduleFullName = module.Name
+	local moduleName = module.ModuleName
+	io.write(string.format("^^  Loading module %s ^^\n", moduleFullName))
+	-- Feint.Modules[module.ModuleName] = module
+	local current = Feint.Modules
+
+	local accum = ""--string.match(moduleFullName, "([%a%d]+)")
+
+	local count = countOccurences(moduleFullName, "([%a%d]+).?")
+	local i = 0
+	-- print("---", string.match(moduleFullName, ("[%a%d]+.?"):rep(count - 1) .. "[%a%d]+"))
+	if count > 0 then -- if there is a dot in the name, it is a child
+		for word in string.gmatch(moduleFullName, "([%a%d]+).?") do -- traverse to the end and add the module
+			i = i + 1
+			funcSpace(1)
+		end
+	end
+end
+--[[
 for k, module in pairs(moduleLoadQueue) do
 	local moduleFullName = module.Name
 	local moduleName = module.ModuleName
@@ -367,6 +386,7 @@ for k, module in pairs(moduleLoadQueue) do
 	Feint.LoadedModules[moduleFullName] = module
 	io.write(string.format("VV  Loaded  module %s VV\n", module.Name))
 end
+--]]
 io.write("Loaded Modules\n\n")
 
 -- print("Feint Layout:")
