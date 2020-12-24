@@ -183,6 +183,9 @@ Feint.Util.Debug.PRINT_ENV(_G, false)
 local getTime = love.timer.getTime
 
 local run = Feint.Core.Run
+for k, v in pairs(Feint.Core.Run) do
+	print(k, v)
+end
 local lgraphics = love.graphics
 function love.update(dt)
 	graphics.clear()

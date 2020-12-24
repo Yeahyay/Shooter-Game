@@ -29,7 +29,9 @@ local FEINT_ROOT = args[1]:gsub("feintAPI", "")
 --]]
 
 Feint = {}--require(FEINT_ROOT .. "modules.core.module")
-Feint.Modules = {}
+Feint.Modules = {
+	Name = "MODULE_HEIRARCHY_ROOT"
+}
 setmetatable(Feint, {
 	__index = Feint.Modules
 })
@@ -131,9 +133,9 @@ function Feint:importModules(root)
 					-- print("DEPENDENCY DEPTH:", dependencyDepth)
 
 					funcSpace(1)
-					print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
+					print(string.format("*        Dependency: %s depends on %s", module.Name, dependency))
 				end
-				numDependencies[moduleName] = (numDependencies[moduleName] or 0) - #module.depends
+				numDependencies[module.Name] = (numDependencies[moduleName] or 0) - #module.depends
 			end
 
 			-- print(depth > 1 and module.Name:reverse():match("%a+.(%a+)"):reverse())
@@ -143,7 +145,7 @@ function Feint:importModules(root)
 			if depth > 1 then
 				numDependencies[parentString] = (numDependencies[parentString] or 0) + 1
 				funcSpace(1)
-				print(string.format("* Module Parent Dependency: %s depends on %s", module.Name, parentString))
+				print(string.format("* Parent Dependency: %s depends on %s", module.Name, parentString))
 			-- else
 			-- 	numDependencies["Core"] = (numDependencies["Core"] or 0) + 1
 			-- 	print("CORE DEP")
@@ -175,15 +177,39 @@ print()
 -- [[
 print("Num Dependencies:")
 local t = {}
-for k, v in pairs(numDependencies) do
-	t[#t + 1] = k
+for dependency, score in pairs(numDependencies) do
+	t[#t + 1] = dependency
 end
+print()
 table.sort(t, function(a, b)
 	return numDependencies[a] > numDependencies[b]
 end)
-for k, v in ipairs(t) do
-	print(v, numDependencies[v])
+-- for k, moduleFullName in ipairs(t) do
+-- 	-- recalculate score
+-- 	-- print(moduleFullName, modules[moduleFullName])
+-- 	if modules[moduleFullName].depends then
+-- 		for _, dependency in pairs(modules[moduleFullName].depends) do
+-- 			-- print(_, dependency)
+-- 			numDependencies[moduleFullName] = numDependencies[moduleFullName] + numDependencies[dependency]
+-- 		end
+-- 	end
+-- end
+-- table.sort(t, function(a, b)
+-- 	return numDependencies[a] > numDependencies[b]
+-- end)
+for k, moduleFullName in ipairs(t) do
+	print(moduleFullName, numDependencies[moduleFullName])
 end
+
+-- for dependency, score in pairs(numDependencies) do
+-- 	local cur = modules
+-- 	for k, v in pairs(modules[dependency].depends) do
+-- 	-- for name in string.gmatch(dependency, "([%a%d]+).?") do
+-- 	-- 	cur = cur[name]
+-- 	-- end
+-- 	end
+-- 	t[#t + 1] = dependency
+-- end
 print()
 --]]
 
@@ -202,23 +228,6 @@ for k, entry in pairs(moduleLoadQueue) do
 end
 print()
 
--- local function qualifyModule(module)
--- 	local current = Feint.Modules
--- 	if string.find(module.Name, "%.") then -- if there is a dot in the name, it is a chil
--- 		for word in string.gmatch(module.Name, "([%a%d]+).?") do -- traverse to the end and add the module
--- 			io.write(string.format("%s exists: %s\n", word, current[word] and true or false))
--- 			if not current[word] then
--- 				-- io.write(string.format("!! Parent %s does not exist, creating\n", word))
--- 				break
--- 			end
--- 			current = current[word]
--- 			-- ::continue::
--- 		end
--- 	end
--- 	return current
--- 	-- current[module.Name] = module
--- end
-
 -- local function moveTableMember(table1, member, table2)
 -- 	table2[member] = table1[member]
 -- 	table1[member] = nil
@@ -235,25 +244,155 @@ local function mergeTables(t1, t2)
 	return t1
 end
 
+local function createEtherealTable(name)
+	local etherealTable = {Name = name, Ethereal = true}
+	etherealTable.tableToString = tostring(etherealTable)
+	function etherealTable:deEtherize(table2)
+		mergeTables(table2, self)
+		self.Name = nil
+		self.Ethereal = false
+		self.Table = nil
+		setmetatable(self, getmetatable(table2))
+	end
+	setmetatable(etherealTable, {
+	__tostring = function()
+		return "Ethereal: " .. etherealTable.tableToString:gsub("table: ", "")
+	end
+	})
+	return etherealTable
+end
+
 Feint.LoadedModules = {}
+
+local debugStuff = function()
+	if true then
+		print()
+		print("__DEBUG__")
+		print()
+		-- print("word", word) -- luacheck: ignore
+		-- print("current", current)
+		print()
+		local f
+		f = function(v, d)
+			for _k, _v in pairs(v) do
+				if (d > 0 and (type(_v) == "table" and (_v.ModuleName or _v.Ethereal))) or _k == "Modules" then
+					if type(_v) == "table" then
+						print(("|   "):rep(d - 1) .. ("| - "):rep(math.min(d, 1)) .. _k, _v)
+						if next(v) and d < 100 then
+							f(_v, d + 1)
+						end
+					else
+						print(("    "):rep(d) .. _k, _v)
+					end
+				end
+			end
+		end
+		f(Feint, 0)
+		print()
+		print("__DEBUG__")
+		print()
+	end
+end
 
 print("Loading Modules")
 for k, module in pairs(moduleLoadQueue) do
 	local moduleFullName = module.Name
 	local moduleName = module.ModuleName
-	io.write(string.format("^^  Loading module %s ^^\n", moduleFullName))
+	io.write(string.format("{ Loading module %s ^^\n", moduleFullName))
 	-- Feint.Modules[module.ModuleName] = module
 	local current = Feint.Modules
 
 	local accum = ""--string.match(moduleFullName, "([%a%d]+)")
 
-	local count = countOccurences(moduleFullName, "([%a%d]+).?")
+	local depth = countOccurences(moduleFullName, "([%a%d]+).?")
 	local i = 0
-	-- print("---", string.match(moduleFullName, ("[%a%d]+.?"):rep(count - 1) .. "[%a%d]+"))
-	if count > 0 then -- if there is a dot in the name, it is a child
-		for word in string.gmatch(moduleFullName, "([%a%d]+).?") do -- traverse to the end and add the module
+	-- print("---", string.match(moduleFullName, ("[%a%d]+.?"):rep(depth - 1) .. "[%a%d]+"))
+	if depth > 0 then -- if there is a dot in the name, it is a child
+		for name in string.gmatch(moduleFullName, "([%a%d]+).?") do -- traverse to the end and add the module
 			i = i + 1
+			-- funcSpace(1)
+			-- io.write(string.format("%s exists: %s\n", name, current[name] and true or false))
+
+			accum = accum:len() > 0 and accum .. "." .. name or name
+			local currentModule = current[name]
+
+			print(",,,", module.Name, currentModule and currentModule.Name)
+			if module.Name == (currentModule and currentModule.Name) then
+				print("FOUND REAL TABLE, DEETHERIZING")
+				currentModule:deEtherize(module)
+				break
+			end
+			if currentModule then
+				if currentModule.Ethereal then
+					funcSpace(2)
+					io.write(string.format("!!  ETHEREAL TABLE %s\n", tostring(currentModule)))
+					-- print(accum, current[name].Name)
+					-- if accum == current[name].Name then
+					-- 	current[name]:deEtherize()
+					-- end
+				end
+			else
+				io.write(string.format("%s does not exist\n", accum))
+
+				funcSpace(1)
+				if depth > i then
+					io.write(string.format("it is not terminal, making it ethereal\n", accum))
+					current[name] = createEtherealTable(accum)
+					currentModule = current[name]
+					-- for k, v in pairs(currentModule) do
+					-- 	print(k, v)
+					-- end
+					-- print(module.ModuleName)
+					-- print(current["Table"])
+				else
+					io.write(string.format("it is terminal\n", accum))
+					-- debugStuff()
+					break
+				end
+			end
+
+			current = currentModule
+		end
+	end
+	-- print("TERMINAL:", accum, current.Name)
+	-- if accum == current[name].Name then
+	-- 	current[name]:deEtherize()
+	-- end
+	current[module.ModuleName] = module
+
+	-- debugStuff()
+
+	if Feint.LoadedModules["Core"] then
+		pushPrintPrefix(moduleFullName .. " debug: ")
+	end
+	module:load()
+	if Feint.LoadedModules["Core"] then
+		popPrintPrefix()
+	end
+
+	Feint.LoadedModules[moduleFullName] = module
+	io.write(string.format("} Loaded  module %s VV\n", module.Name))
+	print()
+end
+
+print("FINAL")
+debugStuff()
+
+for _, module in pairs(Feint.Modules) do
+	if module.depends then
+		io.write(string.format("Checking module %s's depenencies\n", module.Name))
+		for _, dependency in pairs(module.depends) do
+			local cur = Feint.Modules
 			funcSpace(1)
+			io.write(string.format("Searching for dependency %s\n", dependency))
+			for name in string.gmatch(dependency, "([%a%d]+).?") do
+				funcSpace(2)
+				io.write(string.format("checking if module %s exists in %s\n", name, cur.Name))
+				assert(cur[name], "BROKEN DEPENDENCY ".. dependency)
+				funcSpace(2)
+				io.write(string.format("module %s exists in %s\n", name, cur.Name))
+				cur = cur[name]
+			end
 		end
 	end
 end

@@ -1,7 +1,8 @@
-local tableUtilities = {}
+local tableUtilities = {
+	depends = {"Util"}
+}
 
 function tableUtilities:load()
-	print(self, tableUtilities, "jnkknjlnknonk")
 -- do
 -- 	local lastEnv = getfenv(1)
 -- 	tableUtilities._ENV = tableUtilities
