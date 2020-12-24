@@ -3,6 +3,8 @@ local extendedMath = {
 }
 
 function extendedMath:load()
+	Feint.Core.Paths.Add("Math", Feint.Core.Paths.Modules .. "math")
+
 	self.Vec2 = require(Feint.Core.Paths.Lib .. "brinevector2D.brinevector")
 	self.Vec3 = require(Feint.Core.Paths.Lib .. "brinevector3D.brinevector3D")
 	-- Feint.vMath = require(Feint.Core.Paths.Root .. "vMath")

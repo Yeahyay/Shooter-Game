@@ -8,6 +8,8 @@ function graphics:load()
 	require("love.window")
 	require("love.graphics")
 
+	Feint.Core.Paths.Add("Graphics", Feint.Core.Paths.Modules .. "graphics")
+
 	local width, height, flags = love.window.getMode() -- luacheck: ignore
 	local screenHeight = height
 	local screenWidth = screenHeight * (16 / 9)

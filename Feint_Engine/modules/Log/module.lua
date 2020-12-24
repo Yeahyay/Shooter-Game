@@ -3,6 +3,8 @@ local log = {
 }
 
 function log:load()
+	Feint.Core.Paths.Add("Log", Feint.Core.Paths.Root .. "logs")
+
 	local coreUtil = Feint.Core.Util
 
 	local date = function() -- luacheck: ignore

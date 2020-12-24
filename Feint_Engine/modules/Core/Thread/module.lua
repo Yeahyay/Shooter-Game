@@ -1,6 +1,12 @@
-local threading = {}
+local threading = {
+	depends = {"Core.Paths"}
+}
 
-function threading:load(_)
+function threading:load()
+	require("love.system")
+
+	Feint.Core.Paths.Add("Thread", Feint.Core.Paths.Modules .. "threading")
+
 	local workers = {}
 
 	-- require("love.system")
@@ -10,7 +16,7 @@ function threading:load(_)
 	function self:newWorker(id)
 		Feint.Log.log("Creating new worker thread \"THREAD_%02d\"\n", id)
 		local newThread = {
-			thread = love.thread.newThread(Feint.Paths.SlashDelimited(Feint.Paths.Thread) .. "threadBootstrap.lua"),
+			thread = love.thread.newThread(Feint.Core.Paths.SlashDelimited(Feint.Core.Paths.Thread) .. "threadBootstrap.lua"),
 			id = not workers[id] and id or #workers + 1,
 			running = false,
 			channel = love.thread.getChannel("thread_data_" .. id),

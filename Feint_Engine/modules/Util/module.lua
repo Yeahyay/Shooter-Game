@@ -3,6 +3,10 @@ local util = {
 }
 
 function util:load()
+	require("love.timer")
+
+	Feint.Core.Paths.Add("Util", Feint.Core.Paths.Modules .. "utilities")
+
 	self.Class = require(Feint.Core.Paths.Lib .. "30log-master.30log-clean")
 	self.Memoize = require(Feint.Core.Paths.Lib .. "memoize-master.memoize")
 	self.UUID = require(Feint.Core.Paths.Lib .. "uuid-master.src.uuid")
