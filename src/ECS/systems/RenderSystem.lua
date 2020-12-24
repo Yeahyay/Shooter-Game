@@ -59,12 +59,12 @@ function RenderSystem:start()
 		self.EntityManager:CreateEntity(archetype)
 	end
 
-	local rect = Feint.Graphics.rectangle
+	local rect = Feint.Core.Graphics.rectangle
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- print(Data[Entity], Entity)
-			Transform.x = random2(Feint.Graphics.RenderSize.x / 2)
-			Transform.y = random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)
+			Transform.x = random2(Feint.Core.Graphics.RenderSize.x / 2)
+			Transform.y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
 			Transform.trueSizeX = Transform.scaleX / Transform.sizeX
 			Transform.trueSizeY = Transform.scaleY / Transform.sizeY
 
@@ -77,8 +77,8 @@ function RenderSystem:start()
 			-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
 			-- local x = Data[Transform]
 			-- local y = Data[Transform + 1]
-			local x = random2(Feint.Graphics.RenderSize.x / 2)
-			local y = random2(-Feint.Graphics.RenderSize.y / 2, Feint.Graphics.RenderSize.y / 2 - 300)
+			local x = random2(Feint.Core.Graphics.RenderSize.x / 2)
+			local y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
 			local angle = Data[Transform + 2]
 			local sizeX = Data[Transform + 3]
 			local sizeY = Data[Transform + 4]
@@ -97,25 +97,25 @@ function RenderSystem:start()
 	end
 end
 
-local input = Feint.Input
+local input = Feint.Core.Input
 local px, py = 0, 0
 local lx, ly = 0, 0
 function RenderSystem:update(dt)
 	do
 		lx, ly = px, py
 		px, py = input.mouse.Position.x, input.mouse.Position.y
-		local angle = Feint.Util.Core.getTime()
-		local rect = Feint.Graphics.rectangleInt
+		local angle = Feint.Core.Util.getTime()
+		local rect = Feint.Core.Graphics.rectangleInt
 		-- rect(lx, ly, angle, px, py, angle, 1, 1)
-		-- local rect = Feint.Graphics.rectangle
+		-- local rect = Feint.Core.Graphics.rectangle
 		-- rect(px, py, angle, 1, 1)
 	end
 
 	for i = 1, 1, 1 do
 		if Feint.ECS.FFI_OPTIMIZATIONS then
 			local sin, cos, pi = math.sin, math.cos, math.pi
-			local rect = Feint.Graphics.rectangle
-			local time = Feint.Util.Core.getTime()
+			local rect = Feint.Core.Graphics.rectangle
+			local time = Feint.Core.Util.getTime()
 			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
 				Transform.angle = Transform.angle + 1 / 60 * pi -- + Entity * 6
 				Transform.x = Transform.x + sin(time * 2 + Entity * 0.25) * 0.5
@@ -128,8 +128,8 @@ function RenderSystem:update(dt)
 			end)
 		else
 			local sin, cos, pi = math.sin, math.cos, math.pi
-			local rect = Feint.Graphics.rectangle
-				local time = Feint.Util.Core.getTime()
+			local rect = Feint.Core.Graphics.rectangle
+				local time = Feint.Core.Util.getTime()
 				self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
 					local x = Data[Transform]
 					local y = Data[Transform + 1]

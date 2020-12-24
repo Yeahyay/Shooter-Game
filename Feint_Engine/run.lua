@@ -14,18 +14,18 @@
 local World = Feint.ECS.World
 
 local graphics = Feint.Core.Graphics
--- local oldRate = Feint.Run.rate
+-- local oldRate = Feint.Core.Run.rate
 function love.keypressed(key, ...)
 	if key == "space" then
-		if Feint.Run.pause then -- Feint.Run.rate == 0 then
+		if Feint.Core.Run.pause then -- Feint.Core.Run.rate == 0 then
 			print("PLAY")
-			-- Feint.Run.rate = oldRate
-			-- Feint.Run.pause = false
+			-- Feint.Core.Run.rate = oldRate
+			-- Feint.Core.Run.pause = false
 		else
 			print("PAUSE")
-			-- oldRate = Feint.Run.rate
-			-- Feint.Run.rate = 0
-			Feint.Run.pause = true
+			-- oldRate = Feint.Core.Run.rate
+			-- Feint.Core.Run.rate = 0
+			Feint.Core.Run.pause = true
 		end
 	end
 	if key == "q" then
@@ -75,23 +75,23 @@ function love.threaderror(thread, message)
 	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 1)
 end
 function love.load()
-	Feint.Run.framerate = 60 -- framerate cap
-	Feint.Run.rate = 1 / 60 -- update dt
-	Feint.Run.sleep = 0.001
+	Feint.Core.Run.framerate = 60 -- framerate cap
+	Feint.Core.Run.rate = 1 / 60 -- update dt
+	Feint.Core.Run.sleep = 0.001
 
 	love.graphics.setLineStyle("rough")
 	love.graphics.setDefaultFilter("nearest", "nearest", 16)
 	love.math.setRandomSeed(Feint.Math.G_SEED)
 
-	Feint.Paths.Add("Game_ECS_Files", "src.ECS")
-	Feint.Paths.Add("Game_ECS_Bootstrap", Feint.Paths.Game_ECS_Files.."bootstrap", "file")
-	Feint.Paths.Add("Game_ECS_Components", Feint.Paths.Game_ECS_Files.."components")
-	Feint.Paths.Add("Game_ECS_Systems", Feint.Paths.Game_ECS_Files.."systems")
+	Feint.Core.Paths.Add("Game_ECS_Files", "src.ECS")
+	Feint.Core.Paths.Add("Game_ECS_Bootstrap", Feint.Core.Paths.Game_ECS_Files.."bootstrap", "file")
+	Feint.Core.Paths.Add("Game_ECS_Components", Feint.Core.Paths.Game_ECS_Files.."components")
+	Feint.Core.Paths.Add("Game_ECS_Systems", Feint.Core.Paths.Game_ECS_Files.."systems")
 	local systems = {} -- luacheck: ignore
 	local systemCount = 0
-	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Paths.SlashDelimited(Feint.Paths.Game_ECS_Systems))) do
+	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Core.Paths.SlashDelimited(Feint.Core.Paths.Game_ECS_Systems))) do
 		if v:match(".lua") then
-			local path = Feint.Paths.Game_ECS_Systems..v:gsub(".lua", "")
+			local path = Feint.Core.Paths.Game_ECS_Systems..v:gsub(".lua", "")
 			local system = require(path)
 			systemCount = systemCount + 1
 			systems[systemCount] = system
@@ -127,14 +127,16 @@ function love.load()
 		})
 	end
 
-	-- [[
+	-- after the new module system, this might not work
+	-- to future me, please fix
+	--[[
 	for i = 1, 1, 1 do
-		Feint.Thread.newWorker(i, nil)
+		Feint.Core.Thread.newWorker(i, nil)
 	end
 	love.timer.sleep(0.1)
 	for i = 1, 1, 1 do
 		Feint.Log.logln("STARTING THREAD %d", i)
-		Feint.Thread.startWorker(i)
+		Feint.Core.Thread.startWorker(i)
 
 		local threadData = {
 			go = true,
@@ -172,7 +174,7 @@ function love.load()
 	end
 	--]]
 
-	Feint.UI.Immediate.Initialize()
+	Feint.Core.Graphics.UI.Immediate.Initialize()
 end
 
 Feint.Util.Debug.PRINT_ENV(_G, false)
@@ -183,7 +185,7 @@ Feint.Util.Debug.PRINT_ENV(_G, false)
 local getTime = love.timer.getTime
 
 local run = Feint.Core.Run
-for k, v in pairs(Feint.Core.Run) do
+for k, v in pairs(Feint.Core.Graphics) do
 	print(k, v)
 end
 local lgraphics = love.graphics
@@ -191,7 +193,7 @@ function love.update(dt)
 	graphics.clear()
 
 		graphics.RenderSize = Feint.Math.Vec2.new(1280, 720)
-		-- graphics.RenderSize = graphics.RenderSize * ((0.5 + math.sin(Feint.Util.Core.getTime()) * 0.5) * 0.1 + 0.9)
+		-- graphics.RenderSize = graphics.RenderSize * ((0.5 + math.sin(Feint.Core.Util.getTime()) * 0.5) * 0.1 + 0.9)
 		graphics.RenderToScreenRatio = graphics.ScreenSize / graphics.RenderSize
 		graphics.ScreenToRenderRatio = graphics.RenderSize / graphics.ScreenSize
 
@@ -204,8 +206,8 @@ function love.update(dt)
 	graphics.processAddQueue()	-- process all pending draw queue insertions
 	graphics.processQueue()		-- process all draw data updates
 
-	if Feint.UI.Immediate then
-		Feint.UI.Immediate.Update(dt)
+	if Feint.Core.Graphics.UI.Immediate then
+		Feint.Core.Graphics.UI.Immediate.Update(dt)
 	end
 
 	local endTime = getTime()
@@ -216,7 +218,7 @@ function love.update(dt)
 
 	run.G_UPDATE_TIME_PERCENT_FRAME = run.G_UPDATE_TIME / (run.rate) * 100
 
-	Feint.UI.Immediate.Update(run.G_RENDER_DT)
+	Feint.Core.Graphics.UI.Immediate.Update(run.G_RENDER_DT)
 
 end
 
@@ -270,7 +272,7 @@ function love.draw(dt)
 	lgraphics.setCanvas()
 	lgraphics.draw(canvas, 0, 0, 0, graphics.RenderToScreenRatio.x, graphics.RenderToScreenRatio.y, 0, 0)
 
-	Feint.UI.Immediate.Draw(run.G_RENDER_DT)
+	Feint.Core.Graphics.UI.Immediate.Draw(run.G_RENDER_DT)
 
 	local endTime = getTime()
 
@@ -345,13 +347,13 @@ function love.draw(dt)
 	-- )
 
 	-- MEMORY
-	lgraphics.printf(string.format("Memory Usage (MiB):   %12.2f", Feint.Util.Core.getMemoryUsageKiB() / 1024),
+	lgraphics.printf(string.format("Memory Usage (MiB):   %12.2f", Feint.Core.Util.getMemoryUsageKiB() / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 8, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(string.format("Memory Usage (KiB):   %12.2f", Feint.Util.Core.getMemoryUsageKiB()),
+	lgraphics.printf(string.format("Memory Usage (KiB):   %12.2f", Feint.Core.Util.getMemoryUsageKiB()),
 		0, DEFAULT_FONT_HEIGHT / 2 * 9, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(string.format("Memory Usage (bytes): %12.2f", Feint.Util.Core.getMemoryUsageKiB() * 1024),
+	lgraphics.printf(string.format("Memory Usage (bytes): %12.2f", Feint.Core.Util.getMemoryUsageKiB() * 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 10, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 

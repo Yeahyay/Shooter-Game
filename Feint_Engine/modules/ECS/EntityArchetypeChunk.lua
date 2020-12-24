@@ -4,7 +4,7 @@ local ECSutils = Feint.ECS.Util
 
 local EntityChunk = ECSutils.newClass("EntityChunk")
 function EntityChunk:init(archetype, ...)
-	assert(Feint.Util.Core.type(archetype) == "table", "EntityArchetypeChunk needs an archetype", 1)
+	assert(Feint.Core.Util:type(archetype) == "table", "EntityArchetypeChunk needs an archetype", 1)
 	self.archetype = archetype
 	self.Name = archetype.Name.."_ArchetypeChunk"
 	self.isFull_cached = false

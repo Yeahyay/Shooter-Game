@@ -180,36 +180,12 @@ local t = {}
 for dependency, score in pairs(numDependencies) do
 	t[#t + 1] = dependency
 end
-print()
 table.sort(t, function(a, b)
 	return numDependencies[a] > numDependencies[b]
 end)
--- for k, moduleFullName in ipairs(t) do
--- 	-- recalculate score
--- 	-- print(moduleFullName, modules[moduleFullName])
--- 	if modules[moduleFullName].depends then
--- 		for _, dependency in pairs(modules[moduleFullName].depends) do
--- 			-- print(_, dependency)
--- 			numDependencies[moduleFullName] = numDependencies[moduleFullName] + numDependencies[dependency]
--- 		end
--- 	end
--- end
--- table.sort(t, function(a, b)
--- 	return numDependencies[a] > numDependencies[b]
--- end)
 for k, moduleFullName in ipairs(t) do
 	print(moduleFullName, numDependencies[moduleFullName])
 end
-
--- for dependency, score in pairs(numDependencies) do
--- 	local cur = modules
--- 	for k, v in pairs(modules[dependency].depends) do
--- 	-- for name in string.gmatch(dependency, "([%a%d]+).?") do
--- 	-- 	cur = cur[name]
--- 	-- end
--- 	end
--- 	t[#t + 1] = dependency
--- end
 print()
 --]]
 
@@ -228,11 +204,6 @@ for k, entry in pairs(moduleLoadQueue) do
 end
 print()
 
--- local function moveTableMember(table1, member, table2)
--- 	table2[member] = table1[member]
--- 	table1[member] = nil
--- end
-
 local function mergeTables(t1, t2)
 	for k, v in pairs(t2) do
 		if (type(v) == "table") and (type(t1[k] or false) == "table") then
@@ -246,17 +217,19 @@ end
 
 local function createEtherealTable(name)
 	local etherealTable = {Name = name, Ethereal = true}
-	etherealTable.tableToString = tostring(etherealTable)
+	etherealTable.TableToString = tostring(etherealTable)
 	function etherealTable:deEtherize(table2)
-		mergeTables(table2, self)
 		self.Name = nil
-		self.Ethereal = false
+		self.Ethereal = nil
 		self.Table = nil
+		self.deEtherize = nil
+		self.TableToString = nil
+		self = mergeTables(table2, self)
 		setmetatable(self, getmetatable(table2))
 	end
 	setmetatable(etherealTable, {
 	__tostring = function()
-		return "Ethereal: " .. etherealTable.tableToString:gsub("table: ", "")
+		return "Ethereal: " .. etherealTable.TableToString:gsub("table: ", "")
 	end
 	})
 	return etherealTable
@@ -273,20 +246,27 @@ local debugStuff = function()
 		-- print("current", current)
 		print()
 		local f
+		local h = {}
+		pushPrintPrefix("")
 		f = function(v, d)
-			for _k, _v in pairs(v) do
-				if (d > 0 and (type(_v) == "table" and (_v.ModuleName or _v.Ethereal))) or _k == "Modules" then
-					if type(_v) == "table" then
-						print(("|   "):rep(d - 1) .. ("| - "):rep(math.min(d, 1)) .. _k, _v)
-						if next(v) and d < 100 then
-							f(_v, d + 1)
+			if not h[v] then
+				h[v] = true
+				for _k, _v in pairs(v) do
+					if d > 0 or _k == "Modules" then
+					-- if (d > 0 and (type(_v) == "table" and (_v.ModuleName or _v.Ethereal))) or _k == "Modules" then
+						if type(_v) == "table" then
+							print(("   "):rep(d - 1) .. (" - "):rep(math.min(d, 1)) .. _k, _v)
+							if next(v) and d < 100 then
+								f(_v, d + 1)
+							end
+						else
+							print(("    "):rep(d) .. _k, _v)
 						end
-					else
-						print(("    "):rep(d) .. _k, _v)
 					end
 				end
 			end
 		end
+		popPrintPrefix()
 		f(Feint, 0)
 		print()
 		print("__DEBUG__")
@@ -298,7 +278,7 @@ print("Loading Modules")
 for k, module in pairs(moduleLoadQueue) do
 	local moduleFullName = module.Name
 	local moduleName = module.ModuleName
-	io.write(string.format("{ Loading module %s ^^\n", moduleFullName))
+	io.write(string.format("* Loading module %s\n", moduleFullName))
 	-- Feint.Modules[module.ModuleName] = module
 	local current = Feint.Modules
 
@@ -316,27 +296,24 @@ for k, module in pairs(moduleLoadQueue) do
 			accum = accum:len() > 0 and accum .. "." .. name or name
 			local currentModule = current[name]
 
-			print(",,,", module.Name, currentModule and currentModule.Name)
+			-- print(",,,", module.Name, currentModule and currentModule.Name)
 			if module.Name == (currentModule and currentModule.Name) then
-				print("FOUND REAL TABLE, DEETHERIZING")
+				-- print("FOUND REAL TABLE, DEETHERIZING")
+				-- print(currentModule.Name, module.Name)
 				currentModule:deEtherize(module)
 				break
 			end
 			if currentModule then
 				if currentModule.Ethereal then
-					funcSpace(2)
-					io.write(string.format("!!  ETHEREAL TABLE %s\n", tostring(currentModule)))
-					-- print(accum, current[name].Name)
-					-- if accum == current[name].Name then
-					-- 	current[name]:deEtherize()
-					-- end
+					-- funcSpace(2)
+					-- io.write(string.format("!!  ETHEREAL TABLE %s\n", tostring(currentModule)))
 				end
 			else
-				io.write(string.format("%s does not exist\n", accum))
+				-- io.write(string.format("%s does not exist\n", accum))
 
-				funcSpace(1)
+				-- funcSpace(1)
 				if depth > i then
-					io.write(string.format("it is not terminal, making it ethereal\n", accum))
+					-- io.write(string.format("it is not terminal, making it ethereal\n", accum))
 					current[name] = createEtherealTable(accum)
 					currentModule = current[name]
 					-- for k, v in pairs(currentModule) do
@@ -345,7 +322,7 @@ for k, module in pairs(moduleLoadQueue) do
 					-- print(module.ModuleName)
 					-- print(current["Table"])
 				else
-					io.write(string.format("it is terminal\n", accum))
+					-- io.write(string.format("it is terminal\n", accum))
 					-- debugStuff()
 					break
 				end
@@ -371,31 +348,31 @@ for k, module in pairs(moduleLoadQueue) do
 	end
 
 	Feint.LoadedModules[moduleFullName] = module
-	io.write(string.format("} Loaded  module %s VV\n", module.Name))
+	io.write(string.format("* Loaded  module %s\n", module.Name))
 	print()
 end
 
 print("FINAL")
-debugStuff()
+-- debugStuff()
 
-for _, module in pairs(Feint.Modules) do
-	if module.depends then
-		io.write(string.format("Checking module %s's depenencies\n", module.Name))
-		for _, dependency in pairs(module.depends) do
-			local cur = Feint.Modules
-			funcSpace(1)
-			io.write(string.format("Searching for dependency %s\n", dependency))
-			for name in string.gmatch(dependency, "([%a%d]+).?") do
-				funcSpace(2)
-				io.write(string.format("checking if module %s exists in %s\n", name, cur.Name))
-				assert(cur[name], "BROKEN DEPENDENCY ".. dependency)
-				funcSpace(2)
-				io.write(string.format("module %s exists in %s\n", name, cur.Name))
-				cur = cur[name]
-			end
-		end
-	end
-end
+-- for _, module in pairs(Feint.Modules) do
+-- 	if module.depends then
+-- 		io.write(string.format("Checking module %s's depenencies\n", module.Name))
+-- 		for _, dependency in pairs(module.depends) do
+-- 			local cur = Feint.Modules
+-- 			funcSpace(1)
+-- 			io.write(string.format("Searching for dependency %s\n", dependency))
+-- 			for name in string.gmatch(dependency, "([%a%d]+).?") do
+-- 				funcSpace(2)
+-- 				io.write(string.format("checking if module %s exists in %s\n", name, cur.Name))
+-- 				assert(cur[name], "BROKEN DEPENDENCY ".. dependency)
+-- 				funcSpace(2)
+-- 				io.write(string.format("module %s exists in %s\n", name, cur.Name))
+-- 				cur = cur[name]
+-- 			end
+-- 		end
+-- 	end
+-- end
 --[[
 for k, module in pairs(moduleLoadQueue) do
 	local moduleFullName = module.Name

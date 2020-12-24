@@ -18,7 +18,7 @@ function extendedMath.clamp(x, min, max)
 	return math.max(math.min(min, x), max)
 end
 
-local util = Feint.Util.Core
+local util = Feint.Core.Util
 function extendedMath.oscillateManual(time, amplitude, rate, offset)
 	return (math.cos(time * rate + offset) * 0.5 + 0.5) * amplitude
 end

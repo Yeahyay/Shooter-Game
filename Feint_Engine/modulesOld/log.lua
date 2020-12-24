@@ -1,6 +1,6 @@
 local log = {}
 
-local util = Feint.Util.Core
+local util = Feint.Core.Util
 
 local date = function()
 	return os.date(string.format("%%y-%%m-%%d", (util.getTime() % 1) * 1000))
