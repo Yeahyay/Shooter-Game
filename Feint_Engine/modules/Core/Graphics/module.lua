@@ -1,5 +1,5 @@
 local graphics = {
-	depends = {""}
+	depends = {"Math"}
 }
 
 local private = {}

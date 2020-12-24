@@ -63,7 +63,7 @@ function love.keyreleased(...)
 end
 
 function love.mousemoved(x, y, dx, dy)
-	Feint.Input.mousemoved(x, y, dx, dy)
+	Feint.Core.Input.mousemoved(x, y, dx, dy)
 end
 
 function love.mousepressed(...)

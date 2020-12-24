@@ -42,13 +42,13 @@ function input:load()
 	function private.mousemoved(x, y, dx, dy)
 		local mouse = self.mouse
 		mouse.PositionRawOld = mouse.PositionRaw
-		mouse.PositionRaw.x, mouse.PositionRaw.y = x, Feint.Graphics.ScreenSize.y - y
-		mouse.PositionRaw = mouse.PositionRaw % Feint.Graphics.ScreenToRenderRatio
+		mouse.PositionRaw.x, mouse.PositionRaw.y = x, Feint.Core.Graphics.ScreenSize.y - y
+		mouse.PositionRaw = mouse.PositionRaw % Feint.Core.Graphics.ScreenToRenderRatio
 		mouse.PositionOld = mouse.Position
-		mouse.Position = mouse.PositionRaw - Feint.Graphics.RenderSize / 2
+		mouse.Position = mouse.PositionRaw - Feint.Core.Graphics.RenderSize / 2
 
 		mouse.PositionUnitOld = mouse.PositionUnit
-		mouse.PositionUnit = mouse.Position / Feint.Graphics.RenderSize
+		mouse.PositionUnit = mouse.Position / Feint.Core.Graphics.RenderSize
 
 		mouse.PositionDeltaOld = mouse.PositionDelta
 		-- mouse.PositionDelta = mouse.Position - mouse.PositionOld
