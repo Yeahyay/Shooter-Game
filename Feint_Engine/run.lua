@@ -1,21 +1,29 @@
 -- CORE FILE
 
+local Paths = Feint.Core.Paths
+local Math = Feint.Math
+local Util = Feint.Util
+local Graphics = Feint.Core.Graphics
+local LoveGraphics = love.graphics
+local Run = Feint.Core.Run
+local Log = Feint.Log
+local Core = Feint.Core
+
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
 
-local graphics = Feint.Core.Graphics
--- local oldRate = Feint.Core.Run.rate
+-- local oldRate = Run.rate
 function love.keypressed(key, ...)
 	if key == "space" then
-		if Feint.Core.Run.pause then -- Feint.Core.Run.rate == 0 then
+		if Run.pause then -- Run.rate == 0 then
 			print("PLAY")
-			-- Feint.Core.Run.rate = oldRate
-			-- Feint.Core.Run.pause = false
+			-- Run.rate = oldRate
+			-- Run.pause = false
 		else
 			print("PAUSE")
-			-- oldRate = Feint.Core.Run.rate
-			-- Feint.Core.Run.rate = 0
-			Feint.Core.Run.pause = true
+			-- oldRate = Run.rate
+			-- Run.rate = 0
+			Run.pause = true
 		end
 	end
 	if key == "q" then
@@ -26,8 +34,8 @@ function love.keypressed(key, ...)
 		local entity = entityManager:CreateEntity(archetype)
 
 		entityManager:setComponentData(entity, Transform, {
-			{x = Feint.Math.random2(graphics.RenderSize.x / 2)},
-			{y = Feint.Math.random2(-graphics.RenderSize.y / 2, graphics.RenderSize.y / 2 - 300)},
+			{x = Math.random2(Graphics.RenderSize.x / 2)},
+			{y = Math.random2(-Graphics.RenderSize.y / 2, Graphics.RenderSize.y / 2 - 300)},
 											-- 1
 			{angle = 0},				-- 2
 			{sizeX = 32},				-- 3
@@ -39,14 +47,14 @@ function love.keypressed(key, ...)
 		})
 	end
 	if key == "a" then
-		print(graphics.ScreenToRenderRatio)
-		graphics.RenderSize = graphics.RenderSize % Feint.Math.Vec2.new(0.5, 0.5)
-		graphics.RenderToScreenRatio = graphics.ScreenSize / graphics.RenderSize
-		graphics.ScreenToRenderRatio = graphics.RenderSize / graphics.ScreenSize
-		print(graphics.ScreenToRenderRatio)
+		print(Graphics.ScreenToRenderRatio)
+		Graphics.RenderSize = Graphics.RenderSize % Math.Vec2.new(0.5, 0.5)
+		Graphics.RenderToScreenRatio = Graphics.ScreenSize / Graphics.RenderSize
+		Graphics.ScreenToRenderRatio = Graphics.RenderSize / Graphics.ScreenSize
+		print(Graphics.ScreenToRenderRatio)
 	end
 	if key == "z" then
-		graphics.toggleInterpolation()
+		Graphics.toggleInterpolation()
 	end
 end
 function love.keyreleased(...)
@@ -65,23 +73,23 @@ function love.threaderror(thread, message)
 	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 1)
 end
 function love.load()
-	Feint.Core.Run.framerate = 60 -- framerate cap
-	Feint.Core.Run.rate = 1 / 60 -- update dt
-	Feint.Core.Run.sleep = 0.001
+	Run.framerate = 60 -- framerate cap
+	Run.rate = 1 / 60 -- update dt
+	Run.sleep = 0.001
 
-	love.graphics.setLineStyle("rough")
-	love.graphics.setDefaultFilter("nearest", "nearest", 16)
-	love.math.setRandomSeed(Feint.Math.G_SEED)
+	LoveGraphics.setLineStyle("rough")
+	LoveGraphics.setDefaultFilter("nearest", "nearest", 16)
+	love.math.setRandomSeed(Math.G_SEED)
 
-	Feint.Core.Paths.Add("Game_ECS_Files", "src.ECS")
-	Feint.Core.Paths.Add("Game_ECS_Bootstrap", Feint.Core.Paths.Game_ECS_Files.."bootstrap", "file")
-	Feint.Core.Paths.Add("Game_ECS_Components", Feint.Core.Paths.Game_ECS_Files.."components")
-	Feint.Core.Paths.Add("Game_ECS_Systems", Feint.Core.Paths.Game_ECS_Files.."systems")
+	Paths.Add("Game_ECS_Files", "src.ECS")
+	Paths.Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
+	Paths.Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
+	Paths.Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
 	local systems = {} -- luacheck: ignore
 	local systemCount = 0
-	for k, v in pairs(love.filesystem.getDirectoryItems(Feint.Core.Paths.SlashDelimited(Feint.Core.Paths.Game_ECS_Systems))) do
+	for k, v in pairs(love.filesystem.getDirectoryItems(Paths.SlashDelimited(Paths.Game_ECS_Systems))) do
 		if v:match(".lua") then
-			local path = Feint.Core.Paths.Game_ECS_Systems..v:gsub(".lua", "")
+			local path = Paths.Game_ECS_Systems..v:gsub(".lua", "")
 			local system = require(path)
 			systemCount = systemCount + 1
 			systems[systemCount] = system
@@ -89,12 +97,12 @@ function love.load()
 		end
 	end
 
-	Feint.Log.log("\n%s update order:\n", World.DefaultWorld.Name)
+	Log.log("\n%s update order:\n", World.DefaultWorld.Name)
 	World.DefaultWorld:generateUpdateOrderList()
 	for k, v in ipairs(World.DefaultWorld.updateOrder) do
-		Feint.Log.log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
+		Log.log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
 	end
-	Feint.Log.logln()
+	Log.logln()
 
 	World.DefaultWorld:start()
 
@@ -125,7 +133,7 @@ function love.load()
 	end
 	love.timer.sleep(0.1)
 	for i = 1, 1, 1 do
-		Feint.Log.logln("STARTING THREAD %d", i)
+		Log.logln("STARTING THREAD %d", i)
 		Feint.Core.Thread.startWorker(i)
 
 		local threadData = {
@@ -153,36 +161,34 @@ function love.load()
 
 		channel:push(threadData)
 
-		Feint.Log.logln("WAITING FOR THREAD %d", i)
+		Log.logln("WAITING FOR THREAD %d", i)
 		local wait = false
 		wait = channel:demand()
 		-- while not wait and wait ~= threadData do
-			Feint.Log.logln("RECIEVED", wait)
+			Log.logln("RECIEVED", wait)
 		-- end
-		Feint.Log.logln("DONE WAITING FOR THREAD %d", i)
+		Log.logln("DONE WAITING FOR THREAD %d", i)
 
 	end
 	--]]
 
-	Feint.Core.Graphics.UI.Immediate.Initialize()
+	Graphics.UI.Immediate.Initialize()
 end
 
-Feint.Util.Debug.PRINT_ENV(_G, false)
+Util.Debug.PRINT_ENV(_G, false)
 
 
 -- local avg = 0
 -- local avgTimes = 0
 local getTime = love.timer.getTime
 
-local run = Feint.Core.Run
-local lgraphics = love.graphics
 function love.update(dt)
-	graphics.clear()
+	Graphics.clear()
 
-		graphics.RenderSize = Feint.Math.Vec2.new(1280, 720)
-		-- graphics.RenderSize = graphics.RenderSize * ((0.5 + math.sin(Feint.Core.Util.getTime()) * 0.5) * 0.1 + 0.9)
-		graphics.RenderToScreenRatio = graphics.ScreenSize / graphics.RenderSize
-		graphics.ScreenToRenderRatio = graphics.RenderSize / graphics.ScreenSize
+		Graphics.RenderSize = Math.Vec2.new(1280, 720)
+		-- Graphics.RenderSize = Graphics.RenderSize * ((0.5 + math.sin(Util.getTime()) * 0.5) * 0.1 + 0.9)
+		Graphics.RenderToScreenRatio = Graphics.ScreenSize / Graphics.RenderSize
+		Graphics.ScreenToRenderRatio = Graphics.RenderSize / Graphics.ScreenSize
 
 	local startTime = getTime()
 
@@ -190,88 +196,88 @@ function love.update(dt)
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 	end
 
-	graphics.processAddQueue()	-- process all pending draw queue insertions
-	graphics.processQueue()		-- process all draw data updates
+	Graphics.processAddQueue()	-- process all pending draw queue insertions
+	Graphics.processQueue()		-- process all draw data updates
 
-	if Feint.Core.Graphics.UI.Immediate then
-		Feint.Core.Graphics.UI.Immediate.Update(dt)
+	if Graphics.UI.Immediate then
+		Graphics.UI.Immediate.Update(dt)
 	end
 
 	local endTime = getTime()
 
-	run.G_UPDATE_DT = endTime - startTime
+	Run.G_UPDATE_DT = endTime - startTime
 
-	run.G_UPDATE_TIME = run.G_UPDATE_TIME + (run.G_UPDATE_DT - run.G_UPDATE_TIME) * (1 - run.G_UPDATE_TIME_SMOOTHNESS)
+	Run.G_UPDATE_TIME = Run.G_UPDATE_TIME + (Run.G_UPDATE_DT - Run.G_UPDATE_TIME) * (1 - Run.G_UPDATE_TIME_SMOOTHNESS)
 
-	run.G_UPDATE_TIME_PERCENT_FRAME = run.G_UPDATE_TIME / (run.rate) * 100
+	Run.G_UPDATE_TIME_PERCENT_FRAME = Run.G_UPDATE_TIME / (Run.rate) * 100
 
-	Feint.Core.Graphics.UI.Immediate.Update(run.G_RENDER_DT)
+	Graphics.UI.Immediate.Update(Run.G_RENDER_DT)
 
 end
 
 local function updateRender(dt) -- luacheck: ignore
 end
 
-local DEFAULT_FONT = love.graphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
+local DEFAULT_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
 local DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
-love.graphics.setFont(DEFAULT_FONT)
+LoveGraphics.setFont(DEFAULT_FONT)
 
 local	fpsList = {}
-for i = 1, run.G_AVG_FPS_DELTA_ITERATIONS, 1 do
+for i = 1, Run.G_AVG_FPS_DELTA_ITERATIONS, 1 do
 	fpsList[i] = 0
 end
 local fpsIndex = 1
 local fpsSum = 0
 
-local canvas = love.graphics.newCanvas(graphics.RenderSize.x, graphics.RenderSize.y, {msaa = 0})
--- local debug = love.graphics.newCanvas(graphics.RenderSize.x, graphics.RenderSize.y, {msaa = 0})
+local canvas = LoveGraphics.newCanvas(Graphics.RenderSize.x, Graphics.RenderSize.y, {msaa = 0})
+-- local debug = LoveGraphics.newCanvas(Graphics.RenderSize.x, Graphics.RenderSize.y, {msaa = 0})
 
 -- local acc = 0
 function love.draw(dt)
 	do
-		run.G_FPS_DELTA = run.G_FPS_DELTA + (run.dt - run.G_FPS_DELTA) * (1 - run.G_FPS_DELTA_SMOOTHNESS)
-		run.G_FPS = 1 / run.G_FPS_DELTA
+		Run.G_FPS_DELTA = Run.G_FPS_DELTA + (Run.dt - Run.G_FPS_DELTA) * (1 - Run.G_FPS_DELTA_SMOOTHNESS)
+		Run.G_FPS = 1 / Run.G_FPS_DELTA
 	end
 
 	do
-		fpsSum = fpsSum -	fpsList[fpsIndex] + run.dt
-		fpsList[fpsIndex] = run.dt
-		fpsIndex = fpsIndex % run.G_AVG_FPS_DELTA_ITERATIONS + 1
-		run.G_AVG_FPS_DELTA = fpsSum / run.G_AVG_FPS_DELTA_ITERATIONS
+		fpsSum = fpsSum -	fpsList[fpsIndex] + Run.dt
+		fpsList[fpsIndex] = Run.dt
+		fpsIndex = fpsIndex % Run.G_AVG_FPS_DELTA_ITERATIONS + 1
+		Run.G_AVG_FPS_DELTA = fpsSum / Run.G_AVG_FPS_DELTA_ITERATIONS
 
-		run.G_AVG_FPS = 1 / run.G_AVG_FPS_DELTA
+		Run.G_AVG_FPS = 1 / Run.G_AVG_FPS_DELTA
 	end
 
-	run.G_INT = run.accum / math.max(0, run.rate)
+	Run.G_INT = Run.accum / math.max(0, Run.rate)
 
 	local startTime = getTime()
 
-	lgraphics.setCanvas(canvas)
-	lgraphics.clear()
-	lgraphics.push()
-		lgraphics.translate(graphics.RenderSize.x / 2, -graphics.RenderSize.y / 2)
-		-- lgraphics.setWireframe(true)
-		graphics.updateInterpolate(run.accum)
-		-- graphics.processQueue()
-		graphics.draw()
-		-- lgraphics.setWireframe(false)
-	lgraphics.pop()
-	lgraphics.setCanvas()
-	lgraphics.draw(canvas, 0, 0, 0, graphics.RenderToScreenRatio.x, graphics.RenderToScreenRatio.y, 0, 0)
+	LoveGraphics.setCanvas(canvas)
+	LoveGraphics.clear()
+	LoveGraphics.push()
+		LoveGraphics.translate(Graphics.RenderSize.x / 2, -Graphics.RenderSize.y / 2)
+		-- LoveGraphics.setWireframe(true)
+		Graphics.updateInterpolate(Run.accum)
+		-- Graphics.processQueue()
+		Graphics.draw()
+		-- LoveGraphics.setWireframe(false)
+	LoveGraphics.pop()
+	LoveGraphics.setCanvas()
+	LoveGraphics.draw(canvas, 0, 0, 0, Graphics.RenderToScreenRatio.x, Graphics.RenderToScreenRatio.y, 0, 0)
 
-	Feint.Core.Graphics.UI.Immediate.Draw(run.G_RENDER_DT)
+	Graphics.UI.Immediate.Draw(Run.G_RENDER_DT)
 
 	local endTime = getTime()
 
-	run.G_RENDER_DT = endTime - startTime
+	Run.G_RENDER_DT = endTime - startTime
 
-	run.G_RENDER_TIME = run.G_RENDER_TIME + (run.G_RENDER_DT - run.G_RENDER_TIME) * (1 - run.G_RENDER_TIME_SMOOTHNESS)
+	Run.G_RENDER_TIME = Run.G_RENDER_TIME + (Run.G_RENDER_DT - Run.G_RENDER_TIME) * (1 - Run.G_RENDER_TIME_SMOOTHNESS)
 
-	run.G_RENDER_TIME_PERCENT_FRAME = run.G_RENDER_TIME / (run.rate) * 100
+	Run.G_RENDER_TIME_PERCENT_FRAME = Run.G_RENDER_TIME / (Run.rate) * 100
 
 	--[[
 	local f = 60
-	acc = acc + run.G_RENDER_DT * f
+	acc = acc + Run.G_RENDER_DT * f
 	while acc > 1 / 60 do
 		updateRender(acc)
 		acc = acc - 1 / 60
@@ -279,78 +285,78 @@ function love.draw(dt)
 	--]]
 
 	-- FPS
-	lgraphics.printf(
+	LoveGraphics.printf(
 		string.format("FPS:      %7.2f, DT:      %7.4fms\n",
-		run.G_FPS, 1000 * run.G_FPS_DELTA), 0, 0, graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
+		Run.G_FPS, 1000 * Run.G_FPS_DELTA), 0, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 	-- [[
-	lgraphics.printf(
-		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", run.G_AVG_FPS, 1000 * run.G_AVG_FPS_DELTA),
-		0, DEFAULT_FONT_HEIGHT / 2, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(
+		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Run.G_AVG_FPS, 1000 * Run.G_AVG_FPS_DELTA),
+		0, DEFAULT_FONT_HEIGHT / 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(
-		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.dt, 1000 * run.dt),
-		0, DEFAULT_FONT_HEIGHT / 2 * 2, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(
+		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / Run.dt, 1000 * Run.dt),
+		0, DEFAULT_FONT_HEIGHT / 2 * 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 	-- UPDATE TIME
-	lgraphics.printf(
-		string.format("UPDATE:     %8.4fms, %6.2f%% 60Hz\n", 1000 * run.G_UPDATE_TIME, run.G_UPDATE_TIME_PERCENT_FRAME),
-		0, DEFAULT_FONT_HEIGHT / 2 * 4, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(
+		string.format("UPDATE:     %8.4fms, %6.2f%% 60Hz\n", 1000 * Run.G_UPDATE_TIME, Run.G_UPDATE_TIME_PERCENT_FRAME),
+		0, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(
+	LoveGraphics.printf(
 		string.format("UPDATE AVG: %8.4fms, %6.2f%% 60Hz\n", 0, 0),
-		0, DEFAULT_FONT_HEIGHT / 2 * 5, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		0, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(
-		string.format("UPDATE TRUE:%8.4fms, %6.2f%% 60Hz\n", 1000 * run.G_UPDATE_DT, run.G_UPDATE_DT / (run.rate) * 100),
-		0, DEFAULT_FONT_HEIGHT / 2 * 6, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(
+		string.format("UPDATE TRUE:%8.4fms, %6.2f%% 60Hz\n", 1000 * Run.G_UPDATE_DT, Run.G_UPDATE_DT / (Run.rate) * 100),
+		0, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	-- RENDER TIME
-	lgraphics.printf(
-		string.format("RENDER:     %8.4fms, %6.2f%% Frame\n", 1000 * run.G_RENDER_TIME, run.G_RENDER_TIME_PERCENT_FRAME),
-		350, DEFAULT_FONT_HEIGHT / 2 * 4, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(
+		string.format("RENDER:     %8.4fms, %6.2f%% Frame\n", 1000 * Run.G_RENDER_TIME, Run.G_RENDER_TIME_PERCENT_FRAME),
+		350, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(
+	LoveGraphics.printf(
 		string.format("RENDER AVG: %8.4fms, %6.2f%% Frame\n", 0, 0),
-		350, DEFAULT_FONT_HEIGHT / 2 * 5, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		350, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(
-		string.format("RENDER TRUE:%8.4fms, %6.2f%% Frame\n", 1000 * run.G_RENDER_DT, run.G_RENDER_DT / (run.rate) * 100),
-		350, DEFAULT_FONT_HEIGHT / 2 * 6, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(
+		string.format("RENDER TRUE:%8.4fms, %6.2f%% Frame\n", 1000 * Run.G_RENDER_DT, Run.G_RENDER_DT / (Run.rate) * 100),
+		350, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 
-	-- lgraphics.printf(
-	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", run.G_TPS, 1000 * run.G_TPS_DELTA),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	-- LoveGraphics.printf(
+	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", Run.G_TPS, 1000 * Run.G_TPS_DELTA),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
-	-- lgraphics.printf(
-	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", run.G_AVG_TPS, 1000 * run.G_AVG_TPS_DELTA),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	-- LoveGraphics.printf(
+	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Run.G_AVG_TPS, 1000 * Run.G_AVG_TPS_DELTA),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
-	-- lgraphics.printf(
-	-- 	string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / run.rate, 1000 * run.rate),
-	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	-- LoveGraphics.printf(
+	-- 	string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / Run.rate, 1000 * Run.rate),
+	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 
 	-- MEMORY
-	lgraphics.printf(string.format("Memory Usage (MiB):   %12.2f", Feint.Core.Util.getMemoryUsageKiB() / 1024),
-		0, DEFAULT_FONT_HEIGHT / 2 * 8, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(string.format("Memory Usage (MiB):   %12.2f", Core.Util.getMemoryUsageKiB() / 1024),
+		0, DEFAULT_FONT_HEIGHT / 2 * 8, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(string.format("Memory Usage (KiB):   %12.2f", Feint.Core.Util.getMemoryUsageKiB()),
-		0, DEFAULT_FONT_HEIGHT / 2 * 9, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(string.format("Memory Usage (KiB):   %12.2f", Core.Util.getMemoryUsageKiB()),
+		0, DEFAULT_FONT_HEIGHT / 2 * 9, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(string.format("Memory Usage (bytes): %12.2f", Feint.Core.Util.getMemoryUsageKiB() * 1024),
-		0, DEFAULT_FONT_HEIGHT / 2 * 10, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(string.format("Memory Usage (bytes): %12.2f", Core.Util.getMemoryUsageKiB() * 1024),
+		0, DEFAULT_FONT_HEIGHT / 2 * 10, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 	-- DRAWING
-	local stats = lgraphics.getStats()
-	lgraphics.printf(string.format("Draw calls: %d", stats.drawcalls),
-		0, DEFAULT_FONT_HEIGHT / 2 * 12, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	local stats = LoveGraphics.getStats()
+	LoveGraphics.printf(string.format("Draw calls: %d", stats.drawcalls),
+		0, DEFAULT_FONT_HEIGHT / 2 * 12, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	lgraphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
-		0, DEFAULT_FONT_HEIGHT / 2 * 13, graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	LoveGraphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
+		0, DEFAULT_FONT_HEIGHT / 2 * 13, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	--]]
 end
@@ -360,4 +366,4 @@ end
 -- PRINT_ENV(_ENV, false)
 
 printf("\n")
-Feint.Log.log("Exiting run.lua\n")
+Log.log("Exiting run.lua\n")
