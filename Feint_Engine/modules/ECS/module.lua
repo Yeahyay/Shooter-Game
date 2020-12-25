@@ -9,6 +9,8 @@ function ECS:load()
 
 	self.FFI_OPTIMIZATIONS = true
 
+	print(Feint.ECS.Util)
+
 	self.EntityArchetype = require(paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(paths.ECS .. "EntityArchetypeChunk")
 

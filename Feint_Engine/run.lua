@@ -1,15 +1,5 @@
 -- CORE FILE
 
--- load Feint Engine modules
--- Feint.LoadModule("ECS")
--- Feint.LoadModule("Graphics")
--- Feint.LoadModule("Input")
--- Feint.LoadModule("UI")
--- Feint.LoadModule("Parsing")
--- Feint.LoadModule("Serialize")
--- Feint.LoadModule("Audio")
--- Feint.LoadModule("Tween")
-
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
 
@@ -185,9 +175,6 @@ Feint.Util.Debug.PRINT_ENV(_G, false)
 local getTime = love.timer.getTime
 
 local run = Feint.Core.Run
-for k, v in pairs(Feint.Core.Graphics) do
-	print(k, v)
-end
 local lgraphics = love.graphics
 function love.update(dt)
 	graphics.clear()
