@@ -1,5 +1,5 @@
 local ECS = {
-	depends = {"Core.Paths", "ECS.Util", "Core.Run", "Core.Graphics", "Util.Table"}
+	depends = {"Core.Paths", "ECS.Util", "Core.Time", "Core.Graphics", "Util.Table"}
 }
 
 local paths
@@ -8,8 +8,6 @@ function ECS:load()
 	paths.Add("ECS", paths.Modules .. "ECS") -- add path
 
 	self.FFI_OPTIMIZATIONS = true
-
-	print(Feint.ECS.Util)
 
 	self.EntityArchetype = require(paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(paths.ECS .. "EntityArchetypeChunk")

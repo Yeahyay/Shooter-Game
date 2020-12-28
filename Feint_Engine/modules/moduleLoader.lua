@@ -52,6 +52,9 @@ function moduleLoader:importModule(path)
 	print(string.format("importing %s: %s", module.Name, module.FullName))
 
 	module:loadModule()
+	if not modulePriorities[module.FullName] then
+		modulePriorities[module.FullName] = 0
+	end
 
 	if not module.Module.load then
 		funcSpace(1)
@@ -67,9 +70,9 @@ function moduleLoader:importModule(path)
 			modulePriorities[dependency] = (modulePriorities[dependency] or 0) + 1
 
 			funcSpace(1)
-			print(string.format("*        Dependency: %s depends on %s", module.Name, dependency))
+			print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
 		end
-		-- moduleDependencies[module.Name] = (moduleDependencies[moduleName] or 0) - #module.depends
+		-- modulePriorities[module.Name] = (modulePriorities[module.Name] or 0) - #module.Module.depends
 	end
 
 	-- if getModuleDepth(module.FullName) > 1 then
@@ -79,39 +82,139 @@ function moduleLoader:importModule(path)
 	-- end
 
 	-- insert each module in a default order
-	table.insert(moduleLoadList, #moduleLoadList + 1, module)
+	-- table.insert(moduleLoadList, #moduleLoadList + 1, module)
 	modules[module.FullName] = module
+	funcSpace(1)
+	print("! imported")
+	print()
 	return module
 end
 function moduleLoader:sortDependencies()
+	local notUsed = {}
+	local graph = {}
+	local graphIndex = {}
+	for name, module in pairs(modules) do
+		local node = {
+			FullName = name,
+			Dependencies = {Index ={}},
+			Dependants = {Index = {}},
+		}
+		local indexMT = {
+			__index = function(t, k)
+				return t[t.Index[k]]
+			end,
+			__newindex = function(t, k, v)
+				if type(k) == "number" then
+					rawset(t, k, v)
+					print("no index entry")
+				else
+					t[#t + 1] = v
+					rawset(t.Index, k, #t)
+				end
+			end
+		}
+		setmetatable(node.Dependencies, indexMT)
+		setmetatable(node.Dependants, indexMT)
+		graph[#graph + 1] = node
+		graphIndex[name] = #graph
+		notUsed[name] = true
+	end
+	for name, module in pairs(modules) do
+		local node = graph[graphIndex[name]]
+		if module.Module.depends then
+			for k, dependency in pairs(module.Module.depends) do
+				local dependNode = graph[graphIndex[dependency]]
+				node.Dependencies[dependNode.FullName] = dependNode
+				-- node.Dependencies[#node.Dependencies + 1] = dependNode
+				dependNode.Dependants[node.FullName] = node
+				-- dependNode.Dependants[#dependNode.Dependants + 1] = node
+				-- print(node.FullName, "depends on", dependNode.FullName)
+			end
+		-- else
+		-- 	print(node.FullName, "depends on nothing")
+		end
+	end
 	print()
-	print("Module Dependencies:")
+	for _, node in pairs(graph) do
+		for _, dependant in pairs(node.Dependants) do
+			print(node.FullName, "is depended upon by", dependant.FullName)
+		end
+		if #node.Dependants == 0 then
+			print(node.FullName, "is depended upon by nothing")
+		end
+	end
+	print()
 	local t = {}
-	for name, _ in pairs(modulePriorities) do
-		t[#t + 1] = name
+	for _, node in pairs(graph) do
+		if #node.Dependencies == 0 then --or #node.Dependants == 0 then
+			-- if not notUsed[node.FullName] then
+				-- notUsed[node.FullName] = true
+				t[#t + 1] = node
+			-- end
+		end
 	end
-	-- table.sort(t, function(a, b)
-	-- 	return modulePriorities[a] > modulePriorities[b]
-	-- end)
-	for name, priority in pairs(modulePriorities) do
-		io.write(string.format("%3d %s %s on %s\n",
-			priority,
-			priority == 1 and "module" or "modules",
-			priority == 1 and "depends" or "depend",
-			name
-		))
+	while #t > 0 do
+		local current = t[1]
+		print()
+		for k, v in pairs(t) do
+			io.write(string.format("%d: %s, ", k, v.FullName))
+		end
+		print()
+		table.remove(t, 1)
+		moduleLoadList[#moduleLoadList + 1] = current
+		-- table.insert(moduleLoadList, #moduleLoadList, current)
+
+		-- io.write(string.format("%s is depended on by %d modules and depends on %d modules\n",
+		-- 	current.FullName, #current.Dependants, #current.Dependencies))
+		print("dependants: " .. #current.Dependants .. ", depends: " .. #current.Dependencies .. ", " .. current.FullName)
+		for k, node in ipairs(current.Dependants) do
+			-- print(node.FullName .. " used: " .. tostring(not (notUsed[node.FullName] or false)))
+			-- node.Dependencies[]
+			if notUsed[node.FullName] then
+				print("   - dependants: " .. #node.Dependants .. ", depends: " .. #node.Dependencies .. ", " .. node.FullName)
+				if #node.Dependencies == 1 then
+					print("adding")
+					t[#t + 1] = node
+					notUsed[node.FullName] = nil
+				end
+			end
+		end
 	end
-
-	table.sort(moduleLoadList, function(a, b)
-		return (modulePriorities[a.FullName] or 0) > (modulePriorities[b.FullName] or 0)
-	end)
-
 	print()
 	print("Module Load Order:")
 	for k, entry in pairs(moduleLoadList) do
-		io.write(string.format("%3d: %s\n", k, entry.FullName))
+		io.write(string.format("%2d: %s\n", k, entry.FullName))
 	end
 end
+-- function moduleLoader:sortDependencies()
+-- 	print()
+-- 	print("Module Priorities:")
+-- 	local t = {}
+-- 	for name, _ in pairs(modulePriorities) do
+-- 		t[#t + 1] = name
+-- 	end
+-- 	-- table.sort(t, function(a, b)
+-- 	-- 	return modulePriorities[a] > modulePriorities[b]
+-- 	-- end)
+-- 	for name, priority in pairs(modulePriorities) do
+-- 		io.write(string.format("%3d %s %s on %s\n",
+-- 			priority,
+-- 			priority == 1 and "module" or "modules",
+-- 			priority == 1 and "depends" or "depend",
+-- 			name
+-- 		))
+-- 	end
+--
+-- 	table.sort(moduleLoadList, function(a, b)
+-- 		return (modulePriorities[a.FullName] or 0) > (modulePriorities[b.FullName] or 0)
+-- 	end)
+--
+-- 	print()
+-- 	print("Module Load Order:")
+-- 	for k, entry in pairs(moduleLoadList) do
+-- 		io.write(string.format("%3d: %s\n", k, entry.FullName))
+-- 	end
+-- end
 function moduleLoader:loadModule(fullName)
 	io.write(string.format("* Loading module %s\n", fullName))
 	local module = modules[fullName]

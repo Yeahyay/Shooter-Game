@@ -1,4 +1,6 @@
-local parsing = {}
+local parsing = {
+	depends = {"Core.Paths"}
+}
 
 function parsing:load()
 	-- PARSING

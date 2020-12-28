@@ -1,4 +1,6 @@
-local audio = {}
+local audio = {
+	depends = {"Core.Paths"}
+}
 
 function audio:load()
 	-- PARSING

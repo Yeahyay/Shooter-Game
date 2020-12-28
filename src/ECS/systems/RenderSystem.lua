@@ -104,7 +104,7 @@ function RenderSystem:update(dt)
 	-- do
 	-- 	lx, ly = px, py
 	-- 	px, py = input.mouse.Position.x, input.mouse.Position.y
-	-- 	local angle = Feint.Core.Util.getTime()
+	-- 	local angle = Feint.Core.Util:getTime()
 	-- 	local rect = Feint.Core.Graphics.rectangleInt
 	-- 	rect(lx, ly, angle, px, py, angle, 1, 1)
 	-- 	local rect = Feint.Core.Graphics.rectangle
@@ -113,7 +113,7 @@ function RenderSystem:update(dt)
 
 	local sin, cos, pi = math.sin, math.cos, math.pi
 	-- local rect = Feint.Core.Graphics.rectangle
-	local time = Feint.Core.Util.getTime()
+	local time = Feint.Core.Util:getTime()
 	for i = 1, 1, 1 do
 		if Feint.ECS.FFI_OPTIMIZATIONS then
 			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)

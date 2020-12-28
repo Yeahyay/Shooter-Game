@@ -1,5 +1,5 @@
 local log = {
-	depends = {"Core.Util"}
+	depends = {"Core.Paths", "Core.Util"}
 }
 
 function log:load()
@@ -8,15 +8,15 @@ function log:load()
 	local coreUtil = Feint.Core.Util
 
 	local date = function() -- luacheck: ignore
-		return os.date(string.format("%%y-%%m-%%d", (coreUtil.getTime() % 1) * 1000))
+		return os.date(string.format("%%y-%%m-%%d", (coreUtil:getTime() % 1) * 1000))
 	end
 
 	local time = function()
-		return os.date(string.format("%%I:%%M:%%S:%06d", (coreUtil.getTime() % 1) * 1000000))
+		return os.date(string.format("%%I:%%M:%%S:%06d", (coreUtil:getTime() % 1) * 1000000))
 	end
 
 	local fullTime = function()
-		return os.date(string.format("%%y-%%m-%%d_%%I:%%M:%%S:%03d", (coreUtil.getTime() % 1) * 1000))
+		return os.date(string.format("%%y-%%m-%%d_%%I:%%M:%%S:%03d", (coreUtil:getTime() % 1) * 1000))
 	end
 
 	local dir = string.format("%s/logs/%s", love.filesystem.getWorkingDirectory(), string.format("log_%s", time()))

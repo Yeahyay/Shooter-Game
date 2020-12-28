@@ -1,4 +1,6 @@
-local serialization = {}
+local serialization = {
+	depends = {"Core.Paths"}
+}
 
 function serialization:load()
 	-- PARSING

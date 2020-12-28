@@ -147,7 +147,7 @@ function graphics:load()
 
 	function private.processQueue()
 		local loveGraphics = love.graphics
-		local time = Feint.Core.Util.getTime()
+		local time = Feint.Core.Util:getTime()
 		local oscillate = Feint.Math.oscillateManualSigned
 		for i = graphics.drawQueueSize, 1, -1 do
 			local drawCall = graphics.drawQueue[i]

@@ -1,4 +1,6 @@
-local tween = {}
+local tween = {
+	depends = {"Core.Paths"}
+}
 
 function tween:load()
 	-- PARSING
