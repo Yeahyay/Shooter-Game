@@ -9,6 +9,18 @@ function run:load()
 		__newindex = tick
 	})
 
+	function run:pause()
+		self.paused = true
+		Feint.Core.Util:setPauseOffset(Feint.Core.Util:getTime())
+	end
+	function run:unpause()
+		self.paused = false
+		Feint.Core.Util:setPauseOffset(Feint.Core.Util:getTime())
+	end
+	function run:isPaused()
+		return self.paused
+	end
+
 	self.G_DEBUG = false
 	-- G_TIMER = 0
 

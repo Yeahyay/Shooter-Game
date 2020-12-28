@@ -12,19 +12,30 @@ local Core = Feint.Core
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
 
--- local oldRate = Run.rate
+local oldRate = Run.rate
 function love.keypressed(key, ...)
+	print("kkmlk;ml")
 	if key == "space" then
-		if Run.pause then -- Run.rate == 0 then
+		print(Run:isPaused())
+		if Run:isPaused() then
 			print("PLAY")
-			-- Run.rate = oldRate
-			-- Run.pause = false
+			Run:unpause()
 		else
 			print("PAUSE")
-			-- oldRate = Run.rate
-			-- Run.rate = 0
-			Run.pause = true
+			Run:pause()
 		end
+		-- if Run.rate == 0 then
+		-- 	print("PLAY")
+		-- 	Run.rate = oldRate
+		-- 	Run.accum = 0
+		-- 	Run.dt = 0
+		-- 	-- Run.pause = false
+		-- else
+		-- 	print("PAUSE")
+		-- 	oldRate = Run.rate
+		-- 	Run.rate = 0
+		-- 	-- Run.pause = true
+		-- end
 	end
 	if key == "q" then
 		local world = World.DefaultWorld
@@ -186,7 +197,7 @@ function love.update(dt)
 	Graphics.clear()
 
 		Graphics.RenderSize = Math.Vec2.new(1280, 720)
-		-- Graphics.RenderSize = Graphics.RenderSize * ((0.5 + math.sin(Util.getTime()) * 0.5) * 0.1 + 0.9)
+		-- Graphics.RenderSize = Graphics.RenderSize * ((0.5 + math.sin(Util:getTime()) * 0.5) * 0.1 + 0.9)
 		Graphics.RenderToScreenRatio = Graphics.ScreenSize / Graphics.RenderSize
 		Graphics.ScreenToRenderRatio = Graphics.RenderSize / Graphics.ScreenSize
 
@@ -283,6 +294,11 @@ function love.draw(dt)
 		acc = acc - 1 / 60
 	end
 	--]]
+
+	LoveGraphics.printf(
+		Run:isPaused() and string.format("Game Speed: %s\n", "Paused") or
+		string.format("Game Speed: %.3f\n", 1),
+		400, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 
 	-- FPS
 	LoveGraphics.printf(

@@ -7,7 +7,7 @@ local tickModule = {
 	accum = 0,
 	tick = 1,
 	frame = 1,
-	pause = true
+	paused = false
 }
 
 local timer = love.timer
@@ -31,19 +31,41 @@ love.run = function()
 	while true do
 		timer.step()
 		tickModule.dt = timer.getDelta() * tickModule.timescale
-		tickModule.accum = tickModule.accum + tickModule.dt
-		if tickModule.accum > tickModule.rate * 5 then
-			tickModule.accum = tickModule.rate * 5
+		if not tickModule.paused then
+			tickModule.accum = tickModule.accum + tickModule.dt
+		else
+			tickModule.accum = tickModule.rate
 		end
 
-		if graphics and graphics.isActive() then
+		local isDraw = graphics and graphics.isActive()
+
+		if isDraw then
 			graphics.clear(graphics.getBackgroundColor())
 			graphics.origin()
 		end
 
-		while tickModule.accum >= tickModule.rate do
-			tickModule.accum = tickModule.accum - tickModule.rate
+		print(tickModule.accum, tickModule.dt, tickModule.tick)
+		if not tickModule.paused then
+			while tickModule.accum >= tickModule.rate do
+				tickModule.accum = tickModule.accum - tickModule.rate
 
+				if love.event then
+					love.event.pump()
+					for name, a, b, c, d, e, f in love.event.poll() do
+						if name == 'quit' then
+							if not love.quit or not love.quit() then
+								return a
+							end
+						end
+
+						love.handlers[name](a, b, c, d, e, f)
+					end
+				end
+
+				tickModule.tick = tickModule.tick + 1
+				if love.update then love.update(tickModule.rate) end
+			end
+		else
 			if love.event then
 				love.event.pump()
 				for name, a, b, c, d, e, f in love.event.poll() do
@@ -56,9 +78,6 @@ love.run = function()
 					love.handlers[name](a, b, c, d, e, f)
 				end
 			end
-
-			tickModule.tick = tickModule.tick + 1
-			if love.update then love.update(tickModule.rate) end
 		end
 
 		while tickModule.framerate and timer.getTime() - lastframe < 1 / tickModule.framerate do
@@ -66,7 +85,7 @@ love.run = function()
 		end
 
 		lastframe = timer.getTime()
-		if graphics and graphics.isActive() then
+		if isDraw then
 			-- graphics.clear(graphics.getBackgroundColor())
 			-- graphics.origin()
 			tickModule.frame = tickModule.frame + 1
