@@ -43,10 +43,10 @@ function moduleLoader:importModule(path)
 	end
 
 	if not love.filesystem.getInfo(module.ModulePath .. ".lua") then
-		-- funcSpace(1)
-		-- print(string.format("* Module Info for %s, %s: module.lua not found, assumed to be resource folder",
-		-- 	module.Name, module.FullName
-		-- ))
+		funcSpace(1)
+		print(string.format("* Module Info for %s, %s: module.lua not found, assumed to be resource folder",
+			module.Name, module.FullName
+		))
 		return nil
 	end
 	print(string.format("importing %s: %s", module.Name, module.FullName))
@@ -62,8 +62,6 @@ function moduleLoader:importModule(path)
 		return nil
 	end
 
-	-- funcSpace(1)
-	-- print("DEPTH:", depth)
 	if module.Module.depends then
 		for k, dependency in pairs(module.Module.depends) do
 			assert(dependency:len() > 1, string.format("module %s depends on an empty string", module.Name))
@@ -72,18 +70,11 @@ function moduleLoader:importModule(path)
 			funcSpace(1)
 			print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
 		end
-		-- modulePriorities[module.Name] = (modulePriorities[module.Name] or 0) - #module.Module.depends
 	end
 
-	-- if getModuleDepth(module.FullName) > 1 then
-	-- 	modulePriorities[module.ParentFullName] = (modulePriorities[module.ParentFullName] or 0) + 1
-	-- 	funcSpace(1)
-	-- 	print(string.format("* Parent Dependency: %s depends on %s", module.Name, module.ParentFullName))
-	-- end
-
-	-- insert each module in a default order
-	-- table.insert(moduleLoadList, #moduleLoadList + 1, module)
+	-- add the module to the list of all modules
 	modules[module.FullName] = module
+
 	funcSpace(1)
 	print("! imported")
 	print()
@@ -94,53 +85,26 @@ function moduleLoader:sortDependencies()
 	local graph = {}
 	local graphIndex = {}
 	for name, module in pairs(modules) do
-		local node = setmetatable({
+		local node = {
 			FullName = name,
-			Dependencies = setmetatable({
-				Index = setmetatable({}, {
-					__tostring = function() return "dependencies index " .. name end
-				})
-			}, {
-				__tostring = function() return "dependencies " .. name end
-			}),
-			Dependants = setmetatable({
-				Index = setmetatable({}, {
-					__tostring = function() return "dependants index " .. name end
-				})
-			}, {
-				__tostring = function() return "dependants " .. name end
-			}),
-		}, {
-			__tostring = function() return "node " .. name end
-		})
+			Dependencies = {Index = {}},
+			Dependants = {Index = {}},
+		}
 		local indexMT = {
 			__index = function(t, k)
-				return t[t.Index[k]]
+				return t[t.Index[k]] -- defer to the index by default
 			end,
 			__newindex = function(t, k, v)
-				-- print(type(k), k)
-				if type(k) == "number" then
+				if type(k) == "number" then -- accessing the array portion is normal
 					rawset(t, k, v)
-					print("no index entry")
-				else
+				else -- accessing the hash is spicy
 					if v == nil then
-						print("removing " .. k .. " from " .. tostring(t))
-						for k, v in pairs(t) do
-							print("     " .. k, v)
-						end
-						print()
-						for k, v in pairs(rawget(t, "Index")) do
-							print("     " .. k, tostring(v))
-						end
-						print()
-						-- table.remove(t, rawget(t, "Index")[k])
 						rawset(t, t.Index[k], nil)
 						rawset(t.Index, k, nil)
 					else
-						rawset(t, #t + 1, v)
-						rawset(t.Index, k, #t)
+						rawset(t, #t + 1, v) -- add the value to the end of the list
+						rawset(t.Index, k, #t) -- use the key as the value's index
 					end
-					-- print(t, k, tostring(v))
 				end
 			end
 		}
@@ -156,58 +120,32 @@ function moduleLoader:sortDependencies()
 			for k, dependency in pairs(module.Module.depends) do
 				local dependNode = graph[graphIndex[dependency]]
 				node.Dependencies[dependNode.FullName] = dependNode
-				-- node.Dependencies[#node.Dependencies + 1] = dependNode
 				dependNode.Dependants[node.FullName] = node
-				-- dependNode.Dependants[#dependNode.Dependants + 1] = node
-				-- print(node.FullName, "depends on", dependNode.FullName)
 			end
-		-- else
-		-- 	print(node.FullName, "depends on nothing")
+			io.write(string.format("%s depends on %d %s\n",
+				node.FullName, #node.Dependencies, #node.Dependencies == 1 and "module" or "modules")
+			)
+		else
+		io.write(string.format("%s depends on 0 modules\n", node.FullName))
 		end
 	end
-	print()
-	for _, node in pairs(graph) do
-		for _, dependant in pairs(node.Dependants) do
-			print(node.FullName, "is depended upon by", dependant.FullName)
-		end
-		if #node.Dependants == 0 then
-			print(node.FullName, "is depended upon by nothing")
-		end
-	end
-	print()
-	local t = {}
-	for _, node in pairs(graph) do
-		if #node.Dependencies == 0 then --or #node.Dependants == 0 then
-			-- if not notUsed[node.FullName] then
-				-- notUsed[node.FullName] = true
-				t[#t + 1] = node
-			-- end
-		end
-	end
-	while #t > 0 do
-		local current = t[1]
-		print()
-		for k, v in pairs(t) do
-			io.write(string.format("%d: %s, ", k, v.FullName))
-		end
-		print()
-		table.remove(t, 1)
-		moduleLoadList[#moduleLoadList + 1] = current
-		-- table.insert(moduleLoadList, #moduleLoadList, current)
 
-		-- io.write(string.format("%s is depended on by %d modules and depends on %d modules\n",
-		-- 	current.FullName, #current.Dependants, #current.Dependencies))
-		print("dependants: " .. #current.Dependants .. ", depends: " .. #current.Dependencies .. ", " .. current.FullName)
+	local queue = {}
+	for _, node in pairs(graph) do
+		if #node.Dependencies == 0 then
+			queue[#queue + 1] = node
+		end
+	end
+	while #queue > 0 do
+		local current = queue[1]
+		table.remove(queue, 1)
+		moduleLoadList[#moduleLoadList + 1] = current
+
 		for k, node in ipairs(current.Dependants) do
-			-- print(node.FullName .. " used: " .. tostring(not (notUsed[node.FullName] or false)))
-			-- node.Dependencies[]
 			if notUsed[node.FullName] then
-				print("   - dependants: " .. #node.Dependants .. ", depends: " .. #node.Dependencies .. ", " .. node.FullName)
 				node.Dependencies[current.FullName] = nil
-				print("   - dependants: " .. #node.Dependants .. ", depends: " .. #node.Dependencies .. ", " .. node.FullName)
 				if #node.Dependencies <= 1 then
-					print("adding")
-					t[#t + 1] = node
+					queue[#queue + 1] = node
 					notUsed[node.FullName] = nil
 				end
 			end
@@ -219,35 +157,6 @@ function moduleLoader:sortDependencies()
 		io.write(string.format("%2d: %s\n", k, entry.FullName))
 	end
 end
--- function moduleLoader:sortDependencies()
--- 	print()
--- 	print("Module Priorities:")
--- 	local t = {}
--- 	for name, _ in pairs(modulePriorities) do
--- 		t[#t + 1] = name
--- 	end
--- 	-- table.sort(t, function(a, b)
--- 	-- 	return modulePriorities[a] > modulePriorities[b]
--- 	-- end)
--- 	for name, priority in pairs(modulePriorities) do
--- 		io.write(string.format("%3d %s %s on %s\n",
--- 			priority,
--- 			priority == 1 and "module" or "modules",
--- 			priority == 1 and "depends" or "depend",
--- 			name
--- 		))
--- 	end
---
--- 	table.sort(moduleLoadList, function(a, b)
--- 		return (modulePriorities[a.FullName] or 0) > (modulePriorities[b.FullName] or 0)
--- 	end)
---
--- 	print()
--- 	print("Module Load Order:")
--- 	for k, entry in pairs(moduleLoadList) do
--- 		io.write(string.format("%3d: %s\n", k, entry.FullName))
--- 	end
--- end
 function moduleLoader:loadModule(fullName)
 	io.write(string.format("* Loading module %s\n", fullName))
 	local module = modules[fullName]
