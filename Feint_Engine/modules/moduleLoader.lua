@@ -94,22 +94,53 @@ function moduleLoader:sortDependencies()
 	local graph = {}
 	local graphIndex = {}
 	for name, module in pairs(modules) do
-		local node = {
+		local node = setmetatable({
 			FullName = name,
-			Dependencies = {Index ={}},
-			Dependants = {Index = {}},
-		}
+			Dependencies = setmetatable({
+				Index = setmetatable({}, {
+					__tostring = function() return "dependencies index " .. name end
+				})
+			}, {
+				__tostring = function() return "dependencies " .. name end
+			}),
+			Dependants = setmetatable({
+				Index = setmetatable({}, {
+					__tostring = function() return "dependants index " .. name end
+				})
+			}, {
+				__tostring = function() return "dependants " .. name end
+			}),
+		}, {
+			__tostring = function() return "node " .. name end
+		})
 		local indexMT = {
 			__index = function(t, k)
 				return t[t.Index[k]]
 			end,
 			__newindex = function(t, k, v)
+				-- print(type(k), k)
 				if type(k) == "number" then
 					rawset(t, k, v)
 					print("no index entry")
 				else
-					t[#t + 1] = v
-					rawset(t.Index, k, #t)
+					if v == nil then
+						print("removing " .. k .. " from " .. tostring(t))
+						for k, v in pairs(t) do
+							print("     " .. k, v)
+						end
+						print()
+						for k, v in pairs(rawget(t, "Index")) do
+							print("     " .. k, tostring(v))
+						end
+						print()
+						-- table.remove(t, rawget(t, "Index")[k])
+						rawset(t, t.Index[k], nil)
+						rawset(t.Index, k, nil)
+					else
+						rawset(t, #t + 1, v)
+						rawset(t.Index, k, #t)
+					end
+					-- print(t, k, tostring(v))
 				end
 			end
 		}
@@ -172,7 +203,9 @@ function moduleLoader:sortDependencies()
 			-- node.Dependencies[]
 			if notUsed[node.FullName] then
 				print("   - dependants: " .. #node.Dependants .. ", depends: " .. #node.Dependencies .. ", " .. node.FullName)
-				if #node.Dependencies == 1 then
+				node.Dependencies[current.FullName] = nil
+				print("   - dependants: " .. #node.Dependants .. ", depends: " .. #node.Dependencies .. ", " .. node.FullName)
+				if #node.Dependencies <= 1 then
 					print("adding")
 					t[#t + 1] = node
 					notUsed[node.FullName] = nil

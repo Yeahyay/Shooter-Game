@@ -5,7 +5,7 @@ local Math = Feint.Math
 local Util = Feint.Util
 local Graphics = Feint.Core.Graphics
 local LoveGraphics = love.graphics
-local Run = Feint.Core.Run
+local Run = Feint.Core.Time
 local Log = Feint.Log
 local Core = Feint.Core
 
