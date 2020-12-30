@@ -7,7 +7,7 @@ local tickModule = {
 	accum = 0,
 	tick = 1,
 	frame = 1,
-	paused = false
+	paused = false,
 }
 
 local timer = love.timer
@@ -34,7 +34,7 @@ love.run = function()
 		if not tickModule.paused then
 			tickModule.accum = tickModule.accum + tickModule.dt
 		else
-			tickModule.accum = tickModule.rate
+			-- tickModule.accum = tickModule.rate
 		end
 
 		local isDraw = graphics and graphics.isActive()
@@ -44,7 +44,6 @@ love.run = function()
 			graphics.origin()
 		end
 
-		print(tickModule.accum, tickModule.dt, tickModule.tick)
 		if not tickModule.paused then
 			while tickModule.accum >= tickModule.rate do
 				tickModule.accum = tickModule.accum - tickModule.rate

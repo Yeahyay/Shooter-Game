@@ -1,11 +1,11 @@
 local log = {
-	depends = {"Core.Paths", "Core.Util"}
+	depends = {"Core.Paths", "Core.Time"}
 }
 
 function log:load()
 	Feint.Core.Paths.Add("Log", Feint.Core.Paths.Root .. "logs")
 
-	local coreUtil = Feint.Core.Util
+	local coreUtil = Feint.Core.Time
 
 	local date = function() -- luacheck: ignore
 		return os.date(string.format("%%y-%%m-%%d", (coreUtil:getTime() % 1) * 1000))

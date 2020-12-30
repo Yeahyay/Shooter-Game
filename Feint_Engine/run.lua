@@ -87,6 +87,7 @@ function love.load()
 	Run.framerate = 60 -- framerate cap
 	Run.rate = 1 / 60 -- update dt
 	Run.sleep = 0.001
+	Run:setSpeed(1)
 
 	LoveGraphics.setLineStyle("rough")
 	LoveGraphics.setDefaultFilter("nearest", "nearest", 16)
@@ -194,6 +195,8 @@ Util.Debug.PRINT_ENV(_G, false)
 local getTime = love.timer.getTime
 
 function love.update(dt)
+	Run:update()
+	Run:setSpeed(Feint.Core.Input.Mouse.PositionNormalized.x)
 	Graphics.clear()
 
 		Graphics.RenderSize = Math.Vec2.new(1280, 720)
@@ -297,7 +300,7 @@ function love.draw(dt)
 
 	LoveGraphics.printf(
 		Run:isPaused() and string.format("Game Speed: %s\n", "Paused") or
-		string.format("Game Speed: %.3f\n", 1),
+		string.format("Game Speed: %.3f\n", Run:getSpeed()),
 		400, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 
 	-- FPS

@@ -9,15 +9,45 @@ function run:load()
 		__newindex = tick
 	})
 
-	function run:pause()
+	local pauseOffset = 0
+	local pauseTimeStart = 0
+	local time = 0
+	local speed = 1
+
+	function self:update()
+		time = time + love.timer.getDelta() * speed
+	end
+	function self:setSpeed(value)
+		speed = value
+	end
+	function self:getSpeed()
+		return speed
+	end
+
+	do
+		local socket = require("socket")
+		local startTime = love.timer.getTime() - (socket.gettime() % 1)
+		function self:getTrueTime()
+			return time - startTime
+		end
+		function self:getTime()
+			return self:getTrueTime() + pauseOffset
+		end
+	end
+	function self:setPauseOffset(time)
+		pauseOffset = pauseOffset + time
+	end
+
+
+	function self:pause()
 		self.paused = true
-		Feint.Core.Util:setPauseOffset(Feint.Core.Util:getTime())
+		pauseTimeStart = self:getTrueTime()
 	end
-	function run:unpause()
+	function self:unpause()
 		self.paused = false
-		Feint.Core.Util:setPauseOffset(Feint.Core.Util:getTime())
+		pauseOffset = pauseOffset - (self:getTrueTime() - pauseTimeStart)
 	end
-	function run:isPaused()
+	function self:isPaused()
 		return self.paused
 	end
 

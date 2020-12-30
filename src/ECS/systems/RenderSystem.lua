@@ -104,7 +104,7 @@ function RenderSystem:update(dt)
 	-- do
 	-- 	lx, ly = px, py
 	-- 	px, py = input.mouse.Position.x, input.mouse.Position.y
-	-- 	local angle = Feint.Core.Util:getTime()
+	-- 	local angle = Feint.Core.Time:getTime()
 	-- 	local rect = Feint.Core.Graphics.rectangleInt
 	-- 	rect(lx, ly, angle, px, py, angle, 1, 1)
 	-- 	local rect = Feint.Core.Graphics.rectangle
@@ -112,19 +112,21 @@ function RenderSystem:update(dt)
 	-- end
 
 	local sin, cos, pi = math.sin, math.cos, math.pi
-	-- local rect = Feint.Core.Graphics.rectangle
-	local time = Feint.Core.Util:getTime()
+	local rect = Feint.Core.Graphics.rectangle
+	local time = Feint.Core.Time:getTime()
+	-- print("time", time)
 	for i = 1, 1, 1 do
 		if Feint.ECS.FFI_OPTIMIZATIONS then
 			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
 				Transform.angle = Transform.angle + 1 / 60 * pi -- + Entity * 6
 				Transform.x = Transform.x + sin(time * 2 + Entity * 0.25) * 0.5
 				Transform.y = Transform.y + cos(time * 2 + Entity * 0.25) * 0.5
+				local trueSizeX, trueSizeY = Transform.trueSizeX, Transform.trueSizeY
 
 				-- local trueSizeX = Transform.trueSizeX
 				-- local trueSizeY = Transform.trueSizeY
 
-				-- rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
+				rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
 			end)
 		else
 			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
