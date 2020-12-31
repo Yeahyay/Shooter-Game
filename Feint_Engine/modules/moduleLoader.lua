@@ -119,8 +119,10 @@ function moduleLoader:sortDependencies()
 		if module.Module.depends then
 			for k, dependency in pairs(module.Module.depends) do
 				local dependNode = graph[graphIndex[dependency]]
+				assert(modules[dependency], "dependency " .. dependency .. " does not exist", 1)
 				node.Dependencies[dependNode.FullName] = dependNode
 				dependNode.Dependants[node.FullName] = node
+				io.write(string.format("   %s depends on module %s\n", name, dependency))
 			end
 			io.write(string.format("%s depends on %d %s\n",
 				node.FullName, #node.Dependencies, #node.Dependencies == 1 and "module" or "modules")
@@ -144,7 +146,7 @@ function moduleLoader:sortDependencies()
 		for k, node in ipairs(current.Dependants) do
 			if notUsed[node.FullName] then
 				node.Dependencies[current.FullName] = nil
-				if #node.Dependencies <= 1 then
+				if #node.Dependencies == 0 then
 					queue[#queue + 1] = node
 					notUsed[node.FullName] = nil
 				end
