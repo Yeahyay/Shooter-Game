@@ -99,68 +99,14 @@ function moduleLoader:sortDependencies()
 					rawset(t, k, v)
 				else -- accessing the hash is spicy
 					if v == nil then
-						print("REMOVING " .. k .. " FROM " .. name)
-						local index = t.Index[k]
-						-- print(t, k, index, v)
-						print("CONTENTS")
-						for k, v in pairs(t) do
-							if k ~= "Index" then
-								print("   " .. k, v.FullName)
-							end
-						end
-						print("INDEX")
-						for k, v in pairs(t.Index) do
-							print("   " .. k, v)
-						end
-						print("START INDEX: " .. tostring(index), "SIZE: " .. #t)
-						for i = 1, index - 1, 1 do
-							print("   " .. tostring(t[i].FullName), t.Index[t[i].FullName])
-						end
-						print("   ~")
-						for i = index, #t - 1, 1 do
-							local next = t[i + 1]
-							print("   " .. tostring(t[i].FullName), t.Index[t[i].FullName], next.FullName, t.Index[next.FullName])
-							-- t.Index[t[i].FullName] = nil
+						for i = t.Index[k], #t - 1, 1 do
 							rawset(t, i, next)
-							-- print(t.Index[t[i].FullName])
 							t.Index[i] = t.Index[i + 1]
 							t.Index[t.Index[i]] = i
-
-							-- if index > 1 then
-							-- end
-							-- print("kasnd", t.Index[i], t.Index[i + 1])
-							-- print("ksndksl", t.Index[t.Index[i]])
-							-- rawset(t.Index, rawget(t.Index, i + 1), i)
-							-- rawset(t, rawget(t.Index, i), rawget(t.Index, i + 1))
 						end
 						rawset(t.Index, k, nil)
-						print("kdsamdsdlal", #t)
 						rawset(t.Index, #t, nil)
 						rawset(t, #t, nil)
-						-- print("------------------", t[#t], t.Index[#t], t.Index[t.Index[#t]])
-						-- print("REMOVE INDEX")
-						-- for k, v in pairs(t.Index) do
-						-- 	print(k, v)
-						-- end
-						-- print("_____")
-
-						-- print(#t)
-						-- rawset(t, #t, nil)
-						-- t.Index[t.Index[#t]] = nil
-						-- t.Index[#t] = nil
-
-						print("DONE CONTENTS")
-						for k, v in pairs(t) do
-							print("   " .. k, v.FullName)
-						end
-						print("DONE REMOVE")
-						for k, v in pairs(t.Index) do
-							print("   " .. tostring(k), v)
-						end
-						print("_____")
-						-- rawset(t.Index, #t, nil)
-						-- rawset(t, t.Index[k], nil)
-						-- rawset(t.Index, k, nil)
 					else
 						rawset(t, #t + 1, v) -- add the value to the end of the list
 						rawset(t.Index, k, #t) -- use the key as the value's index
@@ -201,18 +147,6 @@ function moduleLoader:sortDependencies()
 	end
 	while #queue > 0 do
 		local current = queue[1]
-		-- table.sort(queue, function(a, b)
-		-- 	print(a.FullName, #a.Dependencies, b.FullName, #b.Dependencies)
-		-- 	return false -- #a.Dependencies < #b.Dependencies
-		-- end)
-		-- print("current: " .. current.FullName)
-		for k, v in ipairs(queue) do
-			io.write(("   "):rep(math.min(k - 1, 1)) .. k .. ": " .. v.FullName)
-			-- for k, v in pairs(v.Dependencies) do
-			-- 	io.write("-> ".. tostring(v.FullName))
-			-- end
-			print()
-		end
 		table.remove(queue, 1)
 		moduleLoadList[#moduleLoadList + 1] = current
 
