@@ -180,8 +180,8 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 			local idList = archetypeChunk.entityIndexToId
 			local data = archetypeChunk.data
 
-			-- printf("chunk %d: %s\n", i, archetypeChunk.data[19].Transform.x)
-			for j = 0, archetypeChunk.numEntities - 1, 1 do
+			-- printf("chunk %d: %s\n", i, archetypeChunk.data[399].Transform.x)
+			for j = archetypeChunk.numEntities - 1, 0, -1 do
 				-- printf("  x: %f\n  index: %s, id: %s\n", data[j][a4.Name].x, j, id)
 				callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
 			end

@@ -28,8 +28,8 @@ function EntityChunk:init(archetype, ...)
 	else
 		self.data = Feint.Util.Table.preallocate(self.capacity * self.archetype.totalSize, 0)
 		self.dataStatus = Feint.Util.Table.preallocate(self.capacity)
-		self:preallocate(self.capacity)
 	end
+	self:preallocate(self.capacity)
 
 	-- self.dataStatus = {}
 	-- self.dataAlive = 0
@@ -39,18 +39,18 @@ function EntityChunk:init(archetype, ...)
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
 	self.index = Feint.Math.random2(200)--self.archetype.chunkCount
 
-	local s = 40
-	for k, v in pairs(self) do
-		if type(k) == "string" then
-			s = s + 40
-		elseif type(k) == "number" then
-			s = s + 16
-		end
-	end
-	self.capacityBytes = self.capacityBytes - s
-	self.capacityBytes = math.floor(self.capacityBytes / 64) * 64
-	self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
-	-- print(self.capacityBytes, self.capacity * self.entitySizeBytes, self.capacity)
+	-- local s = 40
+	-- for k, v in pairs(self) do
+	-- 	if type(k) == "string" then
+	-- 		s = s + 40
+	-- 	elseif type(k) == "number" then
+	-- 		s = s + 16
+	-- 	end
+	-- end
+	-- self.capacityBytes = self.capacityBytes - s
+	-- self.capacityBytes = math.floor(self.capacityBytes / 64) * 64
+	-- self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
+	print(self.capacity, self.capacityBytes, self.capacity * self.entitySizeBytes)
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1
@@ -70,6 +70,27 @@ function EntityChunk:isEmpty()
 end
 -- function EntityChunk:getEntity()
 if Feint.ECS.FFI_OPTIMIZATIONS then
+	function EntityChunk:preallocate(num)
+		for i = 0, num - 1, 1 do
+			local archetypeInstance = self.data[i]
+			for _, component in pairs(self.archetype.components) do
+				local componentInstance = archetypeInstance[component.Name]
+				for k, v in pairs(component.strings) do
+					componentInstance[k] = ffi.C.malloc(#v)--ffi.gc(ffi.C.malloc(#v), ffi.C.free)
+					ffi.copy(componentInstance[k], v)
+					componentInstance[k .. "Length"] = #v
+				end
+			end
+		end
+		-- for i = 0, num - 1, 1 do
+		-- 	local archetypeInstance = self.data[i]
+		-- 	print(i, archetypeInstance)
+		-- 	print(ffi.C.strlen(archetypeInstance.Renderer.texture))
+		-- 	-- print(archetypeInstance.Renderer.textureLength)
+		-- 	-- print(ffi.string(archetypeInstance.Renderer.texture))--, archetypeInstance.Renderer.textureLength))
+		-- end
+		-- print("njoiomklnjklkok")
+	end
 	function EntityChunk:newEntity(id)
 		if not self:isFull() then
 			assert(type(id) == "number" and id >= 0, "new entity expects a number", 3)

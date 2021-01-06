@@ -2,6 +2,13 @@ local ECSUtils = Feint.ECS.Util
 local Component = ECSUtils.newClass("Component")
 
 local ffi = require("ffi")
+ffi.cdef([[
+	void* malloc(size_t size);
+	int free(void* ptr);
+	void* realloc(void* ptr, size_t size);
+	size_t strlen(char* restrict str);
+	void* calloc(size_t, size_t);
+]])
 
 local typeSize = {
 	bool = ffi.sizeof("bool"),
@@ -18,17 +25,23 @@ function Component:init(data, ...)
 
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		self.data = data
+		self.strings = {}
 		local structMembers = {}
 		for k, v in pairs(data) do
 			-- for k, v in pairs(v) do
 			local dataType = type(v)
 			if dataType == "string" then
-				dataType = "char"
-				local arraySize = v:len()
+				-- dataType = "char"
+				-- local arraySize = v:len()
+				-- print(v:len())
 
-				self.trueSizeBytes = self.trueSizeBytes + arraySize
-				structMembers[#structMembers + 1] = dataType .. " " .. k .. "[" .. arraySize .. "]"
-				print(structMembers[#structMembers])
+				self.trueSizeBytes = self.trueSizeBytes ffi.sizeof("uint8_t*")--+ arraySize
+				-- structMembers[#structMembers + 1] = dataType .. " " .. k .. "[" .. arraySize .. "]"
+				structMembers[#structMembers + 1] = "uint8_t* " .. k --.. "[" .. arraySize .. "]"
+				structMembers[#structMembers + 1] = "uint8_t" .. " " .. k .. "Length"
+				self.strings[k] = v
+				self.data[k] = nil--ffi.C.malloc(k:len())
+				-- print(k, v, self.data[k])
 			else
 				dataType = dataType == "number" and "float" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
 				self.trueSizeBytes = self.trueSizeBytes + typeSize[dataType]
@@ -89,6 +102,8 @@ function Component:init(data, ...)
 		print(self.trueSizeBytes, padding, self.sizeBytes)
 	end
 end
+
+-- function Component.modifyString()
 
 function Component:new(name, data, ...)
 	local instance = {

@@ -5,7 +5,8 @@ local World = Feint.ECS.World
 if Feint.ECS.FFI_OPTIMIZATIONS then
 	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
 		visible = true,
-		id = Feint.Util.UUID.new()
+		texture = "Test Texture 1.png",
+		id = -1--Feint.Util.UUID.new()
 	}))
 	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
 		x = 0,						-- 0
@@ -42,6 +43,7 @@ end
 local fmath = Feint.Math
 local random2 = fmath.random2
 
+local ffi = require("ffi")
 function RenderSystem:start()
 	-- print(os.capture("wmic cpu list full"), "as kdnklnsd")
 	-- for k, v in pairs(love.graphics.getSystemLimits()) do
@@ -55,11 +57,17 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
-	for i = 1, 1000, 1 do
+	for i = 1, 7000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 
-	local rect = Feint.Core.Graphics.rectangle
+	local r = {}
+	for k, v in pairs(Feint.Core.Graphics:getTextures()) do
+		r[#r + 1] = k
+		-- print(#r, r[#r])
+	end
+
+	local graphics = Feint.Core.Graphics
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- print(Data[Entity], Entity)
@@ -70,7 +78,15 @@ function RenderSystem:start()
 
 			local trueSizeX = Transform.trueSizeX
 			local trueSizeY = Transform.trueSizeY
-			rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
+			-- local rand = math.floor(random2(1, 9))
+			-- Renderer.texture = ffi.cast("uint8_t*", r[rand])
+			-- Renderer.textureSize = r[rand]:len()
+			-- print(r[rand]:len())
+			-- print(Feint.Core.Graphics:getTextures()["Test Texture 1.png"])
+			Renderer.id = graphics:addRectangle(
+				Renderer.texture, Renderer.textureLength,
+				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY
+			)
 		end)
 	else
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
@@ -92,7 +108,9 @@ function RenderSystem:start()
 			Data[Transform + 7] = trueSizeX
 			Data[Transform + 8] = trueSizeY
 
-			rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
+			-- Renderer.id = graphics:addRectangle(
+			-- 	x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY
+			-- )
 		end)
 	end
 end
