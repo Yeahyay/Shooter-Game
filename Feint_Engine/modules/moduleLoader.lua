@@ -27,6 +27,9 @@ function moduleLoader:getRoot()
 end
 function moduleLoader:importModule(path)
 	local module = moduleObject:new(rootDir, path)
+	if module.Name:find("__[%a%d]+") then
+		return nil
+	end
 	if love.filesystem.getInfo(path).type ~= "directory" or module.Name:find("%.lua") then
 		if module.Name:find("%.lua") then
 			funcSpace(1)
