@@ -8,6 +8,7 @@ local LoveGraphics = love.graphics
 local Run = Feint.Core.Time
 local Log = Feint.Log
 local Core = Feint.Core
+local Input = Feint.Core.Input
 
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
@@ -72,7 +73,7 @@ function love.keyreleased(...)
 end
 
 function love.mousemoved(x, y, dx, dy)
-	Feint.Core.Input.mousemoved(x, y, dx, dy)
+	Input.mousemoved(x, y, dx, dy)
 end
 
 function love.mousepressed(...)
@@ -83,59 +84,18 @@ end
 function love.threaderror(thread, message)
 	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 1)
 end
+function love.resize(x, y)
+	Graphics:setScreenResolution(x, y)
+	-- love.draw()
+	-- Graphics:draw()
+end
 function love.load()
 	Run.framerate = 60 -- framerate cap
 	Run.rate = 1 / 60 -- update dt
 	Run.sleep = 0.001
 	Run:setSpeed(1)
 
-	LoveGraphics.setLineStyle("rough")
-	LoveGraphics.setDefaultFilter("nearest", "nearest", 16)
 	love.math.setRandomSeed(Math.G_SEED)
-
-	Paths.Add("Game_ECS_Files", "src.ECS")
-	Paths.Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
-	Paths.Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
-	Paths.Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
-	local systems = {} -- luacheck: ignore
-	local systemCount = 0
-	for k, v in pairs(love.filesystem.getDirectoryItems(Paths.SlashDelimited(Paths.Game_ECS_Systems))) do
-		if v:match(".lua") then
-			local path = Paths.Game_ECS_Systems..v:gsub(".lua", "")
-			local system = require(path)
-			systemCount = systemCount + 1
-			systems[systemCount] = system
-			World.DefaultWorld:registerSystem(system)
-		end
-	end
-
-	Log.log("\n%s update order:\n", World.DefaultWorld.Name)
-	World.DefaultWorld:generateUpdateOrderList()
-	for k, v in ipairs(World.DefaultWorld.updateOrder) do
-		Log.log("%d: %s\n", k, World.DefaultWorld.systems[k].Name)
-	end
-	Log.logln()
-
-	World.DefaultWorld:start()
-
-	-- luacheck: ignore
-	if false then
-		love.window.updateMode(960, 540, {
-			fullscreen = false,
-			fullscreentype = "desktop",
-			vsync = false,
-			msaa = 0,
-			resizable = false,
-			borderless = false,
-			centered = true,
-			display = 1,
-			minwidth = 1,
-			minheight = 1,
-			highdpi = false,
-			x = nil,
-			y = nil,
-		})
-	end
 
 	-- after the new module system, this might not work
 	-- to future me, please fix
@@ -185,24 +145,19 @@ function love.load()
 	--]]
 
 	Graphics.UI.Immediate.Initialize()
+
+	Feint.ECS:init()
 end
 
-Util.Debug.PRINT_ENV(_G, false)
-
-
--- local avg = 0
--- local avgTimes = 0
 local getTime = love.timer.getTime
-
+local Mouse = Input.Mouse
 function love.update(dt)
 	Run:update()
-	Run:setSpeed(Feint.Core.Input.Mouse.PositionNormalized.x)
+	Run:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
 
-		Graphics.RenderSize = Math.Vec2.new(1280, 720)
-		-- Graphics.RenderSize = Graphics.RenderSize * ((0.5 + math.sin(Util:getTime()) * 0.5) * 0.1 + 0.9)
-		Graphics.RenderToScreenRatio = Graphics.ScreenSize / Graphics.RenderSize
-		Graphics.ScreenToRenderRatio = Graphics.RenderSize / Graphics.ScreenSize
+	local s = math.max(Mouse.PositionNormalized.y, 0.001)
+	Graphics.RenderScale = Feint.Math.Vec2.new(s, s)
 
 	local startTime = getTime()
 
@@ -210,8 +165,8 @@ function love.update(dt)
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 	end
 
-	Graphics.processAddQueue()	-- process all pending draw queue insertions
-	Graphics.processQueue()		-- process all draw data updates
+	-- Graphics.processAddQueue()	-- process all pending draw queue insertions
+	-- Graphics.processQueue()		-- process all draw data updates
 
 	if Graphics.UI.Immediate then
 		Graphics.UI.Immediate.Update(dt)
@@ -233,6 +188,7 @@ local function updateRender(dt) -- luacheck: ignore
 end
 
 local DEFAULT_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
+-- local DEFAULT_FONT_BOLD = LoveGraphics.newFont("Assets/fonts/FiraCode-Bold.ttf", 28)
 local DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
 LoveGraphics.setFont(DEFAULT_FONT)
 
@@ -243,7 +199,6 @@ end
 local fpsIndex = 1
 local fpsSum = 0
 
-local canvas = LoveGraphics.newCanvas(Graphics.RenderSize.x, Graphics.RenderSize.y, {msaa = 0})
 -- local debug = LoveGraphics.newCanvas(Graphics.RenderSize.x, Graphics.RenderSize.y, {msaa = 0})
 
 -- local acc = 0
@@ -266,18 +221,26 @@ function love.draw(dt)
 
 	local startTime = getTime()
 
-	LoveGraphics.setCanvas(canvas)
-	LoveGraphics.clear()
-	LoveGraphics.push()
-		LoveGraphics.translate(Graphics.RenderSize.x / 2, -Graphics.RenderSize.y / 2)
-		-- LoveGraphics.setWireframe(true)
-		Graphics.updateInterpolate(Run.accum)
-		-- Graphics.processQueue()
-		Graphics.draw()
-		-- LoveGraphics.setWireframe(false)
-	LoveGraphics.pop()
-	LoveGraphics.setCanvas()
-	LoveGraphics.draw(canvas, 0, 0, 0, Graphics.RenderToScreenRatio.x, Graphics.RenderToScreenRatio.y, 0, 0)
+	-- LoveGraphics.setCanvas(canvas)
+	-- LoveGraphics.clear()
+	-- LoveGraphics.setColor(0.5, 0.5, 0.5, 1)
+	-- LoveGraphics.rectangle("fill", 0, 0, Graphics.ScreenSize.x, Graphics.ScreenSize.y)
+	-- LoveGraphics.setColor(1, 1, 1, 1)
+	-- LoveGraphics.push()
+	-- 	LoveGraphics.scale(Graphics.ScreenToRenderRatio.x, Graphics.ScreenToRenderRatio.y)
+	-- 	LoveGraphics.translate(Graphics.ScreenSize.x / 2, Graphics.ScreenSize.y / 2)
+	-- 	-- LoveGraphics.setWireframe(true)
+		Graphics:updateInterpolate(Run.accum)
+	-- 	-- Graphics.processQueue()
+		Graphics:draw()
+	-- 	-- LoveGraphics.setWireframe(false)
+	-- LoveGraphics.pop()
+	-- LoveGraphics.setCanvas()
+	-- -- print(Graphics.RenderToScreenRatio, Graphics.ScreenToRenderRatio)
+	-- -- LoveGraphics.translate(720 * Graphics.ScreenToRenderRatio.x / 2, 1)
+	-- local sx, sy = Graphics.RenderToScreenRatio.x, Graphics.RenderToScreenRatio.y
+	-- LoveGraphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
+	-- -- LoveGraphics.draw(canvas, 50, 50, 0, 1, 1, 0, 0)
 
 	Graphics.UI.Immediate.Draw(Run.G_RENDER_DT)
 
@@ -382,7 +345,7 @@ end
 function love.quit()
 end
 
--- PRINT_ENV(_ENV, false)
+Util.Debug.PRINT_ENV(_G, false)
 
 printf("\n")
 Log.log("Exiting run.lua\n")

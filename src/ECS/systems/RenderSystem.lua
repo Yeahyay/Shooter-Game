@@ -14,10 +14,10 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 		angle = 0,					-- 2
 		sizeX = 32,					-- 3
 		sizeY = 32,					-- 4
-		scaleX = 16,				-- 5
-		scaleY = 16,				-- 6
-		trueSizeX = 16 / 32,		-- 7
-		trueSizeY = 16 / 32,		-- 8
+		scaleX = 8,				-- 5
+		scaleY = 8,				-- 6
+		trueSizeX = 32 / 32,		-- 7
+		trueSizeY = 32 / 32,		-- 8
 	}))
 else
 	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
@@ -130,24 +130,30 @@ function RenderSystem:update(dt)
 	-- end
 
 	local sin, cos, pi = math.sin, math.cos, math.pi
-	local rect = Feint.Core.Graphics.rectangle
+	local graphics = Feint.Core.Graphics
 	local time = Feint.Core.Time:getTime()
+	local oscillate = Feint.Math.oscillateManualSigned
 	-- print("time", time)
 	for i = 1, 1, 1 do
 		if Feint.ECS.FFI_OPTIMIZATIONS then
-			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
-				Transform.angle = Transform.angle + 1 / 60 * pi -- + Entity * 6
-				Transform.x = Transform.x + sin(time * 2 + Entity * 0.25) * 0.5
-				Transform.y = Transform.y + cos(time * 2 + Entity * 0.25) * 0.5
-				local trueSizeX, trueSizeY = Transform.trueSizeX, Transform.trueSizeY
+			self.EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
+				Transform.angle = (time + Entity / 10) * pi -- + Entity * 6
+				local offsetX = oscillate(time, 50, 2, Entity)
+				local offsetY = oscillate(time, 50, 2, (Entity * Entity) % (2 * math.pi))
 
-				-- local trueSizeX = Transform.trueSizeX
-				-- local trueSizeY = Transform.trueSizeY
+				local trueSizeX = Transform.trueSizeX
+				local trueSizeY = Transform.trueSizeY
 
-				rect(Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY)
+				-- oscillate(trueSizeX, trueSizeY, offsetX, offsetY)
+				graphics:modify(
+					Renderer.texture, Renderer.textureLength, Renderer.id,
+					offsetX + Transform.x - trueSizeX / 2,
+					offsetY + Transform.y - trueSizeY / 2,
+					Transform.angle, trueSizeX, trueSizeY
+				)
 			end)
 		else
-			self.EntityManager:forEach("sdads", function(Data, Entity, Renderer, Transform)
+			self.EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
 				local x = Data[Transform]
 				local y = Data[Transform + 1]
 				local angle = Data[Transform + 2]
