@@ -28,7 +28,7 @@ function run:load()
 		local socket = require("socket")
 		local startTime = love.timer.getTime() - (socket.gettime() % 1)
 		function self:getTrueTime()
-			return time - startTime
+			return time -- startTime
 		end
 		function self:getTime()
 			return self:getTrueTime() + pauseOffset

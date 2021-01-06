@@ -72,6 +72,7 @@ function paths:load()
 	end
 
 	self.Add("Modules", self.Root .. "modules")
+	self.Add("Assets", "Assets")
 	self.Add("Lib", self.Root .. "lib")
 	self.Add("Archive", self.Root .. "archive")
 end
