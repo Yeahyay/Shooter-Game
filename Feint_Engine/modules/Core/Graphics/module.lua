@@ -1,6 +1,23 @@
 local graphics = {
-	depends = {"Math", "Core.Paths"}
+	depends = {"Math", "Core.Paths"},
+	Public = {}
 }
+
+local ENV = getfenv(1)
+
+-- setmetatable(graphics, {
+-- 	__index = function(t, k, v)
+-- 		if not rawget(t, "Public")[k] and getfenv(1) ~= ENV then
+-- 			error("Attmept to access private member " .. k, 2)
+-- 		end
+-- 	end,
+-- 	__newindex = function(t, k, v)
+-- 		if k == "Public" then
+-- 			rawget(t, "Public")[k] = true
+-- 		end
+-- 		rawset(t, k, v)
+-- 	end
+-- })
 
 local ffi = require("ffi")
 
@@ -13,15 +30,18 @@ function graphics:load()
 	Paths.Add("Graphics", Paths.Modules .. "graphics")
 
 	-- local width, height, flags = love.window.getMode() -- luacheck: ignore
+	local aspectRatio = 16 / 9
 	local screenHeight = 720
-	local screenWidth = screenHeight * (16 / 9)
-	local renderHeight = 720
-	local renderWidth = renderHeight * (16 / 9)
+	local renderHeight = 1080
+	local screenWidth = screenHeight * (aspectRatio)
+	local renderWidth = renderHeight * (aspectRatio)
 	self.ScreenSize = Feint.Math.Vec2.new(screenWidth, screenHeight)
-	self.ScreenAspectRatio = 16 / 9
+	-- self.TrueScreenSize
+	self.ScreenAspectRatio = aspectRatio
 	self.RenderSize = Feint.Math.Vec2.new(renderWidth, renderHeight)
-	self.RenderAspectRatio = 16 / 9
+	self.RenderAspectRatio = aspectRatio
 	self.RenderScale = Feint.Math.Vec2.new(1, 1)
+	self.isEnforceRatio = true
 	self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
 	self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
 
@@ -83,15 +103,16 @@ function graphics:load()
 
 	function self:setRenderResolution(x, y)
 		self.RenderSize.x = x
-		self.RenderSize.y = y
-		self.RenderAspectRatio = x / y
+		self.RenderSize.y = self.isEnforceRatio and x / self.RenderAspectRatio or y
+		self.RenderAspectRatio = self.RenderSize.x / self.RenderSize.y
 		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
 		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
 	end
 	function self:setScreenResolution(x, y)
 		self.ScreenSize.x = x
-		self.ScreenSize.y = y
-		self.ScreenAspectRatio = x / y
+		self.ScreenSize.y = self.isEnforceRatio and x / self.ScreenAspectRatio or y
+		print(self.ScreenAspectRatio, x / self.ScreenAspectRatio)
+		self.ScreenAspectRatio = self.ScreenSize.x / self.ScreenSize.y
 		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
 		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
 	end
@@ -162,11 +183,11 @@ function graphics:load()
 
 		local sx = self.RenderToScreenRatio.x / self.RenderScale.x
 		local sy = self.RenderToScreenRatio.y / self.RenderScale.y
-		love.graphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
+		love.graphics.draw(canvas, 0, (self.ScreenSize.y - self.ScreenSize.y), 0, sx, sy, 0, 0)
 	end
 
 	function self:updateInterpolate(value)
-		if graphics.interOn then
+		if self.interOn then
 			interpolate = math.sqrt(value / Feint.Run.rate, 2)
 		else
 			interpolate = 0

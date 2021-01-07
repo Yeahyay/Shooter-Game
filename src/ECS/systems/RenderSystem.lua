@@ -14,8 +14,8 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 		angle = 0,					-- 2
 		sizeX = 32,					-- 3
 		sizeY = 32,					-- 4
-		scaleX = 8,				-- 5
-		scaleY = 8,				-- 6
+		scaleX = 32,				-- 5
+		scaleY = 32,				-- 6
 		trueSizeX = 32 / 32,		-- 7
 		trueSizeY = 32 / 32,		-- 8
 	}))
@@ -57,7 +57,7 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
-	for i = 1, 7000, 1 do
+	for i = 1, 1000, 1 do
 		self.EntityManager:CreateEntity(archetype)
 	end
 
