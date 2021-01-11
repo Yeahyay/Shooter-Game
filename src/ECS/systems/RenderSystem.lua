@@ -83,8 +83,9 @@ function RenderSystem:start()
 			-- Renderer.textureSize = r[rand]:len()
 			-- print(r[rand]:len())
 			-- print(Feint.Core.Graphics:getTextures()["Test Texture 1.png"])
+			Renderer.texture = Feint.FFI.cstring("walking1.png")
 			Renderer.id = graphics:addRectangle(
-				Renderer.texture, Renderer.textureLength,
+				Renderer.texture,-- Renderer.textureLength,
 				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY
 			)
 		end)
@@ -146,7 +147,8 @@ function RenderSystem:update(dt)
 
 				-- oscillate(trueSizeX, trueSizeY, offsetX, offsetY)
 				graphics:modify(
-					Renderer.texture, Renderer.textureLength, Renderer.id,
+					Renderer.texture,-- Renderer.textureLength,
+					Renderer.id,
 					offsetX + Transform.x - trueSizeX / 2,
 					offsetY + Transform.y - trueSizeY / 2,
 					Transform.angle, trueSizeX, trueSizeY

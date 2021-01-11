@@ -2,22 +2,7 @@ local ECSUtils = Feint.ECS.Util
 local Component = ECSUtils.newClass("Component")
 
 local ffi = require("ffi")
-ffi.cdef([[
-	void* malloc(size_t size);
-	int free(void* ptr);
-	void* realloc(void* ptr, size_t size);
-	size_t strlen(char* restrict str);
-	void* calloc(size_t, size_t);
-]])
 
-local typeSize = {
-	bool = ffi.sizeof("bool"),
-	int8_t = ffi.sizeof("int8_t"),
-	int16_t = ffi.sizeof("int16_t"),
-	int32_t = ffi.sizeof("int32_t"),
-	float = ffi.sizeof("float"),
-	double = ffi.sizeof("double")
-}
 function Component:init(data, ...)
 	self.size = #data
 	self.sizeBytes = 0
@@ -35,16 +20,20 @@ function Component:init(data, ...)
 				-- local arraySize = v:len()
 				-- print(v:len())
 
-				self.trueSizeBytes = self.trueSizeBytes ffi.sizeof("uint8_t*")--+ arraySize
-				-- structMembers[#structMembers + 1] = dataType .. " " .. k .. "[" .. arraySize .. "]"
-				structMembers[#structMembers + 1] = "uint8_t* " .. k --.. "[" .. arraySize .. "]"
-				structMembers[#structMembers + 1] = "uint8_t" .. " " .. k .. "Length"
+				-- self.trueSizeBytes = self.trueSizeBytes ffi.sizeof("uint8_t*")--+ arraySize
+				-- structMembers[#structMembers + 1] = "uint8_t* " .. k --.. "[" .. arraySize .. "]"
+				-- structMembers[#structMembers + 1] = "uint8_t" .. " " .. k .. "Length"
+
+				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof("cstring")
+				structMembers[#structMembers + 1] = "cstring " .. k
+				print(ffi.typeof("cstring"))
+
 				self.strings[k] = v
 				self.data[k] = nil--ffi.C.malloc(k:len())
 				-- print(k, v, self.data[k])
 			else
 				dataType = dataType == "number" and "float" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
-				self.trueSizeBytes = self.trueSizeBytes + typeSize[dataType]
+				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof(dataType) --typeSize[dataType]
 				structMembers[#structMembers + 1] = dataType .. " " .. k
 			end
 			-- 	self.keys[#self.keys + 1] = k
@@ -67,8 +56,8 @@ function Component:init(data, ...)
 				char padding[%s];
 			}
 		]], self.ComponentName, table.concat(structMembers, ";\n") .. ";", padding))
-		local ffiType = ffi.typeof("struct component_" .. self.Name)
-		self.ffiType = ffi.metatype(ffiType, {
+		-- local ffiType = ffi.typeof("struct component_" .. self.Name)
+		self.ffiType = ffi.metatype("struct ".. self.ComponentName, {
 			__pairs = function(t)
 				local function iter(t, k)
 					k = k + 1
@@ -77,8 +66,9 @@ function Component:init(data, ...)
 					end
 				end
 				return iter, t, 0
-			end
+			end,
 		})
+		print(self.ffiType)
 
 		-- print(self.sizeBytes)
 	else

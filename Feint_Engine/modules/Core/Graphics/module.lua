@@ -117,7 +117,7 @@ function graphics:load()
 		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
 	end
 
-	function self:modify(name, len, id, x, y, r, width, height)
+	function self:modify(name, id, x, y, r, width, height)
 		-- self.drawables[id].x = x
 		-- self.drawables[id].y = -y -- self.RenderSize.y - y
 		-- self.drawables[id].r = r
@@ -144,10 +144,10 @@ function graphics:load()
 		-- love.graphics.draw(drawable.image, dx, dy, r, 1, 1)
 	end
 
-	function self:addRectangle(name, len, x, y, r, width, height)
-		local id = TEXTURE_ASSETS[ffi.string(name, len)].batch:add(x, y, r, width, height)
-		self.drawables[id] = {x = x, y = y, r = r, width = width, height = height}
-		return id
+	function self:addRectangle(name, x, y, r, width, height)
+		-- local id = TEXTURE_ASSETS[ffi.string(name.string, #name)].batch:add(x, y, r, width, height)
+		-- self.drawables[id] = {x = x, y = y, r = r, width = width, height = height}
+		return 0--id
 	end
 
 	function self:clear()

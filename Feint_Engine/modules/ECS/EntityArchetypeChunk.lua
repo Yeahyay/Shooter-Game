@@ -70,26 +70,19 @@ function EntityChunk:isEmpty()
 end
 -- function EntityChunk:getEntity()
 if Feint.ECS.FFI_OPTIMIZATIONS then
+	local cstring = ffi.typeof("cstring")
 	function EntityChunk:preallocate(num)
+		local components = self.archetype.components
 		for i = 0, num - 1, 1 do
 			local archetypeInstance = self.data[i]
-			for _, component in pairs(self.archetype.components) do
+			for j = 1, #components, 1 do
+				local component = components[j]
 				local componentInstance = archetypeInstance[component.Name]
 				for k, v in pairs(component.strings) do
-					componentInstance[k] = ffi.C.malloc(#v)--ffi.gc(ffi.C.malloc(#v), ffi.C.free)
-					ffi.copy(componentInstance[k], v)
-					componentInstance[k .. "Length"] = #v
+					componentInstance[k] = cstring(v)
 				end
 			end
 		end
-		-- for i = 0, num - 1, 1 do
-		-- 	local archetypeInstance = self.data[i]
-		-- 	print(i, archetypeInstance)
-		-- 	print(ffi.C.strlen(archetypeInstance.Renderer.texture))
-		-- 	-- print(archetypeInstance.Renderer.textureLength)
-		-- 	-- print(ffi.string(archetypeInstance.Renderer.texture))--, archetypeInstance.Renderer.textureLength))
-		-- end
-		-- print("njoiomklnjklkok")
 	end
 	function EntityChunk:newEntity(id)
 		if not self:isFull() then
