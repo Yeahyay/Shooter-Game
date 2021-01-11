@@ -37,7 +37,7 @@ function EntityChunk:init(archetype, ...)
 	self.dead = false
 
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
-	self.index = Feint.Math.random2(200)--self.archetype.chunkCount
+	self.index = self.archetype.chunkCount
 
 	-- local s = 40
 	-- for k, v in pairs(self) do
@@ -50,7 +50,7 @@ function EntityChunk:init(archetype, ...)
 	-- self.capacityBytes = self.capacityBytes - s
 	-- self.capacityBytes = math.floor(self.capacityBytes / 64) * 64
 	-- self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
-	print(self.capacity, self.capacityBytes, self.capacity * self.entitySizeBytes)
+	-- print(self.capacity, self.capacityBytes, self.capacity * self.entitySizeBytes)
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1

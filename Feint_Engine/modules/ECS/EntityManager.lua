@@ -83,7 +83,7 @@ function EntityManager:newArchetypeChunk(archetype)
 	self.archetypeChunksCount[archetype] = self.archetypeChunksCount[archetype] + 1
 	currentArchetypeChunkTable[self.archetypeChunksCount[archetype]] = archetypeChunk
 
-	-- Feint.Log.logln("Creating archetype chunk " .. archetypeChunk.Name)
+	-- Feint.Log.log("Creating archetype chunk %s, id: %d\n", archetypeChunk.Name, archetypeChunk.index)
 	return archetypeChunk
 end
 

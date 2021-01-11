@@ -16,8 +16,23 @@ local tempModuleObject = require("Feint_Engine.modules.tempModuleObject")
 local moduleObject = require("Feint_Engine.modules.moduleObject")
 
 local moduleLoadList = {}
-local modules = {}
-local modulePriorities = {}
+local modulesUnsorted = {}
+local moduleDependencies = {}
+local modulePriorities = {
+	Index = {}
+}
+setmetatable(modulePriorities, {
+	__index = function(t, k)
+		return t[t.Index[k]]
+	end,
+	__newindex = function(t, k, v)
+		if type(k) == "number" then
+			rawset(t, k, v)
+		else
+			rawset(t.Index, k, v)
+		end
+	end
+})
 
 function moduleLoader:setRoot(path)
 	rootDir = path
@@ -55,8 +70,8 @@ function moduleLoader:importModule(path)
 	print(string.format("importing %s: %s", module.Name, module.FullName))
 
 	module:loadModule()
-	if not modulePriorities[module.FullName] then
-		modulePriorities[module.FullName] = 0
+	if not moduleDependencies[module.FullName] then
+		moduleDependencies[module.FullName] = 0
 	end
 
 	if not module.Module.load then
@@ -65,18 +80,25 @@ function moduleLoader:importModule(path)
 		return nil
 	end
 
-	if module.Module.depends then
+	if module.Module.priority then
+		modulePriorities[#modulePriorities + 1] = module
+		modulePriorities[module.FullName] = #modulePriorities
+		funcSpace(1)
+		print(string.format("* Module Priority: %s has a specified priority of %d", module.Name, module.Module.priority))
+	elseif module.Module.depends then
 		for k, dependency in pairs(module.Module.depends) do
 			assert(dependency:len() > 1, string.format("module %s depends on an empty string", module.Name))
-			modulePriorities[dependency] = (modulePriorities[dependency] or 0) + 1
+			moduleDependencies[dependency] = (moduleDependencies[dependency] or 0) + 1
 
 			funcSpace(1)
 			print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
 		end
 	end
 
-	-- add the module to the list of all modules
-	modules[module.FullName] = module
+	if not module.Module.priority then
+	-- add the module to the list of all unsorted modules
+		modulesUnsorted[module.FullName] = module
+	end
 
 	funcSpace(1)
 	print("! imported")
@@ -87,7 +109,7 @@ function moduleLoader:sortDependencies()
 	local notUsed = {}
 	local graph = {}
 	local graphIndex = {}
-	for name, module in pairs(modules) do
+	for name, module in pairs(modulesUnsorted) do
 		local node = {
 			FullName = name,
 			Dependencies = {Index = {}},
@@ -124,12 +146,12 @@ function moduleLoader:sortDependencies()
 		graphIndex[name] = #graph
 		notUsed[name] = true
 	end
-	for name, module in pairs(modules) do
+	for name, module in pairs(modulesUnsorted) do
 		local node = graph[graphIndex[name]]
 		if module.Module.depends then
 			for k, dependency in pairs(module.Module.depends) do
 				local dependNode = graph[graphIndex[dependency]]
-				assert(modules[dependency], "dependency " .. dependency .. " does not exist", 1)
+				assert(modulesUnsorted[dependency], "dependency " .. dependency .. " does not exist", 1)
 				node.Dependencies[dependNode.FullName] = dependNode
 				dependNode.Dependants[node.FullName] = node
 				io.write(string.format("   %s depends on module %s\n", name, dependency))
@@ -163,6 +185,14 @@ function moduleLoader:sortDependencies()
 			end
 		end
 	end
+
+	table.sort(modulePriorities, function(a, b)
+		return a.Module.priority > b.Module.priority
+	end)
+	for k, v in ipairs(modulePriorities) do
+		table.insert(moduleLoadList, 1, v)
+	end
+
 	print()
 	print("Module Load Order:")
 	for k, entry in pairs(moduleLoadList) do
@@ -171,7 +201,7 @@ function moduleLoader:sortDependencies()
 end
 function moduleLoader:loadModule(fullName)
 	io.write(string.format("* Loading module %s\n", fullName))
-	local module = modules[fullName]
+	local module = modulesUnsorted[fullName] or modulePriorities[fullName]
 	local current = Feint.Modules
 
 	local accum = ""
@@ -187,6 +217,7 @@ function moduleLoader:loadModule(fullName)
 			accum = accum:len() > 0 and accum .. "." .. name or name
 			local currentModule = current[name]
 
+			print(module)
 			if module.Name == (currentModule and currentModule.Name) then
 				currentModule:convert(module.Module)
 				break

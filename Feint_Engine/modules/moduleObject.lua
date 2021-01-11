@@ -4,7 +4,7 @@ function moduleObject:new(...)
 	local newModule = {}
 	setmetatable(newModule, {
 		__index = self,
-		__tostring = function() return self.FullName end
+		__tostring = function() return newModule.FullName end
 	})
 	newModule:init(...)
 	return newModule
