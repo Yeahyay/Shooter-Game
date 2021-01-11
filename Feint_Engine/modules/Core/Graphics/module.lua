@@ -58,6 +58,9 @@ function graphics:load()
 	for _, file in pairs(love.filesystem.getDirectoryItems(SPRITES_PATH)) do
 		if file:find(".png") then
 			local path = SPRITES_PATH .. "/" .. file
+			if not love.filesystem.getInfo(path).exists then
+				path = SPRITES_PATH .. "/" .. "Test Texture 1.png"
+			end
 			local image = love.graphics.newImage(path)
 			local batch = love.graphics.newSpriteBatch(image, nil, "stream")
 			TEXTURE_ASSETS[file] = {image = image, sizeX = image:getWidth(), sizeY = image:getHeight(), batch = batch}
@@ -101,6 +104,9 @@ function graphics:load()
 		y = nil,
 	})
 
+	local canvas = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
+	local canvas2 = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
+
 	function self:setRenderResolution(x, y)
 		self.RenderSize.x = x
 		self.RenderSize.y = self.isEnforceRatio and x / self.RenderAspectRatio or y
@@ -111,10 +117,10 @@ function graphics:load()
 	function self:setScreenResolution(x, y)
 		self.ScreenSize.x = x
 		self.ScreenSize.y = self.isEnforceRatio and x / self.ScreenAspectRatio or y
-		print(self.ScreenAspectRatio, x / self.ScreenAspectRatio)
 		self.ScreenAspectRatio = self.ScreenSize.x / self.ScreenSize.y
 		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
 		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
+		canvas2 = love.graphics.newCanvas(self.ScreenSize.x, self.ScreenSize.y, {msaa = 0})
 	end
 
 	function self:modify(name, id, x, y, r, width, height)
@@ -125,23 +131,21 @@ function graphics:load()
 		-- self.drawables[id].height = height
 		-- something something check if on screen
 
-
 		-- local drawCall = self.drawables[id]
 		-- local interX, interY = drawCall[ENUM_INTERPOLATE_X], drawCall[ENUM_INTERPOLATE_Y]
 		local transformX, transformY = x, -y--drawCall.x,  drawCall.y
 
 		-- local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
 
-		local dx = transformX
-		local dy = transformY
+		-- local dx = math.floor(transformX)
+		-- local dy = math.floor(transformY)
 
-		-- print("id: " .. id, TEXTURE_ASSETS[ffi.string(name, len)], ffi.string(name, len))
-		local drawable = TEXTURE_ASSETS[ffi.string(name, len)]
-		local batch = drawable.batch
-		batch:set(id, math.floor(dx), math.floor(dy), r,
-			width, height,
-			drawable.sizeX, drawable.sizeY)
-		-- love.graphics.draw(drawable.image, dx, dy, r, 1, 1)
+		local drawable = TEXTURE_ASSETS[ffi.string(name.string)]
+		-- local batch = drawable.batch
+		-- batch:set(id, dx, dy, r,
+		-- 	width, height,
+		-- 	drawable.sizeX, drawable.sizeY)
+		-- love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
 	end
 
 	function self:addRectangle(name, x, y, r, width, height)
@@ -156,9 +160,8 @@ function graphics:load()
 	function self:update()
 	end
 
-	local canvas = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
 	function self:draw()
-		love.graphics.setCanvas(canvas)
+		love.graphics.setCanvas(canvas2)
 		love.graphics.clear()
 
 		love.graphics.setColor(0.35, 0.35, 0.35, 1)
@@ -175,15 +178,23 @@ function graphics:load()
 			-- love.graphics.setWireframe(true)
 
 			for k, v in pairs(TEXTURE_ASSETS) do
-				love.graphics.draw(v.batch, 0, 0, 0, 1, 1)
+				love.graphics.draw(v.batch, 0, 200, 0, 1, 1)
 			end
 
 		love.graphics.pop()
 		love.graphics.setCanvas()
-
+		-- love.graphics.setBlendMode("alpha", "premultiplied")
+		-- love.graphics.clear()
+		--
 		local sx = self.RenderToScreenRatio.x / self.RenderScale.x
 		local sy = self.RenderToScreenRatio.y / self.RenderScale.y
-		love.graphics.draw(canvas, 0, (self.ScreenSize.y - self.ScreenSize.y), 0, sx, sy, 0, 0)
+		love.graphics.draw(canvas2, 0, (self.ScreenSize.y - self.ScreenSize.y), 0, sx, sy, 0, 0)
+		-- love.graphics.rectangle("fill", 200, 200, 200, 200)
+
+		-- love.graphics.setCanvas()
+		-- love.graphics.clear()
+		-- love.graphics.draw(canvas2, 0, 0, 1, 1, 0, 0)
+		-- love.graphics.draw(canvas, 0, 0, 1, 1, 0, 0)
 	end
 
 	function self:updateInterpolate(value)

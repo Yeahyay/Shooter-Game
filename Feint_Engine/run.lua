@@ -59,11 +59,10 @@ function love.keypressed(key, ...)
 		})
 	end
 	if key == "a" then
-		print(Graphics.ScreenToRenderRatio)
-		Graphics.RenderSize = Graphics.RenderSize % Math.Vec2.new(0.5, 0.5)
-		Graphics.RenderToScreenRatio = Graphics.ScreenSize / Graphics.RenderSize
-		Graphics.ScreenToRenderRatio = Graphics.RenderSize / Graphics.ScreenSize
-		print(Graphics.ScreenToRenderRatio)
+		Graphics:setRenderResolution((Graphics.RenderSize % Math.Vec2.new(0.5, 0.5)):split())
+	end
+	if key == "d" then
+		Graphics:setRenderResolution((Graphics.RenderSize % Math.Vec2.new(2, 2)):split())
 	end
 	if key == "z" then
 		Graphics.toggleInterpolation()
@@ -156,8 +155,9 @@ function love.update(dt)
 	Run:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
 
-	local s = math.max(Mouse.PositionNormalized.y, 0.001)
-	Graphics.RenderScale = Feint.Math.Vec2.new(s, s)
+	-- local s = math.max(math.floor(Mouse.PositionRaw.y / 8) * 8 / Graphics.ScreenSize.y, 0.001)
+	-- print(s)
+	-- Graphics.RenderScale = Feint.Math.Vec2.new(s, s)
 
 	local startTime = getTime()
 
@@ -202,65 +202,7 @@ local fpsSum = 0
 -- local debug = LoveGraphics.newCanvas(Graphics.RenderSize.x, Graphics.RenderSize.y, {msaa = 0})
 
 -- local acc = 0
-function love.draw(dt)
-	do
-		Run.G_FPS_DELTA = Run.G_FPS_DELTA + (Run.dt - Run.G_FPS_DELTA) * (1 - Run.G_FPS_DELTA_SMOOTHNESS)
-		Run.G_FPS = 1 / Run.G_FPS_DELTA
-	end
-
-	do
-		fpsSum = fpsSum -	fpsList[fpsIndex] + Run.dt
-		fpsList[fpsIndex] = Run.dt
-		fpsIndex = fpsIndex % Run.G_AVG_FPS_DELTA_ITERATIONS + 1
-		Run.G_AVG_FPS_DELTA = fpsSum / Run.G_AVG_FPS_DELTA_ITERATIONS
-
-		Run.G_AVG_FPS = 1 / Run.G_AVG_FPS_DELTA
-	end
-
-	Run.G_INT = Run.accum / math.max(0, Run.rate)
-
-	local startTime = getTime()
-
-	-- LoveGraphics.setCanvas(canvas)
-	-- LoveGraphics.clear()
-	-- LoveGraphics.setColor(0.5, 0.5, 0.5, 1)
-	-- LoveGraphics.rectangle("fill", 0, 0, Graphics.ScreenSize.x, Graphics.ScreenSize.y)
-	-- LoveGraphics.setColor(1, 1, 1, 1)
-	-- LoveGraphics.push()
-	-- 	LoveGraphics.scale(Graphics.ScreenToRenderRatio.x, Graphics.ScreenToRenderRatio.y)
-	-- 	LoveGraphics.translate(Graphics.ScreenSize.x / 2, Graphics.ScreenSize.y / 2)
-	-- 	-- LoveGraphics.setWireframe(true)
-		Graphics:updateInterpolate(Run.accum)
-	-- 	-- Graphics.processQueue()
-		Graphics:draw()
-	-- 	-- LoveGraphics.setWireframe(false)
-	-- LoveGraphics.pop()
-	-- LoveGraphics.setCanvas()
-	-- -- print(Graphics.RenderToScreenRatio, Graphics.ScreenToRenderRatio)
-	-- -- LoveGraphics.translate(720 * Graphics.ScreenToRenderRatio.x / 2, 1)
-	-- local sx, sy = Graphics.RenderToScreenRatio.x, Graphics.RenderToScreenRatio.y
-	-- LoveGraphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
-	-- -- LoveGraphics.draw(canvas, 50, 50, 0, 1, 1, 0, 0)
-
-	Graphics.UI.Immediate.Draw(Run.G_RENDER_DT)
-
-	local endTime = getTime()
-
-	Run.G_RENDER_DT = endTime - startTime
-
-	Run.G_RENDER_TIME = Run.G_RENDER_TIME + (Run.G_RENDER_DT - Run.G_RENDER_TIME) * (1 - Run.G_RENDER_TIME_SMOOTHNESS)
-
-	Run.G_RENDER_TIME_PERCENT_FRAME = Run.G_RENDER_TIME / (Run.rate) * 100
-
-	--[[
-	local f = 60
-	acc = acc + Run.G_RENDER_DT * f
-	while acc > 1 / 60 do
-		updateRender(acc)
-		acc = acc - 1 / 60
-	end
-	--]]
-
+local function debugDraw()
 	LoveGraphics.printf(
 		Run:isPaused() and string.format("Game Speed: %s\n", "Paused") or
 		string.format("Game Speed: %.3f\n", Run:getSpeed()),
@@ -340,6 +282,67 @@ function love.draw(dt)
 	LoveGraphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
 		0, DEFAULT_FONT_HEIGHT / 2 * 13, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
+	--]]
+end
+function love.draw(dt)
+	do
+		Run.G_FPS_DELTA = Run.G_FPS_DELTA + (Run.dt - Run.G_FPS_DELTA) * (1 - Run.G_FPS_DELTA_SMOOTHNESS)
+		Run.G_FPS = 1 / Run.G_FPS_DELTA
+	end
+
+	do
+		fpsSum = fpsSum -	fpsList[fpsIndex] + Run.dt
+		fpsList[fpsIndex] = Run.dt
+		fpsIndex = fpsIndex % Run.G_AVG_FPS_DELTA_ITERATIONS + 1
+		Run.G_AVG_FPS_DELTA = fpsSum / Run.G_AVG_FPS_DELTA_ITERATIONS
+
+		Run.G_AVG_FPS = 1 / Run.G_AVG_FPS_DELTA
+	end
+
+	Run.G_INT = Run.accum / math.max(0, Run.rate)
+
+	local startTime = getTime()
+
+	-- LoveGraphics.setCanvas(canvas)
+	-- LoveGraphics.clear()
+	-- LoveGraphics.setColor(0.5, 0.5, 0.5, 1)
+	-- LoveGraphics.rectangle("fill", 0, 0, Graphics.ScreenSize.x, Graphics.ScreenSize.y)
+	-- LoveGraphics.setColor(1, 1, 1, 1)
+	-- LoveGraphics.push()
+	-- 	LoveGraphics.scale(Graphics.ScreenToRenderRatio.x, Graphics.ScreenToRenderRatio.y)
+	-- 	LoveGraphics.translate(Graphics.ScreenSize.x / 2, Graphics.ScreenSize.y / 2)
+	-- 	-- LoveGraphics.setWireframe(true)
+		Graphics:updateInterpolate(Run.accum)
+	-- 	-- Graphics.processQueue()
+		Graphics:draw()
+	-- 	-- LoveGraphics.setWireframe(false)
+	-- LoveGraphics.pop()
+	-- LoveGraphics.setCanvas()
+	-- -- print(Graphics.RenderToScreenRatio, Graphics.ScreenToRenderRatio)
+	-- -- LoveGraphics.translate(720 * Graphics.ScreenToRenderRatio.x / 2, 1)
+	-- local sx, sy = Graphics.RenderToScreenRatio.x, Graphics.RenderToScreenRatio.y
+	-- LoveGraphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
+	-- -- LoveGraphics.draw(canvas, 50, 50, 0, 1, 1, 0, 0)
+
+	Graphics.UI.Immediate.Draw(Run.G_RENDER_DT)
+
+	debugDraw()
+
+	local endTime = getTime()
+
+	Run.G_RENDER_DT = endTime - startTime
+
+	Run.G_RENDER_TIME = Run.G_RENDER_TIME + (Run.G_RENDER_DT - Run.G_RENDER_TIME) * (1 - Run.G_RENDER_TIME_SMOOTHNESS)
+
+	Run.G_RENDER_TIME_PERCENT_FRAME = Run.G_RENDER_TIME / (Run.rate) * 100
+
+	--[[
+	local f = 60
+	acc = acc + Run.G_RENDER_DT * f
+	while acc > 1 / 60 do
+		updateRender(acc)
+		acc = acc - 1 / 60
+	end
 	--]]
 end
 function love.quit()
