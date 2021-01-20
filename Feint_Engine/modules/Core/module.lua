@@ -7,6 +7,8 @@ local printPrefixStackPointer = 1
 function core:load()
 	self.Name = "Core"
 
+	Feint.Core.Paths:Add("Core", Feint.Core.Paths.Modules .. "Core")
+
 	do
 		local printOld = print
 		function print(...) -- luacheck: ignore

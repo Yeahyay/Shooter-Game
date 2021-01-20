@@ -81,7 +81,7 @@ function love.mousereleased(...)
 end
 
 function love.threaderror(thread, message)
-	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 1)
+	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 2)
 end
 function love.resize(x, y)
 	Graphics:setScreenResolution(x, y)
@@ -98,14 +98,14 @@ function love.load()
 
 	-- after the new module system, this might not work
 	-- to future me, please fix
-	--[[
+	-- [[
 	for i = 1, 1, 1 do
-		Feint.Core.Thread.newWorker(i, nil)
+		Feint.Core.Thread:newWorker(i, nil)
 	end
 	love.timer.sleep(0.1)
 	for i = 1, 1, 1 do
 		Log.logln("STARTING THREAD %d", i)
-		Feint.Core.Thread.startWorker(i)
+		Feint.Core.Thread:startWorker(i)
 
 		local threadData = {
 			go = true,

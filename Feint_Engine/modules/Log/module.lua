@@ -3,7 +3,7 @@ local log = {
 }
 
 function log:load()
-	Feint.Core.Paths.Add("Log", Feint.Core.Paths.Root .. "logs")
+	Feint.Core.Paths:Add("Log", Feint.Core.Paths.Root .. "logs")
 
 	local coreUtil = Feint.Core.Time
 
@@ -23,15 +23,15 @@ function log:load()
 
 	local logFile = nil
 
-	function log.log(fmt, ...)
+	function log:log(fmt, ...)
 		local output = string.format("%s [%s] %s", _ENV._NAME, time(), fmt or "")
 		printf(output, ...)
 	end
-	function log.logln(fmt, ...)
+	function log:logln(fmt, ...)
 		local output = string.format("%s [%s] %s\n", _ENV._NAME, time(), fmt or "\n")
 		printf(output, ...)
 	end
-	function log.file(fmt, ...)
+	function log:file(fmt, ...)
 		local output = string.format("%s [%s] %s\n", _ENV._NAME, fullTime(), fmt and string.format(fmt, ...) or "Empty log")
 		print(output)
 		if not logFile then

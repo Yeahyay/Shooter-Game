@@ -1,5 +1,6 @@
 local graphics = {
 	depends = {"Math", "Core.Paths"},
+	isThreadSafe = false,
 	Public = {}
 }
 
@@ -21,13 +22,15 @@ local ENV = getfenv(1)
 
 local ffi = require("ffi")
 
-function graphics:load()
-	require("love.window")
-	require("love.graphics")
+function graphics:load(isThread)
+	if not isThread then
+		require("love.window")
+		require("love.graphics")
+	end
 
 	local Paths = Feint.Core.Paths
 
-	Paths.Add("Graphics", Paths.Modules .. "graphics")
+	Paths:Add("Graphics", Paths.Modules .. "graphics")
 
 	-- local width, height, flags = love.window.getMode() -- luacheck: ignore
 	local aspectRatio = 16 / 9
@@ -54,21 +57,23 @@ function graphics:load()
 	local interpolate = 0
 
 	local TEXTURE_ASSETS = {}
-	local SPRITES_PATH = Paths.SlashDelimited(Paths.Assets .. "sprites")
-	for _, file in pairs(love.filesystem.getDirectoryItems(SPRITES_PATH)) do
-		if file:find(".png") then
-			local path = SPRITES_PATH .. "/" .. file
-			if not love.filesystem.getInfo(path).exists then
-				path = SPRITES_PATH .. "/" .. "Test Texture 1.png"
+	local SPRITES_PATH = Paths:SlashDelimited(Paths.Assets .. "sprites")
+	if not isThread then
+		for _, file in pairs(love.filesystem.getDirectoryItems(SPRITES_PATH)) do
+			if file:find(".png") then
+				local path = SPRITES_PATH .. "/" .. file
+				if not love.filesystem.getInfo(path).exists then
+					path = SPRITES_PATH .. "/" .. "Test Texture 1.png"
+				end
+				local image = love.graphics.newImage(path)
+				local batch = love.graphics.newSpriteBatch(image, nil, "stream")
+				TEXTURE_ASSETS[file] = {image = image, sizeX = image:getWidth(), sizeY = image:getHeight(), batch = batch}
 			end
-			local image = love.graphics.newImage(path)
-			local batch = love.graphics.newSpriteBatch(image, nil, "stream")
-			TEXTURE_ASSETS[file] = {image = image, sizeX = image:getWidth(), sizeY = image:getHeight(), batch = batch}
 		end
-	end
 
-	function self:getTextures()
-		return TEXTURE_ASSETS
+		function self:getTextures()
+			return TEXTURE_ASSETS
+		end
 	end
 
 	self.drawables = {}
@@ -85,27 +90,31 @@ function graphics:load()
 
 	end
 
-	love.graphics.setLineStyle("rough")
-	love.graphics.setDefaultFilter("nearest", "nearest", 16)
+	local canvas
+	local canvas2
+	if not isThread then
+		love.graphics.setLineStyle("rough")
+		love.graphics.setDefaultFilter("nearest", "nearest", 16)
 
-	love.window.updateMode(self.ScreenSize.x, self.ScreenSize.y, {
-		fullscreen = false,
-		fullscreentype = "desktop",
-		vsync = false,
-		msaa = 0,
-		resizable = true,
-		borderless = false,
-		centered = true,
-		display = 1,
-		minwidth = 1,
-		minheight = 1,
-		highdpi = false,
-		x = nil,
-		y = nil,
-	})
+		love.window.updateMode(self.ScreenSize.x, self.ScreenSize.y, {
+			fullscreen = false,
+			fullscreentype = "desktop",
+			vsync = false,
+			msaa = 0,
+			resizable = true,
+			borderless = false,
+			centered = true,
+			display = 1,
+			minwidth = 1,
+			minheight = 1,
+			highdpi = false,
+			x = nil,
+			y = nil,
+		})
 
-	local canvas = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
-	local canvas2 = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
+		canvas = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
+		canvas2 = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
+	end
 
 	function self:setRenderResolution(x, y)
 		self.RenderSize.x = x
@@ -120,7 +129,9 @@ function graphics:load()
 		self.ScreenAspectRatio = self.ScreenSize.x / self.ScreenSize.y
 		self.RenderToScreenRatio = self.ScreenSize / self.RenderSize
 		self.ScreenToRenderRatio = self.RenderSize / self.ScreenSize
-		canvas2 = love.graphics.newCanvas(self.ScreenSize.x, self.ScreenSize.y, {msaa = 0})
+		if not isThread then
+			canvas2 = love.graphics.newCanvas(self.ScreenSize.x, self.ScreenSize.y, {msaa = 0})
+		end
 	end
 
 	function self:modify(name, id, x, y, r, width, height)

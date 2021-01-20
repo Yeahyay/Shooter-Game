@@ -1,11 +1,13 @@
 local threading = {
-	depends = {"Core.Paths"}
+	depends = {"Core", "Core.Paths"}
 }
 
 function threading:load()
 	require("love.system")
 
-	Feint.Core.Paths.Add("Thread", Feint.Core.Paths.Modules .. "threading")
+	Feint.Core.Paths:Print()
+
+	Feint.Core.Paths:Add("Thread", Feint.Core.Paths.Core .. "Thread")
 
 	local workers = {}
 
@@ -14,9 +16,9 @@ function threading:load()
 	self.MAX_CORES = love.system.getProcessorCount()
 
 	function self:newWorker(id)
-		Feint.Log.log("Creating new worker thread \"THREAD_%02d\"\n", id)
+		-- Feint.Log:log("Creating new worker thread \"THREAD_%02d\"\n", id)
 		local newThread = {
-			thread = love.thread.newThread(Feint.Core.Paths.SlashDelimited(Feint.Core.Paths.Thread) .. "threadBootstrap.lua"),
+			thread = love.thread.newThread(Feint.Core.Paths:SlashDelimited(Feint.Core.Paths.Thread) .. "threadBootstrap.lua"),
 			id = not workers[id] and id or #workers + 1,
 			running = false,
 			channel = love.thread.getChannel("thread_data_" .. id),

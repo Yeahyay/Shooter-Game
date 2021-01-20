@@ -1,6 +1,7 @@
 -- initializes the bare minimum for the engine to run
 
 require("Feint_Engine.feintAPI")
+Feint:init(false)
 
 printf("\n")
 Feint.Log.log("Initializing Feint Engine\n\n")

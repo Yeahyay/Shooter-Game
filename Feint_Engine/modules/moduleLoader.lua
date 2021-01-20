@@ -80,23 +80,34 @@ function moduleLoader:importModule(path)
 		return nil
 	end
 
+	local qualifies = false
 	if module.Module.priority then
-		modulePriorities[#modulePriorities + 1] = module
-		modulePriorities[module.FullName] = #modulePriorities
-		funcSpace(1)
-		print(string.format("* Module Priority: %s has a specified priority of %d", module.Name, module.Module.priority))
-	elseif module.Module.depends then
-		for k, dependency in pairs(module.Module.depends) do
-			assert(dependency:len() > 1, string.format("module %s depends on an empty string", module.Name))
-			moduleDependencies[dependency] = (moduleDependencies[dependency] or 0) + 1
+		qualifies = true
+	end
+	if module.Module.threadSafe ~= false then
+		qualifies = true
+	end
+	print(string.format("%s qualifies: %s", module.FullName, qualifies))
 
+	if qualifies then
+		if module.Module.priority then
+			modulePriorities[#modulePriorities + 1] = module
+			modulePriorities[module.FullName] = #modulePriorities
 			funcSpace(1)
-			print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
+			print(string.format("* Module Priority: %s has a specified priority of %d", module.Name, module.Module.priority))
+		elseif module.Module.depends then
+			for k, dependency in pairs(module.Module.depends) do
+				assert(dependency:len() > 1, string.format("module %s depends on an empty string", module.Name))
+				moduleDependencies[dependency] = (moduleDependencies[dependency] or 0) + 1
+
+				funcSpace(1)
+				print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
+			end
 		end
 	end
 
 	if not module.Module.priority then
-	-- add the module to the list of all unsorted modules
+		-- add the module to the list of all unsorted modules
 		modulesUnsorted[module.FullName] = module
 	end
 
@@ -199,8 +210,8 @@ function moduleLoader:sortDependencies()
 		io.write(string.format("%2d: %s\n", k, entry.FullName))
 	end
 end
-function moduleLoader:loadModule(fullName)
-	io.write(string.format("* Loading module %s\n", fullName))
+function moduleLoader:loadModule(index, fullName, ...)
+	io.write(string.format("* Loading module %d: %s\n", index, fullName))
 	local module = modulesUnsorted[fullName] or modulePriorities[fullName]
 	local current = Feint.Modules
 
@@ -217,7 +228,7 @@ function moduleLoader:loadModule(fullName)
 			accum = accum:len() > 0 and accum .. "." .. name or name
 			local currentModule = current[name]
 
-			print(module)
+			-- print(module)
 			if module.Name == (currentModule and currentModule.Name) then
 				currentModule:convert(module.Module)
 				break
@@ -245,7 +256,7 @@ function moduleLoader:loadModule(fullName)
 	if Feint.LoadedModules["Core"] then
 		pushPrintPrefix(fullName .. " debug: ")
 	end
-	module.Module:load()
+	module.Module:load(...)
 	if Feint.LoadedModules["Core"] then
 		popPrintPrefix()
 	end
@@ -255,13 +266,13 @@ function moduleLoader:loadModule(fullName)
 	print()
 
 end
-function moduleLoader:loadModules()
+function moduleLoader:loadAllModules(args)
 	self:sortDependencies()
 
 	print()
 	print("Loading Modules")
 	for k, module in pairs(moduleLoadList) do
-		self:loadModule(module.FullName)
+		self:loadModule(k, module.FullName, args.thread)
 	end
 
 	io.write("Loaded Modules\n")

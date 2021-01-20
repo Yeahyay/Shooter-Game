@@ -39,6 +39,11 @@ setmetatable(Feint, {
 
 local moduleLoader = require("Feint_Engine.modules.moduleLoader")
 moduleLoader:setRoot(FEINT_ROOT:gsub("%.", "/") .. "modules")
+Feint.ModuleLoader = moduleLoader
+
+function Feint:importModule(path)
+	moduleLoader:importModule(path)
+end
 
 function Feint:importModules()
 	local moduleStack = {}
@@ -67,14 +72,15 @@ function Feint:importModules()
 
 			if love.filesystem.getInfo(path).type == "directory" and not item:find("%.lua") then
 				moduleStack:insert(path)
-				moduleLoader:importModule(path)
+				Feint:importModule(path)
 			end
 		end
 
 		dir = moduleStack:pop()
 	end
-
-	moduleLoader:loadModules()
 end
 
-Feint:importModules()
+function Feint:init(isThread)
+	self:importModules()
+	self.ModuleLoader:loadAllModules({thread = isThread})
+end

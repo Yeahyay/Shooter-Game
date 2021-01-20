@@ -10,7 +10,7 @@ setmetatable(input, {
 })
 
 function input:load()
-	Feint.Core.Paths.Add("Input", Feint.Core.Paths.Modules .."input")
+	Feint.Core.Paths:Add("Input", Feint.Core.Paths.Modules .."input")
 
 	self.Mouse = {}
 	self.Mouse.ClickPosition = Feint.Math.Vec2(0, 0)

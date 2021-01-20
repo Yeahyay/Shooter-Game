@@ -4,7 +4,7 @@ local ECS = {
 
 function ECS:load()
 	local Paths = Feint.Core.Paths
-	Paths.Add("ECS", Paths.Modules .. "ECS") -- add path
+	Paths:Add("ECS", Paths.Modules .. "ECS") -- add path
 
 	self.FFI_OPTIMIZATIONS = true
 
@@ -20,13 +20,13 @@ function ECS:load()
 	self.System = require(Paths.ECS .. "System")
 
 	function self:init()
-		Paths.Add("Game_ECS_Files", "src.ECS")
-		Paths.Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
-		Paths.Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
-		Paths.Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
+		Paths:Add("Game_ECS_Files", "src.ECS")
+		Paths:Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
+		Paths:Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
+		Paths:Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
 		local systems = {} -- luacheck: ignore
 		local systemCount = 0
-		for k, v in pairs(love.filesystem.getDirectoryItems(Paths.SlashDelimited(Paths.Game_ECS_Systems))) do
+		for k, v in pairs(love.filesystem.getDirectoryItems(Paths:SlashDelimited(Paths.Game_ECS_Systems))) do
 			if v:match(".lua") then
 				local path = Paths.Game_ECS_Systems..v:gsub(".lua", "")
 				local system = require(path)
