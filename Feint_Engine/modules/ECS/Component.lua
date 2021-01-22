@@ -13,35 +13,22 @@ function Component:init(data, ...)
 		self.strings = {}
 		local structMembers = {}
 		for k, v in pairs(data) do
-			-- for k, v in pairs(v) do
 			local dataType = type(v)
 			if dataType == "string" then
-				-- dataType = "char"
-				-- local arraySize = v:len()
-				-- print(v:len())
-
-				-- self.trueSizeBytes = self.trueSizeBytes ffi.sizeof("uint8_t*")--+ arraySize
-				-- structMembers[#structMembers + 1] = "uint8_t* " .. k --.. "[" .. arraySize .. "]"
-				-- structMembers[#structMembers + 1] = "uint8_t" .. " " .. k .. "Length"
 
 				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof("cstring")
 				structMembers[#structMembers + 1] = "cstring " .. k
-				print(ffi.typeof("cstring"))
 
 				self.strings[k] = v
+				-- the data table is used for initialization
+				-- setting it to nil because it is initialized manually
 				self.data[k] = nil--ffi.C.malloc(k:len())
 				-- print(k, v, self.data[k])
 			else
 				dataType = dataType == "number" and "float" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
-				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof(dataType) --typeSize[dataType]
+				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof(dataType)
 				structMembers[#structMembers + 1] = dataType .. " " .. k
 			end
-			-- 	self.keys[#self.keys + 1] = k
-			-- 	self.values[#self.values + 1] = v
-			--
-			--
-			-- end
-			-- print(k, v)
 		end
 
 		local padding = 0--math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
@@ -56,7 +43,6 @@ function Component:init(data, ...)
 				char padding[%s];
 			}
 		]], self.ComponentName, table.concat(structMembers, ";\n") .. ";", padding))
-		-- local ffiType = ffi.typeof("struct component_" .. self.Name)
 		self.ffiType = ffi.metatype("struct ".. self.ComponentName, {
 			__pairs = function(t)
 				local function iter(t, k)

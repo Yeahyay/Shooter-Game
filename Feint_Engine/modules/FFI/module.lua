@@ -20,7 +20,7 @@ function FFI:load()
 		float = ffi.sizeof("float"),
 		double = ffi.sizeof("double")
 	}
-	local strings = {}--setmetatable({}, {__mode = "k"})
+	-- local strings = {}--setmetatable({}, {__mode = "k"})
 	do
 		ffi.cdef([[
 			typedef struct {
@@ -50,9 +50,6 @@ function FFI:load()
 			-- end
 		}
 		self.cstring = ffi.metatype("cstring", mt)
-		print('----------------------------------------------')
-		ffi.new("cstring")
-		print('----------------------------------------------')
 	end
 end
 

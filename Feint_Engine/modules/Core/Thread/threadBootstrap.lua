@@ -15,19 +15,6 @@ print("ioiolnkj kjnopnij")
 require("Feint_Engine.feintAPI", {Audio = true})
 Feint:init(true)
 
--- print(require("Feint_Engine.modules.threading.threadInit"), "okonop")
-
--- local loadfile = Feint.Util.Memoize(loadfile)
-
--- Feint.LoadModule("Input")
--- Feint.LoadModule("ECS")
--- Feint.LoadModule("Graphics")
--- Feint.LoadModule("Parsing")
--- Feint.LoadModule("Serialize")
--- Feint.LoadModule("Audio")
--- Feint.LoadModule("Tween")
--- Feint.LoadModule("UI")
-
 
 local jobCode = {}
 local loadJob = function(data, type)
