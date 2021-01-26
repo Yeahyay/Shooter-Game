@@ -49,7 +49,7 @@ function EntityManager:newArchetype(components)
 	local archetype = EntityArchetype:new(components)
 	self.archetypes[archetype.archetypeString] = archetype
 	self.archetypeCount = self.archetypeCount + 1
-	Feint.Log.logln("Creating archetype " .. archetype.Name)
+	Feint.Log:logln("Creating archetype " .. archetype.Name)
 
 	self:newArchetypeChunk(archetype)
 	return archetype
@@ -97,8 +97,8 @@ function EntityManager:getNextArchetypeChunk(archetype)
 	local currentArchetypeChunk = currentArchetypeChunkTable[currentArchetypeChunkTableCount]
 
 	if currentArchetypeChunk:isFull() then
-		-- Feint.Log.logln(currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes)
-		-- Feint.Log.logln((currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes) / 1024)
+		-- Feint.Log:logln(currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes)
+		-- Feint.Log:logln((currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes) / 1024)
 		currentArchetypeChunk = self:newArchetypeChunk(archetype)
 	end
 	return currentArchetypeChunk
@@ -116,7 +116,7 @@ end
 
 function EntityManager:CreateEntity(archetype)
 	-- print(archetype)
-	-- Feint.Log.logln("Creating entity from archetype ".. archetype.archetypeString)
+	-- Feint.Log:logln("Creating entity from archetype ".. archetype.archetypeString)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
 	assert(archetypeChunk)
 	local id = self:getNewEntityId()

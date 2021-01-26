@@ -42,7 +42,7 @@ function ECS:load()
 		for k, v in ipairs(self.World.DefaultWorld.updateOrder) do
 			Log.log("%d: %s\n", k, self.World.DefaultWorld.systems[k].Name)
 		end
-		Log.logln()
+		Log:logln()
 
 		self.World.DefaultWorld:start()
 	end

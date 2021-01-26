@@ -25,10 +25,10 @@ function EntityQuery:getArchetypeChunks(archetypeChunks)
 	-- print(#self.components)
 end
 function EntityQuery:getChunkCount()
-	Feint.Log.logln("ITERATE OVER ALL RELEVANT ARCHETYPE CHUNKS TO GET CHUNK COUNT")
+	Feint.Log:logln("ITERATE OVER ALL RELEVANT ARCHETYPE CHUNKS TO GET CHUNK COUNT")
 end
 function EntityQuery:getEntityCount()
-	Feint.Log.logln("ITERATE OVER ALL RELEVANT ARCHETYPE CHUNKS TO GET ENTITY COUNT")
+	Feint.Log:logln("ITERATE OVER ALL RELEVANT ARCHETYPE CHUNKS TO GET ENTITY COUNT")
 end
 function EntityQuery:new(with, withall, without)
 	local newEntityQuery = {

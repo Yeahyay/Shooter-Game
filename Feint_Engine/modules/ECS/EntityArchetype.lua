@@ -35,7 +35,7 @@ function EntityArchetype:createArchetype()
 	table.sort(components, function(a, b) return a < b end)
 	self.archetypeString = table.concat(components)
 	self.Name = self.archetypeString -- redundant?
-	-- Feint.Log.logln(self.archetypeString)
+	-- Feint.Log:logln(self.archetypeString)
 
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		local structMembers = {}

@@ -92,7 +92,7 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 			self.entityIndexToId[self.numEntities] = id
 			return self.numEntities
 		else
-			Feint.Log.logln("Archetype chunk is full")
+			Feint.Log:logln("Archetype chunk is full")
 		end
 		return nil
 	end
@@ -118,7 +118,7 @@ else
 			self.entityIndexToId[self.numEntities] = id
 			return self.numEntities
 		else
-			Feint.Log.logln("Archetype chunk is full")
+			Feint.Log:logln("Archetype chunk is full")
 		end
 		return nil
 	end
