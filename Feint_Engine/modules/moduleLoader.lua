@@ -61,13 +61,13 @@ function moduleLoader:importModule(path)
 	end
 
 	if not love.filesystem.getInfo(module.ModulePath .. ".lua") then
-		funcSpace(1)
-		print(string.format("* Module Info for %s, %s: module.lua not found, assumed to be resource folder",
-			module.Name, module.FullName
-		))
+		-- funcSpace(1)
+		-- print(string.format("* Module Info for %s, %s: module.lua not found, assumed to be resource folder",
+		-- 	module.Name, module.FullName
+		-- ))
 		return nil
 	end
-	print(string.format("importing %s: %s", module.Name, module.FullName))
+	-- print(string.format("importing %s: %s", module.Name, module.FullName))
 
 	module:loadModule()
 	if not moduleDependencies[module.FullName] then
@@ -87,21 +87,21 @@ function moduleLoader:importModule(path)
 	if module.Module.threadSafe ~= false then
 		qualifies = true
 	end
-	print(string.format("%s qualifies: %s", module.FullName, qualifies))
+	-- print(string.format("%s qualifies: %s", module.FullName, qualifies))
 
 	if qualifies then
 		if module.Module.priority then
 			modulePriorities[#modulePriorities + 1] = module
 			modulePriorities[module.FullName] = #modulePriorities
-			funcSpace(1)
-			print(string.format("* Module Priority: %s has a specified priority of %d", module.Name, module.Module.priority))
+			-- funcSpace(1)
+			-- print(string.format("* Module Priority: %s has a specified priority of %d", module.Name, module.Module.priority))
 		elseif module.Module.depends then
 			for k, dependency in pairs(module.Module.depends) do
 				assert(dependency:len() > 1, string.format("module %s depends on an empty string", module.Name))
 				moduleDependencies[dependency] = (moduleDependencies[dependency] or 0) + 1
 
-				funcSpace(1)
-				print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
+				-- funcSpace(1)
+				-- print(string.format("* Module Dependency: %s depends on %s", module.Name, dependency))
 			end
 		end
 	end
@@ -111,9 +111,9 @@ function moduleLoader:importModule(path)
 		modulesUnsorted[module.FullName] = module
 	end
 
-	funcSpace(1)
-	print("! imported")
-	print()
+	-- funcSpace(1)
+	-- print("! imported")
+	-- print()
 	return module
 end
 function moduleLoader:sortDependencies()
@@ -165,13 +165,13 @@ function moduleLoader:sortDependencies()
 				assert(modulesUnsorted[dependency], "dependency " .. dependency .. " does not exist", 1)
 				node.Dependencies[dependNode.FullName] = dependNode
 				dependNode.Dependants[node.FullName] = node
-				io.write(string.format("   %s depends on module %s\n", name, dependency))
+				-- io.write(string.format("   %s depends on module %s\n", name, dependency))
 			end
-			io.write(string.format("%s depends on %d %s\n",
-				node.FullName, #node.Dependencies, #node.Dependencies == 1 and "module" or "modules")
-			)
+			-- io.write(string.format("%s depends on %d %s\n",
+			-- 	node.FullName, #node.Dependencies, #node.Dependencies == 1 and "module" or "modules")
+			-- )
 		else
-		io.write(string.format("%s depends on 0 modules\n", node.FullName))
+			-- io.write(string.format("%s depends on 0 modules\n", node.FullName))
 		end
 	end
 
@@ -204,14 +204,14 @@ function moduleLoader:sortDependencies()
 		table.insert(moduleLoadList, 1, v)
 	end
 
-	print()
-	print("Module Load Order:")
-	for k, entry in pairs(moduleLoadList) do
-		io.write(string.format("%2d: %s\n", k, entry.FullName))
-	end
+	-- print()
+	-- print("Module Load Order:")
+	-- for k, entry in pairs(moduleLoadList) do
+	-- 	io.write(string.format("%2d: %s\n", k, entry.FullName))
+	-- end
 end
 function moduleLoader:loadModule(index, fullName, ...)
-	io.write(string.format("* Loading module %d: %s\n", index, fullName))
+	-- io.write(string.format("* Loading module %d: %s\n", index, fullName))
 	local module = modulesUnsorted[fullName] or modulePriorities[fullName]
 	local current = Feint.Modules
 
@@ -251,8 +251,6 @@ function moduleLoader:loadModule(index, fullName, ...)
 	end
 	current[module.Name] = module.Module
 
-	-- print(Feint.Core, Feint.Core.Paths, current.Name)
-
 	if Feint.LoadedModules["Core"] then
 		pushPrintPrefix(fullName .. " debug: ")
 	end
@@ -262,15 +260,15 @@ function moduleLoader:loadModule(index, fullName, ...)
 	end
 
 	Feint.LoadedModules[fullName] = module.Module
-	io.write(string.format("* Loaded  module %s\n", fullName))
-	print()
+	-- io.write(string.format("* Loaded  module %s\n", fullName))
+	-- print()
 
 end
 function moduleLoader:loadAllModules(args)
 	self:sortDependencies()
 
-	print()
-	print("Loading Modules")
+	-- print()
+	-- print("Loading Modules")
 	for k, module in pairs(moduleLoadList) do
 		self:loadModule(k, module.FullName, args.thread)
 	end

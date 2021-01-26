@@ -88,6 +88,7 @@ function love.resize(x, y)
 	-- love.draw()
 	-- Graphics:draw()
 end
+local ffi = require("ffi")
 function love.load()
 	Run.framerate = 60 -- framerate cap
 	Run.rate = 1 / 60 -- update dt
@@ -95,6 +96,10 @@ function love.load()
 	Run:setSpeed(1)
 
 	love.math.setRandomSeed(Math.G_SEED)
+
+	Feint.ECS:init()
+	local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
+	-- Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
 
 	-- after the new module system, this might not work
 	-- to future me, please fix
@@ -104,48 +109,58 @@ function love.load()
 	end
 	love.timer.sleep(0.1)
 	for i = 1, 1, 1 do
-		Log.logln("STARTING THREAD %d", i)
+		Log:logln("STARTING THREAD %d", i)
 		Feint.Core.Thread:startWorker(i)
 
+		-- local threadData = {
+		-- 	go = true,
+		-- 	-- func = string.dump(function(test)
+		-- 	-- 	print("yo", test)
+		-- 	-- end),
+		-- 	func = string.dump(function(test)
+		-- 		while true do
+		-- 			local a = 0
+		-- 			local b = {}
+		-- 			for i = 10000, 1, -1 do
+		-- 				local a = i + 1
+		-- 				b[i] = a
+		-- 			end
+		-- 			print("sadkmnk")
+		-- 			-- sort(b)
+		-- 			sleep(0.0001)
+		-- 		end
+		-- 	end),
+		-- 	type = "string",
+		-- }
 		local threadData = {
-			go = true,
-			-- func = string.dump(function(test)
-			-- 	print("yo", test)
-			-- end),
-			func = string.dump(function(test)
-				while true do
-					local a = 0
-					local b = {}
-					for i = 10000, 1, -1 do
-						local a = i + 1
-						b[i] = a
-					end
-					print("sadkmnk")
-					-- sort(b)
-					sleep(0.0001)
-				end
-			end),
-			type = "string",
+			entities = love.data.newByteData(
+				ffi.string(
+				ffi.cast("const char*", Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1].data))),
+			-- entities = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1].data,
+			length = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1].numEntities,
+			archetypeString = arc.archetypeString,
 		}
 
 		local channel = love.thread.getChannel("thread_data_"..i)
 
 		channel:push(threadData)
 
-		Log.logln("WAITING FOR THREAD %d", i)
+		Log:logln("WAITING FOR THREAD %d", i)
 		local wait = false
-		wait = channel:demand()
+		wait = channel:demand(5)
 		-- while not wait and wait ~= threadData do
-			Log.logln("RECIEVED", wait)
+			Log:logln("RECIEVED", wait)
 		-- end
-		Log.logln("DONE WAITING FOR THREAD %d", i)
+		Log:logln("DONE WAITING FOR THREAD %d", i)
+
+		channel:push(threadData)
 
 	end
 	--]]
 
 	Graphics.UI.Immediate.Initialize()
 
-	Feint.ECS:init()
+	-- Feint.ECS:init()
 end
 
 local getTime = love.timer.getTime

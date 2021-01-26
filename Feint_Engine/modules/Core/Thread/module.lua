@@ -5,7 +5,7 @@ local threading = {
 function threading:load()
 	require("love.system")
 
-	Feint.Core.Paths:Print()
+	-- Feint.Core.Paths:Print()
 
 	Feint.Core.Paths:Add("Thread", Feint.Core.Paths.Core .. "Thread")
 

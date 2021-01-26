@@ -5,13 +5,15 @@ local FFI = {
 _G.strings = {}
 local ffi = require("ffi")
 function FFI:load()
-	ffi.cdef([[
+	FFI.decl = [[
 		void* malloc(size_t size);
 		int free(void* ptr);
 		void* realloc(void* ptr, size_t size);
 		size_t strlen(char* restrict str);
 		void* calloc(size_t, size_t);
-	]])
+		char* strdup(const char *str1);
+	]]
+	ffi.cdef(FFI.decl)
 	self.typeSize = {
 		bool = ffi.sizeof("bool"),
 		int8_t = ffi.sizeof("int8_t"),
