@@ -26,9 +26,13 @@ function core:load()
 			io.write("")
 		end
 	end
-	function pushPrintPrefix(string)
+	function pushPrintPrefix(string, noLocation)
 		printPrefixStackPointer = printPrefixStackPointer + 1
-		printPrefixStack[printPrefixStackPointer] = string
+
+		local funcInfo = debug.getinfo(2)
+		-- for k, v in pairs(funcInfo) do print(k, v) end
+
+		printPrefixStack[printPrefixStackPointer] = noLocation and funcInfo.short_src .. " " .. string or string
 	end
 	function popPrintPrefix()
 		assert(printPrefixStackPointer > 1)

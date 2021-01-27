@@ -10,9 +10,14 @@ local channel = love.thread.getChannel("thread_data_" .. self.id)
 local ffi = require("ffi")
 require("Feint_Engine.feintAPI", {Audio = true})
 Feint:init(true)
+print("s,;m;m")
+-- Feint.ECS:init()
+pushPrintPrefix("ASS:", true)
 
-Feint.ECS:init()
-pushPrintPrefix("ASS:")
+for k, v in pairs(Feint.FFI) do
+	print(k, v)
+end
+
 print("yrterwrgty")
 
 print(Feint.FFI.decl)

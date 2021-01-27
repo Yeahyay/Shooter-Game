@@ -146,7 +146,7 @@ function love.load()
 		channel:push(threadData)
 
 		Log:logln("WAITING FOR THREAD %d", i)
-		local wait = false
+		local wait
 		wait = channel:demand(5)
 		-- while not wait and wait ~= threadData do
 			Log:logln("RECIEVED", wait)

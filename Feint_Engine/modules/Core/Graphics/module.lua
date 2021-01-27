@@ -25,8 +25,8 @@ local ffi = require("ffi")
 function graphics:load(isThread)
 	if not isThread then
 		require("love.window")
-		require("love.graphics")
 	end
+	-- require("love.graphics")
 
 	local Paths = Feint.Core.Paths
 
@@ -70,10 +70,10 @@ function graphics:load(isThread)
 				TEXTURE_ASSETS[file] = {image = image, sizeX = image:getWidth(), sizeY = image:getHeight(), batch = batch}
 			end
 		end
+	end
 
-		function self:getTextures()
-			return TEXTURE_ASSETS
-		end
+	function self:getTextures()
+		return TEXTURE_ASSETS
 	end
 
 	self.drawables = {}

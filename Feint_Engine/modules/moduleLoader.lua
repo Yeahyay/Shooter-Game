@@ -211,7 +211,7 @@ function moduleLoader:sortDependencies()
 	-- end
 end
 function moduleLoader:loadModule(index, fullName, ...)
-	-- io.write(string.format("* Loading module %d: %s\n", index, fullName))
+	io.write(string.format("* Loading module %d: %s\n", index, fullName))
 	local module = modulesUnsorted[fullName] or modulePriorities[fullName]
 	local current = Feint.Modules
 
