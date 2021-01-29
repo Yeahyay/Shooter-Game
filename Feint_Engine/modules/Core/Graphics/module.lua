@@ -148,15 +148,15 @@ function graphics:load(isThread)
 
 		-- local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
 
-		-- local dx = math.floor(transformX)
-		-- local dy = math.floor(transformY)
+		local dx = math.floor(transformX)
+		local dy = math.floor(transformY)
 
 		local drawable = TEXTURE_ASSETS[ffi.string(name.string)]
-		-- local batch = drawable.batch
-		-- batch:set(id, dx, dy, r,
-		-- 	width, height,
-		-- 	drawable.sizeX, drawable.sizeY)
-		-- love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
+		local batch = drawable.batch
+		batch:set(id, dx, dy, r,
+			width, height,
+			drawable.sizeX, drawable.sizeY)
+		love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
 	end
 
 	function self:addRectangle(name, x, y, r, width, height)
@@ -171,8 +171,44 @@ function graphics:load(isThread)
 	function self:update()
 	end
 
+	-- function self:draw()
+	-- 	love.graphics.setCanvas(canvas2)
+	-- 	love.graphics.clear()
+	--
+	-- 	love.graphics.setColor(0.35, 0.35, 0.35, 1)
+	-- 	love.graphics.rectangle("fill", 0, 0, self.RenderSize.x, self.RenderSize.y)
+	-- 	love.graphics.setColor(0.25, 0.25, 0.25, 1)
+	-- 	love.graphics.rectangle("fill",
+	-- 		self.RenderSize.x / 4, self.RenderSize.y / 4, self.RenderSize.x / 2, self.RenderSize.y / 2
+	-- 	)
+	-- 	love.graphics.setColor(1, 1, 1, 1)
+	--
+	-- 	love.graphics.push()
+	-- 		love.graphics.scale(self.RenderScale.x, self.RenderScale.y)
+	-- 		love.graphics.translate(self.RenderSize.x / 2, self.RenderSize.y / 2)
+	-- 		-- love.graphics.setWireframe(true)
+	--
+	-- 		for k, v in pairs(TEXTURE_ASSETS) do
+	-- 			love.graphics.draw(v.batch, 0, 200, 0, 1, 1)
+	-- 		end
+	--
+	-- 	love.graphics.pop()
+	-- 	love.graphics.setCanvas()
+	-- 	-- love.graphics.setBlendMode("alpha", "premultiplied")
+	-- 	-- love.graphics.clear()
+	-- 	--
+	-- 	local sx = self.RenderToScreenRatio.x / self.RenderScale.x
+	-- 	local sy = self.RenderToScreenRatio.y / self.RenderScale.y
+	-- 	love.graphics.draw(canvas2, 0, (self.ScreenSize.y - self.ScreenSize.y), 0, sx, sy, 0, 0)
+	-- 	-- love.graphics.rectangle("fill", 200, 200, 200, 200)
+	--
+	-- 	-- love.graphics.setCanvas()
+	-- 	-- love.graphics.clear()
+	-- 	-- love.graphics.draw(canvas2, 0, 0, 1, 1, 0, 0)
+	-- 	-- love.graphics.draw(canvas, 0, 0, 1, 1, 0, 0)
+	-- end
 	function self:draw()
-		love.graphics.setCanvas(canvas2)
+		love.graphics.setCanvas(canvas)
 		love.graphics.clear()
 
 		love.graphics.setColor(0.35, 0.35, 0.35, 1)
@@ -189,23 +225,15 @@ function graphics:load(isThread)
 			-- love.graphics.setWireframe(true)
 
 			for k, v in pairs(TEXTURE_ASSETS) do
-				love.graphics.draw(v.batch, 0, 200, 0, 1, 1)
+				love.graphics.draw(v.batch, 0, 0, 0, 1, 1)
 			end
 
 		love.graphics.pop()
 		love.graphics.setCanvas()
-		-- love.graphics.setBlendMode("alpha", "premultiplied")
-		-- love.graphics.clear()
-		--
+
 		local sx = self.RenderToScreenRatio.x / self.RenderScale.x
 		local sy = self.RenderToScreenRatio.y / self.RenderScale.y
-		love.graphics.draw(canvas2, 0, (self.ScreenSize.y - self.ScreenSize.y), 0, sx, sy, 0, 0)
-		-- love.graphics.rectangle("fill", 200, 200, 200, 200)
-
-		-- love.graphics.setCanvas()
-		-- love.graphics.clear()
-		-- love.graphics.draw(canvas2, 0, 0, 1, 1, 0, 0)
-		-- love.graphics.draw(canvas, 0, 0, 1, 1, 0, 0)
+		-- love.graphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
 	end
 
 	function self:updateInterpolate(value)

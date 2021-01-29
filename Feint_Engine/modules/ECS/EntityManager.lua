@@ -49,7 +49,7 @@ function EntityManager:newArchetype(components)
 	local archetype = EntityArchetype:new(components)
 	self.archetypes[archetype.archetypeString] = archetype
 	self.archetypeCount = self.archetypeCount + 1
-	Feint.Log:logln("Creating archetype " .. archetype.Name)
+	-- Feint.Log:logln("Creating archetype " .. archetype.Name)
 
 	self:newArchetypeChunk(archetype)
 	return archetype

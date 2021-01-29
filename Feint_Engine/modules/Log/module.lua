@@ -24,6 +24,7 @@ function log:load()
 	local logFile = nil
 
 	function log:log(fmt, ...)
+		assert(self, "call with \":\" instead", 3)
 		local output = string.format("%s [%s] %s", _ENV._NAME, time(), fmt or "")
 		printf(output, ...)
 	end

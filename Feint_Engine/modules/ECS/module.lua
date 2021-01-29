@@ -40,9 +40,9 @@ function ECS:load()
 		Log.log("\n%s update order:\n", self.World.DefaultWorld.Name)
 		self.World.DefaultWorld:generateUpdateOrderList()
 		for k, v in ipairs(self.World.DefaultWorld.updateOrder) do
-			Log.log("%d: %s\n", k, self.World.DefaultWorld.systems[k].Name)
+			printf("%d: %s\n", k, self.World.DefaultWorld.systems[k].Name)
 		end
-		Log:logln()
+		print()
 
 		self.World.DefaultWorld:start()
 	end

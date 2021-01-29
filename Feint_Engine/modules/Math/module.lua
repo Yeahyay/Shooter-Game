@@ -13,13 +13,15 @@ function extendedMath:load()
 	self.G_INF = math.huge
 	self.G_SEED = 2--love.timer.getTime())
 
+	local sin = math.sin
+	local cos = math.cos
 	function self.round(num, numDecimalPlaces)
 		local mult = 10^(numDecimalPlaces or 0)
 		return math.floor(num * mult + 0.5) / mult
 	end
 
 	function self.findAngleDifference(from, to)
-		return math.asin(math.sin(from) * math.cos(to) - math.cos(from) * math.sin(to))
+		return math.asin(sin(from) * cos(to) - cos(from) * sin(to))
 	end
 
 	function self.round(num, numDecimalPlaces)
@@ -33,10 +35,10 @@ function extendedMath:load()
 
 	local util = Feint.Core.Util
 	function self.oscillateManual(time, amplitude, rate, offset)
-		return (math.cos(time * rate + offset) * 0.5 + 0.5) * amplitude
+		return (cos(time * rate + offset) * 0.5 + 0.5) * amplitude
 	end
 	function self.oscillateManualSigned(time, amplitude, rate, offset)
-		return math.cos(time * rate + offset) * amplitude
+		return cos(time * rate + offset) * amplitude
 	end
 	function self.oscillate(amplitude, rate, offset)
 		return self.oscillateManual(util.getTime(), amplitude, rate, offset)
@@ -45,15 +47,16 @@ function extendedMath:load()
 		return self.oscillateManualSigned(util.getTime(), amplitude, rate, offset)
 	end
 
+	local random = love.math.random
 	function self.random2(a, b, c)
 		local ans
 		if b then
 			a = a or 1
 			b = b or 1
-			ans = a + ((b - a) * ((love.math.random() * 1) - 0))
+			ans = a + ((b - a) * ((random() * 1) - 0))
 		else
 			a = a or 1
-			ans = a * ((love.math.random() * 2) - 1)
+			ans = a * ((random() * 2) - 1)
 		end
 		return ans
 	end
@@ -63,22 +66,22 @@ function extendedMath:load()
 		if b then
 			a = a or 1
 			b = b or 1
-			ans = a + ((b - a) * ((love.math.random() * 1) - 0))
+			ans = a + ((b - a) * ((random() * 1) - 0))
 		else
 			a = a or 1
-			ans = a * ((love.math.random() * 2) - 1)
+			ans = a * ((random() * 2) - 1)
 		end
 		return ans
 	end
 
 	function self.sinRange(x, min, max)
 		local range = max - min
-		return ((math.sin(x) + 1) / 2) * range
+		return ((sin(x) + 1) / 2) * range
 	end
 
 	function self.cosRange(x, min, max)
 		local range = max - min
-		return ((math.cos(x) + 1) / 2) * range
+		return ((cos(x) + 1) / 2) * range
 	end
 end
 

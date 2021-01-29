@@ -10,6 +10,7 @@ function threading:load()
 	Feint.Core.Paths:Add("Thread", Feint.Core.Paths.Core .. "Thread")
 
 	local workers = {}
+	local numWorkers = 0
 
 	-- require("love.system")
 
@@ -29,12 +30,16 @@ function threading:load()
 		}
 
 		-- print(thread.id, thread.func)
+		numWorkers = numWorkers + 1
 		workers[#workers + 1] = newThread
 		return newThread
 	end
 
 	function self:getWorkers()
 		return workers
+	end
+	function self:getNumWorkers()
+		return numWorkers
 	end
 
 	function self:startWorker(threadID, ...)

@@ -71,8 +71,8 @@ function RenderSystem:start()
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- print(Data[Entity], Entity)
-			Transform.x = random2(Feint.Core.Graphics.RenderSize.x / 2)
-			Transform.y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
+			-- Transform.x = random2(Feint.Core.Graphics.RenderSize.x / 2)
+			-- Transform.y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
 			Transform.trueSizeX = Transform.scaleX / Transform.sizeX
 			Transform.trueSizeY = Transform.scaleY / Transform.sizeY
 
@@ -83,19 +83,20 @@ function RenderSystem:start()
 			-- Renderer.textureSize = r[rand]:len()
 			-- print(r[rand]:len())
 			-- print(Feint.Core.Graphics:getTextures()["Test Texture 1.png"])
-			Renderer.texture = Feint.FFI.cstring("walking1.png")
-			Renderer.id = graphics:addRectangle(
-				Renderer.texture,-- Renderer.textureLength,
-				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY
-			)
+			Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
+			-- Renderer.id = graphics:addRectangle(
+			-- 	Renderer.texture,-- Renderer.textureLength,
+			-- 	Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY
+			-- )
+			Renderer.id = math.floor(Feint.Math.random2(1, 100))
 		end)
 	else
 		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
 			-- local x = Data[Transform]
 			-- local y = Data[Transform + 1]
-			local x = random2(Feint.Core.Graphics.RenderSize.x / 2)
-			local y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
+			-- local x = random2(Feint.Core.Graphics.RenderSize.x / 2)
+			-- local y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
 			local angle = Data[Transform + 2]
 			local sizeX = Data[Transform + 3]
 			local sizeY = Data[Transform + 4]
@@ -104,8 +105,8 @@ function RenderSystem:start()
 			local trueSizeX = scaleX / sizeX
 			local trueSizeY = scaleY / sizeY
 
-			Data[Transform] = x
-			Data[Transform + 1] = y
+			-- Data[Transform] = x
+			-- Data[Transform + 1] = y
 			Data[Transform + 7] = trueSizeX
 			Data[Transform + 8] = trueSizeY
 

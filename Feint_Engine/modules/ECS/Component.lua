@@ -31,6 +31,11 @@ function Component:init(data, ...)
 			end
 		end
 
+		-- table.sort(structMembers, function(a, b)
+		-- 	return a < b
+		-- end)
+		-- for k, v in pairs(structMembers) do print(k, v) end
+
 		local padding = 0--math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
 		-- self.sizeBytes = ffi.sizeof(self.ffiType)
 		self.sizeBytes = self.trueSizeBytes + padding
@@ -75,7 +80,7 @@ function Component:init(data, ...)
 		-- self[1] = self.size
 		local padding = math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
 		self.sizeBytes = self.trueSizeBytes + padding
-		print(self.trueSizeBytes, padding, self.sizeBytes)
+		-- print(self.trueSizeBytes, padding, self.sizeBytes)
 	end
 end
 
