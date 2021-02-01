@@ -24,12 +24,12 @@ function log:load()
 	local logFile = nil
 
 	function log:log(fmt, ...)
-		assert(self, "call with \":\" instead", 3)
+		-- assert(self, "call with \":\" instead", 3)
 		local output = string.format("%s [%s] %s", _ENV._NAME, time(), fmt or "")
 		printf(output, ...)
 	end
 	function log:logln(fmt, ...)
-		assert(self, "call with \":\" instead", 3)
+		-- assert(self, "call with \":\" instead", 3)
 		local output = string.format("%s [%s] %s\n", _ENV._NAME, time(), fmt or "\n")
 		printf(output, ...)
 	end

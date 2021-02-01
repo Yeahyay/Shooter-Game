@@ -56,9 +56,9 @@ function RenderSystem:start()
 
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
-	local archetype = self.EntityManager:newArchetype{Renderer, Transform}
+	local archetype = self.EntityManager:newArchetypeFromCompoonents{Renderer, Transform}
 	for i = 1, 1000, 1 do
-		self.EntityManager:CreateEntity(archetype)
+		self.EntityManager:createEntityFromArchetype(archetype)
 	end
 
 	local r = {}

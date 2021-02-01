@@ -15,7 +15,6 @@ local World = Feint.ECS.World
 
 local oldRate = Run.rate
 function love.keypressed(key, ...)
-	print("kkmlk;ml")
 	if key == "space" then
 		print(Run:isPaused())
 		if Run:isPaused() then
@@ -43,7 +42,7 @@ function love.keypressed(key, ...)
 		local entityManager = world.EntityManager
 		local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 		local archetype = entityManager:getArchetype({Renderer, Transform})
-		local entity = entityManager:CreateEntity(archetype)
+		local entity = entityManager:createEntityFromArchetype(archetype)
 
 		entityManager:setComponentData(entity, Transform, {
 			{x = Math.random2(Graphics.RenderSize.x / 2)},
@@ -146,9 +145,9 @@ function love.load()
 
 		Log:logln("DONE WAITING FOR THREAD %d", i)
 	end
-	print(Feint.Core.FFI.typeSize.cstring)
-	print(ffi.alignof("struct component_Transform"))
-	print(ffi.offsetof("struct component_Transform", "sizeX"))
+	-- print(Feint.Core.FFI.typeSize.cstring)
+	-- print(ffi.alignof("struct component_Transform"))
+	-- print(ffi.offsetof("struct component_Transform", "sizeX"))
 	--]]
 
 	Graphics.UI.Immediate.Initialize()
@@ -158,6 +157,7 @@ end
 
 local getTime = love.timer.getTime
 local Mouse = Input.Mouse
+
 function love.update(dt)
 	Run:update()
 	Run:setSpeed(Mouse.PositionNormalized.x)
