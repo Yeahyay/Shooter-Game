@@ -45,17 +45,17 @@ function EntityManager:getNewEntityId()
 	return self.entitiesCount --newID
 end
 
-function EntityManager:newArchetype(components)
+function EntityManager:newArchetypeFromCompoonents(components)
 	local archetype = EntityArchetype:new(components)
 	self.archetypes[archetype.archetypeString] = archetype
 	self.archetypeCount = self.archetypeCount + 1
 	-- Feint.Log:logln("Creating archetype " .. archetype.Name)
 
-	self:newArchetypeChunk(archetype)
+	self:newArchetypeChunkFromCompoonents(archetype)
 	return archetype
 end
 
-function EntityManager:getArchetypeString(arguments)
+function EntityManager:getArchetypeStringFromComponents(arguments)
 	local stringTable = {}
 	assert(arguments, "no arguments", 3)
 	for i = 1, #arguments do
@@ -66,19 +66,20 @@ function EntityManager:getArchetypeString(arguments)
 	end
 	return table.concat(stringTable)
 end
--- Feint.Util.Memoize(EntityManager.getArchetypeString)
+-- Feint.Util.Memoize(EntityManager.getArchetypeStringFromComponents)
 
-function EntityManager:getArchetype(arguments)
-	-- print(arguments[1])
-	local archetypeString = self:getArchetypeString(arguments)
-	-- print(archetypeString)
+function EntityManager:getArchetypeFromComponents(arguments)
+	local archetypeString = self:getArchetypeStringFromComponents(arguments)
 	return self.archetypes[archetypeString]
 end
+function EntityManager:getArchetypeFromString(string)
+	return self.archetypes[string]
+end
 
-function EntityManager:newArchetypeChunk(archetype)
+function EntityManager:newArchetypeChunkFromCompoonents(archetype)
 	local archetypeChunk = EntityArchetypeChunk:new(archetype)
 
-	local currentArchetypeChunkTable = self:getArchetypeChunkTable(archetype)
+	local currentArchetypeChunkTable = self:getArchetypeChunkTableFromArchetype(archetype)
 
 	self.archetypeChunksCount[archetype] = self.archetypeChunksCount[archetype] + 1
 	currentArchetypeChunkTable[self.archetypeChunksCount[archetype]] = archetypeChunk
@@ -88,7 +89,7 @@ function EntityManager:newArchetypeChunk(archetype)
 end
 
 function EntityManager:getNextArchetypeChunk(archetype)
-	local currentArchetypeChunkTable = self:getArchetypeChunkTable(archetype)
+	local currentArchetypeChunkTable = self:getArchetypeChunkTableFromArchetype(archetype)
 	-- print(archetype)
 	assert(self.archetypes[archetype.archetypeString],
 		string.format("Archetype %s does not exist", archetype.archetypeString), 2)
@@ -99,12 +100,12 @@ function EntityManager:getNextArchetypeChunk(archetype)
 	if currentArchetypeChunk:isFull() then
 		-- Feint.Log:logln(currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes)
 		-- Feint.Log:logln((currentArchetypeChunk.numEntities * currentArchetypeChunk.entitySizeBytes) / 1024)
-		currentArchetypeChunk = self:newArchetypeChunk(archetype)
+		currentArchetypeChunk = self:newArchetypeChunkFromCompoonents(archetype)
 	end
 	return currentArchetypeChunk
 end
 
-function EntityManager:getArchetypeChunkTable(archetype)
+function EntityManager:getArchetypeChunkTableFromArchetype(archetype)
 	local currentArchetypeChunkTable = self.archetypeChunks[archetype]
 	if not currentArchetypeChunkTable then
 		self.archetypeChunks[archetype] = {}
@@ -113,8 +114,18 @@ function EntityManager:getArchetypeChunkTable(archetype)
 	end
 	return currentArchetypeChunkTable
 end
+function EntityManager:getArchetypeChunkTableFromString(string)
+	local currentArchetype = self:getArchetypeFromString(string)
+	local currentArchetypeChunkTable = self.archetypeChunks[currentArchetype]
+	if not currentArchetypeChunkTable then
+		self.archetypeChunks[currentArchetype] = {}
+		self.archetypeChunksCount[currentArchetype] = 0
+		currentArchetypeChunkTable = self.archetypeChunks[currentArchetype]
+	end
+	return currentArchetypeChunkTable
+end
 
-function EntityManager:CreateEntity(archetype)
+function EntityManager:createEntityFromArchetype(archetype)
 	-- print(archetype)
 	-- Feint.Log:logln("Creating entity from archetype ".. archetype.archetypeString)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
@@ -135,12 +146,12 @@ function EntityManager:getArchetypeChunkEntityIndexFromEntity(id)
 	return self.entities[id][2]
 end
 
-function EntityManager:getEntities(query)
+function EntityManager:getEntitiesFromQuery(query)
 	-- printf("Getting Entities from Query\n")
 	local entities = {}
 	return entities
 end
--- Feint.Util.Memoize(EntityManager.getEntities)
+-- Feint.Util.Memoize(EntityManager.getEntitiesFromQuery)
 
 function EntityManager:setComponentData(entity, component, data)
 	local archetypeChunk = self:getArchetypeChunkFromEntity(entity)
@@ -162,7 +173,7 @@ function EntityManager:setComponentData(entity, component, data)
 	end
 end
 
-function EntityManager:buildQuery(components, componentsCount)
+function EntityManager:buildQueryFromComponents(components, componentsCount)
 	local queryBuilder = self.EntityQueryBuilder
 	local query = queryBuilder:withAll(components):build();
 	return query
@@ -237,11 +248,11 @@ function EntityManager:forEach(id, callback)
 		end
 	end
 
-	local query = self:buildQuery(componentCache[id])
+	local query = self:buildQueryFromComponents(componentCache[id])
 	query:getArchetypeChunks(self.archetypeChunks)
 
 	-- convert the array of strings into an archetypeString
-	local archetypeString = self:getArchetypeString(componentCache[id])
+	local archetypeString = self:getArchetypeStringFromComponents(componentCache[id])
 	-- use the string to execute the callback on its respective archetype chunks
 	self:execute(componentCache[id], self.archetypes[archetypeString], callback)
 
