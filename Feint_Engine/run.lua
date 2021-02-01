@@ -102,48 +102,23 @@ function love.load()
 	-- after the new module system, this might not work
 	-- to future me, please fix
 	-- [[
-	for i = 1, 4, 1 do
+	for i = 1, 1, 1 do
 		Feint.Core.Thread:newWorker(i, nil)
 	end
-	love.timer.sleep(0.1)
+	-- love.timer.sleep(0.1)
 	for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
 		Log:logln("STARTING THREAD %d", i)
 		Feint.Core.Thread:startWorker(i)
-
-		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
-		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][i]
-		local s = ffi.string(
-			chunk.data,
-			chunk.numEntities * chunk.entitySizeBytes
-		)
-		local threadData = {
-			tick = Run.tick,
-			entities = s, --love.data.newByteData(s),
-			-- entities = chunk.data,
-			length = chunk.numEntities,
-			archetypeString = arc.archetypeString,
-			operation = string.dump(function(entity)
-				-- print(entity.Transform.x)
-				entity.Transform.x = entity.Transform.x + 10
-			end)
-		}
-
+	end
+	for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
 		local channel = love.thread.getChannel("thread_data_"..i)
-
-		-- channel:push(threadData)
-
 		Log:logln("WAITING FOR THREAD %d", i)
-		local wait
-		wait = channel:demand(2)
-		-- while not wait do--and wait ~= threadData do
-			Log:logln("RECIEVED FROM THREAD %d: %s", i, wait)
-		-- end
-		channel:supply(true)
 
-		wait = channel:demand(2)
-		Log:logln("RECIEVED FROM THREAD %d: %s", i, wait)
+		local status
+		status = channel:demand(2)
 
-		Log:logln("DONE WAITING FOR THREAD %d", i)
+		Log:logln("RECIEVED FROM THREAD %d: %s", i, status)
+		-- Log:logln("DONE WAITING FOR THREAD %d", i)
 	end
 	-- print(Feint.Core.FFI.typeSize.cstring)
 	-- print(ffi.alignof("struct component_Transform"))
@@ -172,61 +147,72 @@ function love.update(dt)
 	if true then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 
-		io.write("\n")
-		Feint.Log:logln("SEND PHASE")
-		for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
-			local channel = love.thread.getChannel("thread_data_" .. i)
+		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
+		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
+		Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
+			Components.Transform.x = Components.Transform.x + 10
+		end)
+		Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
+			Components.Transform.y = Components.Transform.y - 5
+		end)
 
-			local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
-			local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][i]
-			local s = ffi.string(
-				chunk.data,
-				chunk.numEntities * chunk.entitySizeBytes
-			)
-			local threadData = {
-				tick = Run.tick,
-				entities = s, --love.data.newByteData(s),
-				-- entities = chunk.data,
-				length = chunk.numEntities,
-				sizeBytes = chunk.numEntities * chunk.entitySizeBytes,
-				archetypeString = arc.archetypeString,
-				operation = string.dump(function(entity)
-					-- print(entity.Transform.x)
-					entity.Transform.x = entity.Transform.x + 1
-				end)
-			}
+		Feint.Core.Thread:update()
 
-			Feint.Log:logln("Sending: %s tick %d", threadData, threadData.tick)
-			channel:push(threadData)
-		end
-
-		io.write("\n")
-		Feint.Log:logln("RECEIVE PHASE")
-		for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
-			local channel = love.thread.getChannel("thread_data_" .. i)
-			local status
-			Feint.Log:logln("Channel %d count: %s", i, channel:getCount())
-			print(channel:peek())
-			-- repeat
-				status = channel:demand(Run.rate)
-				-- print(status)
-			-- until status == 0
-			print(channel:peek())
-			if status == 0 then
-				local data = channel:demand(Run.rate)
-
-				local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
-				local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][i]
-
-				ffi.copy(chunk.data, data.entities, data.sizeBytes)
-
-				-- Feint.Log:logln("status: %s", status)
-				-- Feint.Log:logln("Channel %d count: %d", i, channel:getCount())
-			else
-				Feint.Log:logln("Thread %d desynced", i)
-				-- Run:pause()
-			end
-		end
+		-- io.write("\n")
+		-- Feint.Log:logln("SEND PHASE")
+		-- for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
+		-- 	local channel = love.thread.getChannel("thread_data_" .. i)
+		--
+		-- 	local s = ffi.string(
+		-- 		chunk.data,
+		-- 		chunk.numEntities * chunk.entitySizeBytes
+		-- 	)
+		-- 	local threadData = {
+		-- 		tick = Run.tick,
+		-- 		entities = s, --love.data.newByteData(s),
+		-- 		-- entities = chunk.data,
+		-- 		length = chunk.numEntities,
+		-- 		sizeBytes = chunk.numEntities * chunk.entitySizeBytes,
+		-- 		archetypeString = arc.archetypeString,
+		-- 		entityIndexToId = chunk.entityIndexToId,
+		-- 		operation = string.dump(function(Entity, Components)
+		-- 			Components.Transform.x = Components.Transform.x + 10
+		-- 			Components.Transform.y = Components.Transform.y - 2
+		-- 		end)
+		-- 	}
+		--
+		-- 	Feint.Log:logln("Sending: %s tick %d", threadData, threadData.tick)
+		-- 	channel:push(threadData)
+		-- end
+		--
+		-- io.write("\n")
+		-- Feint.Log:logln("RECEIVE PHASE")
+		-- for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
+		-- 	local channel = love.thread.getChannel("thread_data_" .. i)
+		-- 	local status
+		-- 	-- Feint.Log:logln("Channel %d count: %s", i, channel:getCount())
+		-- 	print(channel:peek())
+		-- 	-- repeat
+		-- 		-- status = channel:demand(Run.rate)
+		-- 		-- print(status)
+		-- 		status = channel:pop()
+		-- 	-- until status == 0
+		-- 	print(channel:peek())
+		-- 	if status == 0 then
+		-- 		local data = channel:demand(Run.rate)
+		--
+		-- 		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
+		-- 		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][i]
+		--
+		-- 		ffi.copy(chunk.data, data.entities, data.sizeBytes)
+		--
+		-- 		-- Feint.Log:logln("status: %s", status)
+		-- 		-- Feint.Log:logln("Channel %d count: %d", i, channel:getCount())
+		-- 	else
+		-- 		Feint.Log:logln("Thread %d desynced", i)
+		-- 		-- Run:pause()
+		-- 	end
+		-- end
 	end
 
 	-- Graphics.processAddQueue()	-- process all pending draw queue insertions

@@ -6,6 +6,8 @@ local printPrefixStack = {"PRINT: "}
 local printPrefixStackPointer = 1
 function core:load()
 	self.Name = "Core"
+	
+	require("love.event")
 
 	Feint.Core.Paths:Add("Core", Feint.Core.Paths.Modules .. "Core")
 

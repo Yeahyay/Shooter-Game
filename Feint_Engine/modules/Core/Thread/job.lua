@@ -1,7 +1,7 @@
 local job = {}
 
 function job:new()
-	self.
+	-- self.
 end
 
 return job

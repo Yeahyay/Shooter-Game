@@ -83,6 +83,7 @@ end
 function Feint:init(isThread)
 	print("Importing Modules")
 	self:importModules()
+	self.IsThread = isThread
 	print("Imported Modules")
 	print("Loading Modules")
 	self.ModuleLoader:loadAllModules({thread = isThread})

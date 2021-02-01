@@ -13,72 +13,76 @@ Feint:init(true)
 Feint.ECS:init()
 pushPrintPrefix(string.format("THREAD_%02d", self.id), true)
 
--- send response to main thread
+local ENUM_THREAD_FINISHED = 0
+local ENUM_THREAD_NO_JOBS = 1
+local ENUM_THREAD_NEW_JOB = 2
+local ENUM_THREAD_FINISHED_JOB = 3
+local ENUM_THREAD_QUERY_STATUS = 4
+local ENUM_THREAD_STATUS_BUSY = 5
+
+-- send response to main thread and wait
 Feint.Log:logln("RESPONDING")
-channel:push(1)
+channel:supply(ENUM_THREAD_FINISHED)
 
--- wait for acknowledgement
-local status = channel:demand()
-print(Feint.Core.FFI.typeSize.cstring)
-print(ffi.alignof("struct component_Transform"))
-print(ffi.offsetof("struct component_Transform", "sizeX"))
 
--- send response to main thread
-Feint.Log:logln("RESPONDING")
-channel:push(2)
+-- print(Feint.Core.FFI.typeSize.cstring)
+-- print(ffi.alignof("struct component_Transform"))
+-- print(ffi.offsetof("struct component_Transform", "sizeX"))
 
--- function processEntities(data, function)
---
--- end
+local function performJob(job, entities)
+	local entityIndexToId = job.entityIndexToId
+	local operation = loadstring(job.operation)
+	for i = job.rangeMin, job.rangeMax, 1 do
+		operation(entityIndexToId[i], entities[i])
+	end
+end
 
--- print("yrterwrgty")
---
--- print(Feint.Core.FFI.decl)
--- print("dk", ffi.C.strlen(ffi.C.malloc(1)), "djkl")
---
--- local d = channel:pop()
--- print("struct_" .. d.archetypeString .. "* ")
--- local entities = ffi.cast("struct archetype_" .. d.archetypeString .. "* ", d.entities)
--- -- print("fkdlkd", ffi.cast("struct archetype_" .. d.archetypeString .. "* ", d.entities))
--- for i = 0, d.length - 1, 1 do
--- 	print(entities[i].Transform.x)
--- end
+local function jobEntityDataToArray(job)
+	local e = ffi.new("char[?]", job.sizeBytes)
+	ffi.copy(e, job.entities, #job.entities)
+	local entities = ffi.cast("struct archetype_" .. job.archetypeString .. "* ", e)
+	return entities
+end
 
 local cstring = ffi.typeof("cstring")
 Feint.Log:logln("Thread done")
 while true do
-	local data
-	Feint.Log:logln("Waiting for data")
+	local status
+
+	-- Feint.Log:logln("waiting for a job")
 	repeat
-		data = channel:demand()
-	until data ~= 0 and type(data) == "table"
-	-- Feint.Log:log("RECIEVED %s ", data)
-	-- printf("tick: %d\n", data.tick)
+		status = channel:demand(Feint.Core.Time.rate)
+		-- printf("status (%s) \"%s\" channel (%s) \"%s\"\n", status, type(status), channel:peek(), type(channel:peek()))
+		-- printf("%d\n", channel:getCount())
+	until type(status) == "number" and (status ~= ENUM_THREAD_FINISHED and status ~= ENUM_THREAD_FINISHED_JOB)
+	-- printf("status (%s) \"%s\" channel (%s) \"%s\"\n", status, type(status), channel:peek(), type(channel:peek()))
 
-	local operation = loadstring(data.operation)
+	Feint.Log:logln("Thread %d status: %d", self.id, status)
+	if status == ENUM_THREAD_NEW_JOB then
+		local jobData
+	-- Feint.Log:log("RECIEVED %s ", jobData)
+	-- printf("tick: %d\n", jobData.tick)
+		jobData = channel:demand()
+		-- Feint.Log:logln("Thread %d job data: %s", self.id, jobData)
+		-- Feint.Log:logln("got job %d", jobData.id)
 
-	local e = ffi.new("char[?]", data.sizeBytes)
-	ffi.copy(e, data.entities, #data.entities)
-	local entities = ffi.cast("struct archetype_" .. data.archetypeString .. "* ", e)
+		local entities = jobEntityDataToArray(jobData)
+		performJob(jobData, entities)
 
-	for i = 0, data.length - 1, 1 do
-		operation(entities[i])
-		-- print(i, entities[i].Renderer.id)
+		jobData.entities = ffi.string(
+			entities,
+			jobData.sizeBytes
+		)
+
+		-- love.timer.sleep(0.012)
+		-- Feint.Log:logln("finished job %d, sending jobData back", jobData.id)
+
+		love.event.push("thread_finished_job", self.id)
+		channel:push(ENUM_THREAD_FINISHED_JOB)
+		channel:supply(jobData)
+	elseif status == ENUM_THREAD_NO_JOBS then -- luacheck: ignore
+		-- Feint.Log:logln("No more jobs, idling")
+		love.event.push("thread_finished", self.id)
+		channel:supply(ENUM_THREAD_FINISHED)
 	end
-
-	data.entities = ffi.string(
-		entities,
-		data.sizeBytes
-	)
-
-	-- love.timer.sleep(0.1)
-	Feint.Log:logln("Sending data back")
-
-	channel:push(0)
-	channel:supply(data)
--- 	Feint.Log:logln(data)
---
--- 	if data.go then
--- 		loop.resume(data)
--- 	end
 end
