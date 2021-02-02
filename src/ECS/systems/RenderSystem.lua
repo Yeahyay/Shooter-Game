@@ -9,7 +9,7 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 		id = -1--Feint.Util.UUID.new()
 	}))
 	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
-		x = 0,						-- 0
+		x = 100,						-- 0
 		y = 0,						-- 1
 		angle = 0,					-- 2
 		sizeX = 32,					-- 3
@@ -57,7 +57,7 @@ function RenderSystem:start()
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = self.EntityManager:newArchetypeFromCompoonents{Renderer, Transform}
-	for i = 1, 1000, 1 do
+	for i = 1, 5000, 1 do
 		self.EntityManager:createEntityFromArchetype(archetype)
 	end
 

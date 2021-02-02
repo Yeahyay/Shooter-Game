@@ -102,7 +102,7 @@ function love.load()
 	-- after the new module system, this might not work
 	-- to future me, please fix
 	-- [[
-	for i = 1, 1, 1 do
+	for i = 1, 10, 1 do
 		Feint.Core.Thread:newWorker(i, nil)
 	end
 	-- love.timer.sleep(0.1)

@@ -19,12 +19,18 @@ function EntityChunk:init(archetype, ...)
 	self.entityIdToIndex = {}
 	self.entityIndexToId = {}
 
+	self.structDefinition = "struct archetype_" .. self.archetype.archetypeString .. "*"
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		-- self.ffiDataType =
 		-- self.data =
 		-- 	ffi.new("archetype_" .. self.archetype.archetypeString .. "[?]", self.capacityBytes / self.entitySizeBytes)
 		local tp = ffi.typeof("struct archetype_" .. self.archetype.archetypeString .. "[$]", self.capacity)
-		self.data = ffi.new(tp, self.archetype.initializer)
+		-- self.data = ffi.new(tp, self.archetype.initializer)
+		self.rawData = ffi.new(tp, self.archetype.initializer)
+		self.byteData = love.data.newByteData(self.capacity * self.entitySizeBytes)
+		local data = self.byteData:getFFIPointer()
+		ffi.copy(data, self.rawData, self.capacity * self.entitySizeBytes)
+		self.data = data--ffi.cast(self.structDefinition, data)
 	else
 		self.data = Feint.Util.Table.preallocate(self.capacity * self.archetype.totalSize, 0)
 		self.dataStatus = Feint.Util.Table.preallocate(self.capacity)
@@ -73,8 +79,9 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 	local cstring = ffi.typeof("cstring")
 	function EntityChunk:preallocate(num)
 		local components = self.archetype.components
+		local data = ffi.cast(self.structDefinition, self.data)
 		for i = 0, num - 1, 1 do
-			local archetypeInstance = self.data[i]
+			local archetypeInstance = data[i]
 			for j = 1, #components, 1 do
 				local component = components[j]
 				local componentInstance = archetypeInstance[component.Name]

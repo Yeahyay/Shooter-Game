@@ -1,4 +1,4 @@
--- local ffi = require("ffi")
+local ffi = require("ffi")
 
 local ECSUtils = Feint.ECS.Util
 
@@ -189,7 +189,7 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 		for i = 1, self.archetypeChunksCount[archetype], 1 do
 			local archetypeChunk = archetypeChunks[archetype][i]
 			local idList = archetypeChunk.entityIndexToId
-			local data = archetypeChunk.data
+			local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
 
 			-- printf("chunk %d: %s\n", i, archetypeChunk.data[399].Transform.x)
 			for j = archetypeChunk.numEntities - 1, 0, -1 do

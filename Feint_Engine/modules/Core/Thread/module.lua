@@ -79,7 +79,30 @@ function threading:load(isThread)
 
 	self.MAX_CORES = love.system.getProcessorCount()
 
-	local jobQueue = {}
+	local jobQueuePointer = 0
+	local jobQueue = setmetatable({}, {
+		__index = {
+			insert = function(self, item)
+				jobQueuePointer = jobQueuePointer + 1
+				self[jobQueuePointer] = item
+			end;
+			peek = function(self)
+				return self[jobQueuePointer]
+			end;
+			remove = function(self)
+				if jobQueuePointer > 0 then
+					local item = self[jobQueuePointer]
+					jobQueuePointer = jobQueuePointer - 1
+					return item
+				else
+					return nil
+				end
+			end;
+			size = function(self)
+				return jobQueuePointer
+			end;
+		}
+	})
 
 	function self:queue(archetype, archetypeChunk, operation)
 		local s = ffi.string(
@@ -87,25 +110,29 @@ function threading:load(isThread)
 			archetypeChunk.numEntities * archetypeChunk.entitySizeBytes
 		)
 		local job = {
-			id = #jobQueue + 1,
+			id = jobQueue:size() + 1,
 			tick = Feint.Core.Time.tick,
 
+			entityByteData = archetypeChunk.byteData,
+			structDefinition = archetypeChunk.structDefinition,
 			archetypeString = archetype.archetypeString,
 			archetypeChunkIndex = archetypeChunk.index,
 			entityIndexToId = archetypeChunk.entityIndexToId,
 			sizeBytes = archetypeChunk.numEntities * archetypeChunk.entitySizeBytes,
 
-			entities = s, --love.data.newByteData(s),
+			dataString = s, --love.data.newByteData(s),
 			rangeMin = 0,
 			rangeMax = archetypeChunk.numEntities - 1,
 			length = archetypeChunk.numEntities,
 			operation = string.dump(operation),
 		}
-		jobQueue[#jobQueue + 1] = job
+
+		jobQueue:insert(job)
 
 		-- local jobs =  self:splitJob(job, numWorkers)
 		-- for i = 1, #jobs, 1 do
-		-- 	jobQueue[#jobQueue + 1] = jobs[i]
+		-- 	jobQueue:insert(jobs[i])
+		-- 	-- jobQueue[jobQueue:size() + 1] = jobs[i]
 		-- end
 	end
 
@@ -117,12 +144,13 @@ function threading:load(isThread)
 				id = job.id + i - 1,
 				tick = Feint.Core.Time.tick,
 
+				entityByteData = job.entityByteData,
 				archetypeString = job.archetypeString,
 				archetypeChunkIndex = job.archetypeChunkIndex,
 				entityIndexToId = job.entityIndexToId,
 				sizeBytes = job.sizeBytes,
 
-				entities = job.entities, --love.data.newByteData(s),
+				dataString = job.dataString, --love.data.newByteData(s),
 				rangeMin = (i - 1) * dx,
 				rangeMax = math.min(i * dx, job.length) - 1,
 				length = job.length,
@@ -133,91 +161,60 @@ function threading:load(isThread)
 	end
 
 	function self:sendJob(job, workerID)
+		-- assert(job, "no job given", 3)
 		local channel = workers[workerID].channel
 
-		Feint.Log:logln("Sending job %d range %d - %d to worker thread %d", job.id, job.rangeMin, job.rangeMax, workerID)
+		-- Feint.Log:logln("Sending job %d range %d - %d to worker thread %d", job.id, job.rangeMin, job.rangeMax, workerID)
 		channel:push(ENUM_THREAD_NEW_JOB)
 		channel:push(job)
 	end
-
-	-- require("love.event")
 
 	local DefaultWorld = Feint.ECS.World.DefaultWorld
 	local DefaultWorldEntityManager = DefaultWorld.EntityManager
 
 	if not isThread then
 		love.handlers["thread_finished_job"] = function(a) -- luacheck: ignore
-			-- printf("THREAD %d COMPLETED JOB\n", a)
 			local channel = workers[a].channel
 			channel:pop()
-			local job = channel:demand()
-			-- Feint.Log:logln("Channel %d data: %s", a, tostring(job))
+			-- local job = channel:demand()
 
-			local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes[job.archetypeString]
-			local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][a]
-
-			ffi.copy(chunk.data, job.entities, job.sizeBytes)
-
-			if #jobQueue > 0 then
-				-- print(#jobQueue)
-				self:sendJob(jobQueue[#jobQueue], a)
-				jobQueue[#jobQueue] = nil
-				-- print(#jobQueue)
+			if jobQueue:size() > 0 then
+				self:sendJob(jobQueue:remove(), a)
 			else
-				Feint.Log:logln("no more jobs available")
+				-- Feint.Log:logln("no more jobs available")
 				channel:push(ENUM_THREAD_NO_JOBS)
 			end
 		end
 		love.handlers["thread_finished"] = function(a) -- luacheck: ignore
 			local channel = workers[a].channel
 			channel:demand()
-			-- print(channel:pop())
 			-- printf("THREAD %d COMPLETED\n", a)
 		end
 	end
 
 	function self:update()
-		local activeThreads = 0--self:getNumWorkers()
-		-- for k, v in pairs(love.handlers) do
-		-- 	print(k, v)
-		-- end
-		-- printf("\n")
-		Feint.Log:logln("%d jobs queued", #jobQueue)
-		for i = 1, math.min(#jobQueue, self:getNumWorkers()), 1 do
-			-- Feint.Log:logln("Sending job to thread %d", i)
-			self:sendJob(jobQueue[#jobQueue], i)
-			jobQueue[#jobQueue] = nil
+		local activeThreads = 0
+
+		-- Feint.Log:logln("%d jobs queued", jobQueue:size())
+		for i = 1, math.min(jobQueue:size(), self:getNumWorkers()), 1 do
+			self:sendJob(jobQueue:remove(), i)
 			activeThreads = activeThreads + 1
 		end
-		-- for i = 1, 100, 1 do
+
 		while activeThreads > 0 do
-		-- for n, a, b, c, d, e, f in love.event.poll() do
-			-- if n == "thread_finished_job" then
-			-- 	break
-			-- end
-			-- if activeThreads <= 0 then
-				-- Feint.Log:logln("All Threads Inactive")
-				-- break
-			-- end
-
-			-- local status
-			-- local chunkData
-			-- Feint.Log:logln("POLLING")
-
-			-- love.event.push("thread_finished_job", 1)
 			for n, a in love.event.poll() do
 				if n == "thread_finished_job" then
-					local channel = workers[a].channel
-					love.handlers["thread_finished_job"](a)
+					-- local channel = workers[a].channel
+					love.handlers["thread_finished_job"](a) -- luacheck: ignore
 				elseif n == "thread_finished" then
 					activeThreads = activeThreads - 1
-					love.handlers["thread_finished"](a)
+					love.handlers["thread_finished"](a) -- luacheck: ignore
 				end
 			end
 			love.timer.sleep(1 / 1000)
 		end
-		-- ::hard_end::
-		Feint.Log:logln("ALL JOBS DONE")
+
+		-- Feint.Log:logln("ALL JOBS DONE")
 	end
 
 	function self:newWorker(id)
@@ -233,7 +230,6 @@ function threading:load(isThread)
 			-- end,
 		}
 
-		-- print(thread.id, thread.func)
 		numWorkers = numWorkers + 1
 		workers[#workers + 1] = newThread
 		return newThread
@@ -247,7 +243,6 @@ function threading:load(isThread)
 	end
 
 	function self:startWorker(workerID, ...)
-		-- print(workers[workerID].thread)
 		local threadObject = workers[workerID]
 		threadObject.thread:start(string.dump(_G.initEnv), threadObject, ...)
 	end
