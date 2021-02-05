@@ -1,6 +1,6 @@
 local args = {...}
 
-local initEnv = loadstring(args[1])
+local initEnv = load(args[1])
 local self = args[2]
 
 initEnv(self.id)

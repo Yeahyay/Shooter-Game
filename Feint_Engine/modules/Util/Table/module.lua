@@ -13,9 +13,9 @@ function tableUtilities:load()
 -- 	-- set the table tableUtilities to refer to the main program's _G
 -- 	setmetatable(tableUtilities, {__index = lastEnv})
 -- end
-local loadstring_ = Feint.Util.Memoize(loadstring)
+local load_ = Feint.Util.Memoize(load)
 self.preallocate = --[[Feint.Util.Memoize]](function(arraylength, hashLength)
-	local t = loadstring_("return {" .. ("1, "):rep(arraylength or 0) .. ("a = 1,"):rep(hashLength or 0) .. "}")();
+	local t = load_("return {" .. ("1, "):rep(arraylength or 0) .. ("a = 1,"):rep(hashLength or 0) .. "}")();
 	for k in pairs(t) do
 		t[k] = nil
 	end
