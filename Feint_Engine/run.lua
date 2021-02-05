@@ -1,5 +1,6 @@
 -- CORE FILE
 
+-- luacheck: push ignore
 local Paths = Feint.Core.Paths
 local Math = Feint.Math
 local Util = Feint.Util
@@ -12,8 +13,30 @@ local Input = Feint.Core.Input
 
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
+local Mouse = Input.Mouse
 
-local oldRate = Run.rate
+-- function cache
+local getTime = love.timer.getTime
+
+-- fps counter variables
+local	fpsList
+local fpsIndex
+local fpsSum
+
+local fpsGraph1
+local memGraph1
+
+local DEFAULT_FONT
+local DEFAULT_FONT_BOLD
+local DEFAULT_FONT_HEIGHT
+
+-- direct requires (BAD BUT EASY)
+local ffi = require("ffi")
+local fpsGraph = require("Feint_Engine.lib.FPSGraph")
+
+-- luacheck: pop ignore
+
+-- local oldRate = Run.rate
 function love.keypressed(key, ...)
 	if key == "space" then
 		print(Run:isPaused())
@@ -87,22 +110,33 @@ function love.resize(x, y)
 	-- love.draw()
 	-- Graphics:draw()
 end
-local ffi = require("ffi")
 function love.load()
 	Run.framerate = 60 -- framerate cap
 	Run.rate = 1 / 60 -- update dt
-	Run.sleep = 0.001
-	Run:setSpeed(1)
+	Run.sleep = 0.001 -- don't toast the CPU
+	Run:setSpeed(1) -- default game speed
+
+	fpsList = {}
+	for i = 1, Run.G_AVG_FPS_DELTA_ITERATIONS, 1 do
+		fpsList[i] = 0
+	end
+	fpsIndex = 1
+	fpsSum = 0
 
 	love.math.setRandomSeed(Math.G_SEED)
 
-	Feint.ECS:init()
-	-- Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
+	DEFAULT_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
+	DEFAULT_FONT_BOLD = LoveGraphics.newFont("Assets/fonts/FiraCode-Bold.ttf", 28)
+	DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
+	LoveGraphics.setFont(DEFAULT_FONT)
 
-	-- after the new module system, this might not work
-	-- to future me, please fix
-	-- [[
-	for i = 1, 10, 1 do
+	fpsGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 * 8)
+	memGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 *10)
+
+	Feint.ECS:init()
+
+	-- Threads
+	for i = 1, 2, 1 do
 		Feint.Core.Thread:newWorker(i, nil)
 	end
 	-- love.timer.sleep(0.1)
@@ -120,27 +154,16 @@ function love.load()
 		Log:logln("RECIEVED FROM THREAD %d: %s", i, status)
 		-- Log:logln("DONE WAITING FOR THREAD %d", i)
 	end
-	-- print(Feint.Core.FFI.typeSize.cstring)
-	-- print(ffi.alignof("struct component_Transform"))
-	-- print(ffi.offsetof("struct component_Transform", "sizeX"))
-	--]]
 
+	-- Immediate Mode GUI
 	Graphics.UI.Immediate.Initialize()
-
-	-- Feint.ECS:init()
 end
 
-local getTime = love.timer.getTime
-local Mouse = Input.Mouse
 
 function love.update(dt)
 	Run:update()
 	Run:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
-
-	-- local s = math.max(math.floor(Mouse.PositionRaw.y / 8) * 8 / Graphics.ScreenSize.y, 0.001)
-	-- print(s)
-	-- Graphics.RenderScale = Feint.Math.Vec2.new(s, s)
 
 	local startTime = getTime()
 
@@ -157,62 +180,6 @@ function love.update(dt)
 		end)
 
 		Feint.Core.Thread:update()
-
-		-- io.write("\n")
-		-- Feint.Log:logln("SEND PHASE")
-		-- for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
-		-- 	local channel = love.thread.getChannel("thread_data_" .. i)
-		--
-		-- 	local s = ffi.string(
-		-- 		chunk.data,
-		-- 		chunk.numEntities * chunk.entitySizeBytes
-		-- 	)
-		-- 	local threadData = {
-		-- 		tick = Run.tick,
-		-- 		entities = s, --love.data.newByteData(s),
-		-- 		-- entities = chunk.data,
-		-- 		length = chunk.numEntities,
-		-- 		sizeBytes = chunk.numEntities * chunk.entitySizeBytes,
-		-- 		archetypeString = arc.archetypeString,
-		-- 		entityIndexToId = chunk.entityIndexToId,
-		-- 		operation = string.dump(function(Entity, Components)
-		-- 			Components.Transform.x = Components.Transform.x + 10
-		-- 			Components.Transform.y = Components.Transform.y - 2
-		-- 		end)
-		-- 	}
-		--
-		-- 	Feint.Log:logln("Sending: %s tick %d", threadData, threadData.tick)
-		-- 	channel:push(threadData)
-		-- end
-		--
-		-- io.write("\n")
-		-- Feint.Log:logln("RECEIVE PHASE")
-		-- for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
-		-- 	local channel = love.thread.getChannel("thread_data_" .. i)
-		-- 	local status
-		-- 	-- Feint.Log:logln("Channel %d count: %s", i, channel:getCount())
-		-- 	print(channel:peek())
-		-- 	-- repeat
-		-- 		-- status = channel:demand(Run.rate)
-		-- 		-- print(status)
-		-- 		status = channel:pop()
-		-- 	-- until status == 0
-		-- 	print(channel:peek())
-		-- 	if status == 0 then
-		-- 		local data = channel:demand(Run.rate)
-		--
-		-- 		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
-		-- 		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][i]
-		--
-		-- 		ffi.copy(chunk.data, data.entities, data.sizeBytes)
-		--
-		-- 		-- Feint.Log:logln("status: %s", status)
-		-- 		-- Feint.Log:logln("Channel %d count: %d", i, channel:getCount())
-		-- 	else
-		-- 		Feint.Log:logln("Thread %d desynced", i)
-		-- 		-- Run:pause()
-		-- 	end
-		-- end
 	end
 
 	-- Graphics.processAddQueue()	-- process all pending draw queue insertions
@@ -231,26 +198,14 @@ function love.update(dt)
 	Run.G_UPDATE_TIME_PERCENT_FRAME = Run.G_UPDATE_TIME / (Run.rate) * 100
 
 	Graphics.UI.Immediate.Update(Run.G_RENDER_DT)
+
+	fpsGraph.updateFPS(fpsGraph1, Run.rate, Run.G_FPS)
+	fpsGraph.updateMem(memGraph1, Run.rate)
 end
 
 local function updateRender(dt) -- luacheck: ignore
 end
 
-local DEFAULT_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
--- local DEFAULT_FONT_BOLD = LoveGraphics.newFont("Assets/fonts/FiraCode-Bold.ttf", 28)
-local DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
-LoveGraphics.setFont(DEFAULT_FONT)
-
-local	fpsList = {}
-for i = 1, Run.G_AVG_FPS_DELTA_ITERATIONS, 1 do
-	fpsList[i] = 0
-end
-local fpsIndex = 1
-local fpsSum = 0
-
--- local debug = LoveGraphics.newCanvas(Graphics.RenderSize.x, Graphics.RenderSize.y, {msaa = 0})
-
--- local acc = 0
 local function debugDraw()
 	LoveGraphics.printf(
 		Run:isPaused() and string.format("Game Speed: %s\n", "Paused") or
@@ -259,8 +214,8 @@ local function debugDraw()
 
 	-- FPS
 	LoveGraphics.printf(
-		string.format("FPS:      %7.2f, DT:      %7.4fms\n",
-		Run.G_FPS, 1000 * Run.G_FPS_DELTA), 0, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
+		string.format("FPS:      %7.2f, DT:      %7.4fms\n", Run.G_FPS, 1000 * Run.G_FPS_DELTA),
+		0, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 	-- [[
 	LoveGraphics.printf(
 		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Run.G_AVG_FPS, 1000 * Run.G_AVG_FPS_DELTA),
@@ -375,6 +330,9 @@ function love.draw(dt)
 
 	Graphics.UI.Immediate.Draw(Run.G_RENDER_DT)
 
+	-- fpsGraph.drawGraphs(2, {fpsGraph1, memGraph1})
+	-- LoveGraphics.setFont(DEFAULT_FONT)
+
 	debugDraw()
 
 	local endTime = getTime()
@@ -384,6 +342,7 @@ function love.draw(dt)
 	Run.G_RENDER_TIME = Run.G_RENDER_TIME + (Run.G_RENDER_DT - Run.G_RENDER_TIME) * (1 - Run.G_RENDER_TIME_SMOOTHNESS)
 
 	Run.G_RENDER_TIME_PERCENT_FRAME = Run.G_RENDER_TIME / (Run.rate) * 100
+
 
 	--[[
 	local f = 60
