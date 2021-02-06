@@ -15,7 +15,7 @@ function run:load()
 	local speed = 1
 
 	function self:update()
-		time = time + love.timer.getDelta() * speed
+		time = time + speed -- time + love.timer.getDelta() * speed
 	end
 	function self:setSpeed(value)
 		speed = value
@@ -28,7 +28,7 @@ function run:load()
 		local socket = require("socket")
 		local startTime = love.timer.getTime() - (socket.gettime() % 1)
 		function self:getTrueTime()
-			return time -- startTime
+			return time * self.rate-- startTime
 		end
 		function self:getTime()
 			return self:getTrueTime() + pauseOffset
