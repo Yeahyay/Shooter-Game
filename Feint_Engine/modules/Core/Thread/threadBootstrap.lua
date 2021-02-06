@@ -24,9 +24,90 @@ local ENUM_THREAD_STATUS_BUSY = 5
 Feint.Log:logln("RESPONDING")
 channel:supply(ENUM_THREAD_FINISHED)
 
+local function execute(arguments, archetype, callback)
+	local archetypeChunks = self.archetypeChunks
+	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
+	local a1Name, a2Name = a1.Name, a2.Name
+	local a3Name, a4Name = a3.Name, a4.Name
+	local a5Name, a6Name = a5.Name, a6.Name
+
+	for i = 1, self.archetypeChunksCount[archetype], 1 do
+		local archetypeChunk = archetypeChunks[archetype][i]
+		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
+
+		for j = archetypeChunk.numEntities - 1, 0, -1 do
+			callback(
+				data[j][a1Name], data[j][a2Name],
+				data[j][a3Name], data[j][a4Name],
+					data[j][a5Name], data[j][a6Name]
+				)
+			end
+		end
+	end
+local function executeEntity(arguments, archetype, callback)
+	local archetypeChunks = self.archetypeChunks
+	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
+	local a3Name, a4Name = a3.Name, a4.Name
+
+	for i = 1, self.archetypeChunksCount[archetype], 1 do
+		local archetypeChunk = archetypeChunks[archetype][i]
+		local idList = archetypeChunk.entityIndexToId
+		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
+
+		for j = archetypeChunk.numEntities - 1, 0, -1 do
+			callback(idList[j + 1], data[j][a3Name], data[j][a4Name])
+		end
+	end
+end
+local function executeEntityAndData(arguments, archetype, callback)
+	local archetypeChunks = self.archetypeChunks
+	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
+	local a3Name, a4Name = a3.Name, a4.Name
+
+	for i = 1, self.archetypeChunksCount[archetype], 1 do
+		local archetypeChunk = archetypeChunks[archetype][i]
+		local idList = archetypeChunk.entityIndexToId
+		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
+
+		for j = archetypeChunk.numEntities - 1, 0, -1 do
+			callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
+		end
+	end
+end
+
+local componentCache = {}
+local function forEach(id, callback)
+	-- get the function arguments and store them as an array of strings
+	if not componentCache[id] then
+		componentCache[id] = {}
+
+		local funcInfo = debug.getinfo(callback)
+		local i = 1
+		for j = 1, funcInfo.nparams, 1 do
+			local componentName = debug.getlocal(callback, j)
+			if componentName ~= "Data" and componentName ~= "Entity" then
+				local component = self.World.components[componentName]
+				if component.componentData then
+					assert(component, string.format("arg %d (%s) is not a component", i, componentName), 2)
+					componentCache[id][i] = component
+					i = i + 1
+				end
+			else
+				componentCache[id][i] = componentName
+				i = i + 1
+			end
+		end
+	end
+
+	-- convert the array of strings into an archetypeString
+	local archetypeString = self:getArchetypeStringFromComponents(componentCache[id])
+	-- use the string to execute the callback on its respective archetype chunks
+	self:execute(componentCache[id], self.archetypes[archetypeString], callback)
+end
+
 local function performJob(job, entities)
 	local entityIndexToId = job.entityIndexToId
-	local operation = loadstring(job.operation)
+	local operation = load(job.operation)
 	for i = job.rangeMin, job.rangeMax, 1 do
 		operation(entityIndexToId[i], entities[i])
 	end
