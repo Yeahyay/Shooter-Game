@@ -60,12 +60,17 @@ while true do
 		-- love.timer.sleep(0.012)
 		-- Feint.Log:logln("finished job %d, sending jobData back", jobData.id)
 
+
 		love.event.push("thread_finished_job", self.id)
 		channel:push(ENUM_THREAD_FINISHED_JOB)
+		-- Feint.Log:logln("finished job %d", jobData.id)
 		-- channel:supply(jobData)
 	elseif status == ENUM_THREAD_NO_JOBS then -- luacheck: ignore
 		-- Feint.Log:logln("No more jobs, idling")
 		love.event.push("thread_finished", self.id)
 		channel:supply(ENUM_THREAD_FINISHED)
 	end
+	-- love.thread.getChannel("MAIN_BLOCK"):supply(1)
+	-- print("skldnksd", love.thread.getChannel("MAIN_BLOCK"):getCount())
+	-- love.thread.getChannel("MAIN_BLOCK"):push(0)
 end
