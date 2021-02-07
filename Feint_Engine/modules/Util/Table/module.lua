@@ -24,7 +24,7 @@ end)
 
 function self.readOnlyTable(table)
 	return setmetatable({}, {
-		__index = table,
+		-- __index = table,
 		__newindex = function(t, k, v)
 			error("attempt to modify read-only table", 2)
 		end,
