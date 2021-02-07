@@ -6,7 +6,7 @@ local printPrefixStack = {"PRINT: "}
 local printPrefixStackPointer = 1
 function core:load()
 	self.Name = "Core"
-	
+
 	require("love.event")
 
 	Feint.Core.Paths:Add("Core", Feint.Core.Paths.Modules .. "Core")
@@ -53,7 +53,7 @@ function core:load()
 				error(Feint.Util.Exceptions.BAD_ARG_ERROR(1, "level", "number", type(level)), 2)
 			end
 			if not condition then
-				error(message, level or 2)
+				error(message, (level or 1) + 1)
 			end
 		end
 
