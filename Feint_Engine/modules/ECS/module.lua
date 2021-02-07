@@ -1,5 +1,8 @@
 local ECS = {
-	depends = {"Core.Paths", "ECS.Util", "Core.Time", "Core.Graphics", "Util.Table", "Log"}
+	depends = {
+		"Core.Paths", "ECS.Util", "Core.Time",
+		"Core.Graphics", "Util.Table", "Log"
+	}
 }
 
 function ECS:load()
@@ -14,7 +17,10 @@ function ECS:load()
 	self.EntityQuery = require(Paths.ECS .. "EntityQuery")
 	self.EntityQueryBuilder = require(Paths.ECS .. "EntityQueryBuilder")
 
+	-- self.EntityManagerArchetypeMethods = require(Paths.ECS .. "EntityManagerArchetypeMethods")
+	-- self.EntityManagerExecuteFunctions = require(Paths.ECS .. "EntityManagerExecuteFunctions")
 	self.EntityManager = require(Paths.ECS .. "EntityManager")
+
 	self.World = require(Paths.ECS .. "World")
 	self.Component = require(Paths.ECS .. "Component")
 	self.System = require(Paths.ECS .. "System")
