@@ -7,11 +7,11 @@ function ArchetypeMethods:load(EntityManager)
 	-- ARCHETYPE CONSTRUCTORS
 	function self:newArchetypeFromComponents(components)
 		local archetype = EntityArchetype:new(components)
-		EntityManager.archetypes[archetype.archetypeString] = archetype
-		EntityManager.archetypeCount = EntityManager.archetypeCount + 1
+		self.archetypes[archetype.archetypeString] = archetype
+		self.archetypeCount = self.archetypeCount + 1
 		-- Feint.Log:logln("Creating archetype " .. archetype.Name)
 
-		EntityManager:newArchetypeChunkFromComponents(archetype)
+		self:newArchetypeChunkFromComponents(archetype)
 		return archetype
 	end
 
@@ -40,13 +40,13 @@ function ArchetypeMethods:load(EntityManager)
 	-- ARCHETYPE CHUNK CONSTRUCTORS
 	function self:newArchetypeChunkFromComponents(archetype)
 		local archetypeChunk = EntityArchetypeChunk:new(archetype)
+		-- Feint.Log.log("Creating archetype chunk %s, id: %d\n", archetypeChunk.Name, archetypeChunk.index)
 
 		local currentArchetypeChunkTable = self:getArchetypeChunkTableFromArchetype(archetype)
 
 		self.archetypeChunksCount[archetype] = self.archetypeChunksCount[archetype] + 1
 		currentArchetypeChunkTable[self.archetypeChunksCount[archetype]] = archetypeChunk
 
-		-- Feint.Log.log("Creating archetype chunk %s, id: %d\n", archetypeChunk.Name, archetypeChunk.index)
 		return archetypeChunk
 	end
 

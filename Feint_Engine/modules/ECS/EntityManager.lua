@@ -122,6 +122,7 @@ end
 local componentCache = {}
 -- local argumentCache = {}
 function EntityManager:forEach(id, callback)
+	assert(id and callback, "missing argument")
 	-- get the function arguments and store them as an array of strings
 	if not componentCache[id] then
 		componentCache[id] = {}
@@ -131,10 +132,9 @@ function EntityManager:forEach(id, callback)
 		-- for k, v in pairs(funcInfo) do print(k, v) end
 		local i = 1
 		for j = 1, funcInfo.nparams, 1 do
-			-- print(debug.getlocal(callback, i))
 			local componentName = debug.getlocal(callback, j)
-			-- argumentCache[id][j] = argumentName
 			if componentName ~= "Data" and componentName ~= "Entity" then
+				assert(self.World.components[componentName], "component " .. componentName .. " is not registered")
 				local component = self.World.components[componentName]
 				if component.componentData then
 					assert(component, string.format("arg %d (%s) is not a component", i, componentName), 2)
@@ -157,7 +157,11 @@ function EntityManager:forEach(id, callback)
 	-- convert the array of strings into an archetypeString
 	local archetypeString = self:getArchetypeStringFromComponents(componentCache[id])
 	-- use the string to execute the callback on its respective archetype chunks
-	componentCache[id].execute(self, componentCache[id], self.archetypes[archetypeString], callback)
+	-- componentCache[id].execute(self, componentCache[id], self.archetypes[archetypeString], callback)
+	for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(archetypeString)) do
+		Feint.Core.Thread:queue(self, archetypeChunk, callback)
+	end
+	-- Feint.Core.Thread:queue(self.archetypeChunks[archetypeString], self.archetypes[archetypeString], callback)
 
 end
 -- Feint.Util.Memoize(EntityManager.forEach)

@@ -22,6 +22,7 @@ function ECS:load()
 	self.EntityManager = require(Paths.ECS .. "EntityManager")
 
 	self.World = require(Paths.ECS .. "World")
+	self.World.DefaultWorld = self.World:new("DefaultWorld")
 	self.Component = require(Paths.ECS .. "Component")
 	self.System = require(Paths.ECS .. "System")
 
@@ -30,12 +31,27 @@ function ECS:load()
 		Paths:Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
 		Paths:Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
 		Paths:Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
+
+		local components = {} -- luacheck: ignore
+		local componentCount = 0
+		for k, v in pairs(love.filesystem.getDirectoryItems(Paths:SlashDelimited(Paths.Game_ECS_Components))) do
+			if v:match(".lua") then
+				local path = Paths.Game_ECS_Components..v:gsub(".lua", "")
+				local component = require(path)
+				assert(component, "Empty Component file")
+				componentCount = componentCount + 1
+				components[componentCount] = component
+				self.World.DefaultWorld:addComponent(component)
+			end
+		end
+
 		local systems = {} -- luacheck: ignore
 		local systemCount = 0
 		for k, v in pairs(love.filesystem.getDirectoryItems(Paths:SlashDelimited(Paths.Game_ECS_Systems))) do
 			if v:match(".lua") then
 				local path = Paths.Game_ECS_Systems..v:gsub(".lua", "")
 				local system = require(path)
+				assert(system, "Empty System file")
 				systemCount = systemCount + 1
 				systems[systemCount] = system
 				self.World.DefaultWorld:registerSystem(system)

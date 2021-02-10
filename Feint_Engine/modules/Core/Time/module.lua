@@ -25,8 +25,8 @@ function run:load()
 	end
 
 	do
-		local socket = require("socket")
-		local startTime = love.timer.getTime() - (socket.gettime() % 1)
+		-- local socket = require("socket")
+		-- local startTime = love.timer.getTime() - (socket.gettime() % 1)
 		function self:getTrueTime()
 			return time * self.rate-- startTime
 		end

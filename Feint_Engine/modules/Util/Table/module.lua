@@ -54,7 +54,7 @@ function self.makeTableReadOnly(table, callback)
 	if mt then
 		mt.__newindex = function(t, k, v)
 			printf("%s %s %s\n", t, k, v)
-			error(callback(t, k, v) or "attempt to modify read-only table")
+			error(callback(t, k, v) or "attempt to modify read-only table", 2)
 		end
 		mt.__metatable = false
 	else

@@ -13,7 +13,6 @@ function World:init(name)
 		self.PhysicsWorld = love.physics.newWorld(0, 9.82, true)
 	end
 end
-World.DefaultWorld = World:new("DefaultWorld")
 
 function World:addComponent(component)
 	self.components[component.Name] = component
@@ -37,16 +36,19 @@ end
 
 function World:start()
 	local list = self.updateOrder
+	local systems = self.systems
+	local EntityManager = self.EntityManager
 	for i = 1, #list do
-		self.systems[list[i]]:start()
+		systems[list[i]]:start(EntityManager)
 	end
 end
 
 function World:update(dt)
 	local list = self.updateOrder
 	local systems = self.systems
+	local EntityManager = self.EntityManager
 	for i = 1, #list do
-		systems[list[i]]:update(dt)
+		systems[list[i]]:update(EntityManager, dt)
 	end
 end
 
@@ -58,7 +60,7 @@ end
 function World:destroy()
 end
 
-Feint.Util.Table.makeTableReadOnly(World, function(self, k)
-	return string.format("attempt to modify %s", World.Name)
-end)
+-- Feint.Util.Table.makeTableReadOnly(World, function(self, k)
+-- 	return string.format("attempt to modify %s", World.Name)
+-- end)
 return World
