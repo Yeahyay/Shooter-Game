@@ -2,63 +2,19 @@
 local System = Feint.ECS.System
 local World = Feint.ECS.World
 
-if Feint.ECS.FFI_OPTIMIZATIONS then
-	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
-		visible = true,
-		texture = "Test Texture 1.png",
-		id = -1--Feint.Util.UUID.new()
-	}))
-	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
-		x = 100,						-- 0
-		y = 0,						-- 1
-		angle = 0,					-- 2
-		sizeX = 32,					-- 3
-		sizeY = 32,					-- 4
-		scaleX = 32,				-- 5
-		scaleY = 32,				-- 6
-		trueSizeX = 32 / 32,		-- 7
-		trueSizeY = 32 / 32,		-- 8
-	}))
-else
-	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Renderer", {
-		{visible = true},
-	}))
-	World.DefaultWorld:addComponent(Feint.ECS.Component:new("Transform", {
-		{x = 0},						-- 0
-		{y = 0},						-- 1
-		{angle = 0},				-- 2
-		{sizeX = 32},				-- 3
-		{sizeY = 32},				-- 4
-		{scaleX = 16},				-- 5
-		{scaleY = 16},				-- 6
-		{trueSizeX = 16 / 32},	-- 7
-		{trueSizeY = 16 / 32},	-- 8
-	}))
-end
+local fmath = Feint.Math
+local random2 = fmath.random2
 
 local RenderSystem = System:new("RenderSystem")
 function RenderSystem:init(...)
 end
 
-local fmath = Feint.Math
-local random2 = fmath.random2
-
-local ffi = require("ffi")
-function RenderSystem:start()
-	-- print(os.capture("wmic cpu list full"), "as kdnklnsd")
-	-- for k, v in pairs(love.graphics.getSystemLimits()) do
-	-- 	print(k, v)
-	-- end
-	-- print()
-	-- for k, v in pairs(love.graphics.getSupported()) do
-	-- 	print(k, v)
-	-- end
-
+function RenderSystem:start(EntityManager)
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
-	local archetype = self.EntityManager:newArchetypeFromComponents{Renderer, Transform}
+	local archetype = EntityManager:newArchetypeFromComponents{Renderer, Transform}
 	for i = 1, 1000, 1 do
-		self.EntityManager:createEntityFromArchetype(archetype)
+		EntityManager:createEntityFromArchetype(archetype)
 	end
 
 	local r = {}
@@ -69,7 +25,7 @@ function RenderSystem:start()
 
 	local graphics = Feint.Core.Graphics
 	if Feint.ECS.FFI_OPTIMIZATIONS then
-		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
+		EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- print(Data[Entity], Entity)
 			-- Transform.x = random2(Feint.Core.Graphics.RenderSize.x / 2)
 			-- Transform.y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
@@ -91,7 +47,7 @@ function RenderSystem:start()
 			Renderer.id = math.floor(Feint.Math.random2(1, 100))
 		end)
 	else
-		self.EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
+		EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
 			-- local x = Data[Transform]
 			-- local y = Data[Transform + 1]
@@ -120,7 +76,7 @@ end
 -- local input = Feint.Core.Input
 -- local px, py = 0, 0
 -- local lx, ly = 0, 0
-function RenderSystem:update(dt)
+function RenderSystem:update(EntityManager, dt)
 	-- do
 	-- 	lx, ly = px, py
 	-- 	px, py = input.mouse.Position.x, input.mouse.Position.y
@@ -138,7 +94,7 @@ function RenderSystem:update(dt)
 	-- print("time", time)
 	for i = 1, 1, 1 do
 		if Feint.ECS.FFI_OPTIMIZATIONS then
-			self.EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
+			EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
 				Transform.angle = (time + Entity / 10) * pi -- + Entity * 6
 				local offsetX = oscillate(time, 50, 2, Entity)
 				local offsetY = oscillate(time, 50, 2, (Entity * Entity) % (2 * math.pi))
@@ -156,7 +112,7 @@ function RenderSystem:update(dt)
 				)
 			end)
 		else
-			self.EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
+			EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
 				local x = Data[Transform]
 				local y = Data[Transform + 1]
 				local angle = Data[Transform + 2]
