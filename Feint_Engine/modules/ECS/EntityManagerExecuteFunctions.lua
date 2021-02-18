@@ -72,44 +72,49 @@ function ExecuteFunctions:load(EntityManager)
 				local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
 
 				for j = archetypeChunk.numEntities - 1, 0, -1 do
+					local current = data[j]
 					callback(
-						data[j][a1Name], data[j][a2Name],
-						data[j][a3Name], data[j][a4Name]
-						-- data[j][a5Name], data[j][a6Name]
+						current[a1Name], current[a2Name],
+						current[a3Name], current[a4Name]
+						-- current[a5Name], current[a6Name]
 					)
 				end
 			end
 		end
-		function ExecuteFunctions:executeEntity(arguments, archetype, callback)
+		function ExecuteFunctions:executeEntity(jobData, arguments, archetype, callback)
 			local archetypeChunks = self.archetypeChunks
 			local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
 			local a3Name, a4Name = a3.Name, a4.Name
 
-			for i = 1, self.archetypeChunksCount[archetype], 1 do
-				local archetypeChunk = archetypeChunks[archetype][i]
-				local idList = archetypeChunk.entityIndexToId
-				local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
-
-				for j = archetypeChunk.numEntities - 1, 0, -1 do
-					callback(idList[j + 1], data[j][a3Name], data[j][a4Name])
-				end
-			end
-		end
-		function ExecuteFunctions:executeEntityAndData(arguments, archetype, callback)
-			local archetypeChunks = self.archetypeChunks
-			local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-			local a3Name, a4Name = a3.Name, a4.Name
+			local data = {}
+			print(jobData, arguments, archetype, callback)
+			jobData(data)
 
 			for i = 1, self.archetypeChunksCount[archetype], 1 do
 				local archetypeChunk = archetypeChunks[archetype][i]
-				local idList = archetypeChunk.entityIndexToId
-				local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
+				-- local idList = archetypeChunk.entityIndexToId
+				local entities = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
 
 				for j = archetypeChunk.numEntities - 1, 0, -1 do
-					callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
+					callback(data, j, entities[j][a3Name], entities[j][a4Name])
 				end
 			end
 		end
+		-- function ExecuteFunctions:executeEntityAndData(arguments, archetype, callback)
+		-- 	local archetypeChunks = self.archetypeChunks
+		-- 	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
+		-- 	local a3Name, a4Name = a3.Name, a4.Name
+		--
+		-- 	for i = 1, self.archetypeChunksCount[archetype], 1 do
+		-- 		local archetypeChunk = archetypeChunks[archetype][i]
+		-- 		local idList = archetypeChunk.entityIndexToId
+		-- 		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
+		--
+		-- 		for j = archetypeChunk.numEntities - 1, 0, -1 do
+		-- 			callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
+		-- 		end
+		-- 	end
+		-- end
 	else
 		function ExecuteFunctions:execute(arguments, archetype, callback)
 			-- printf("Calling function on entities\n")

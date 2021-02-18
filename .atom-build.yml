@@ -3,6 +3,7 @@ name:        "Love 2d"
 args:
   - "./"
 sh:          true
+cwd:         "{PROJECT_PATH}"
 keymap:      ctrl-b
 targets:
   "Kaitai Struct":

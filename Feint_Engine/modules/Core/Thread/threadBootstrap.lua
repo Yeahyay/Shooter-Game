@@ -24,134 +24,130 @@ local ENUM_THREAD_STATUS_BUSY = 5
 Feint.Log:logln("RESPONDING")
 channel:supply(ENUM_THREAD_FINISHED)
 
-local function execute(arguments, archetype, callback)
-	local archetypeChunks = self.archetypeChunks
-	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-	local a1Name, a2Name = a1.Name, a2.Name
-	local a3Name, a4Name = a3.Name, a4.Name
-	local a5Name, a6Name = a5.Name, a6.Name
-
-	for i = 1, self.archetypeChunksCount[archetype], 1 do
-		local archetypeChunk = archetypeChunks[archetype][i]
-		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
-
-		for j = archetypeChunk.numEntities - 1, 0, -1 do
-			callback(
-				data[j][a1Name], data[j][a2Name],
-				data[j][a3Name], data[j][a4Name],
-					data[j][a5Name], data[j][a6Name]
-				)
-			end
-		end
-	end
-local function executeEntity(arguments, archetype, callback)
-	local archetypeChunks = self.archetypeChunks
-	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-	local a3Name, a4Name = a3.Name, a4.Name
-
-	for i = 1, self.archetypeChunksCount[archetype], 1 do
-		local archetypeChunk = archetypeChunks[archetype][i]
-		local idList = archetypeChunk.entityIndexToId
-		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
-
-		for j = archetypeChunk.numEntities - 1, 0, -1 do
-			callback(idList[j + 1], data[j][a3Name], data[j][a4Name])
-		end
-	end
-end
-local function executeEntityAndData(arguments, archetype, callback)
-	local archetypeChunks = self.archetypeChunks
-	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-	local a3Name, a4Name = a3.Name, a4.Name
-
-	for i = 1, self.archetypeChunksCount[archetype], 1 do
-		local archetypeChunk = archetypeChunks[archetype][i]
-		local idList = archetypeChunk.entityIndexToId
-		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
-
-		for j = archetypeChunk.numEntities - 1, 0, -1 do
-			callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
-		end
-	end
-end
-
 local componentCache = {}
-local function forEach(id, callback)
-	-- get the function arguments and store them as an array of strings
-	if not componentCache[id] then
-		componentCache[id] = {}
-
-		local funcInfo = debug.getinfo(callback)
-		local i = 1
-		for j = 1, funcInfo.nparams, 1 do
-			local componentName = debug.getlocal(callback, j)
-			if componentName ~= "Data" and componentName ~= "Entity" then
-				local component = self.World.components[componentName]
-				if component.componentData then
-					assert(component, string.format("arg %d (%s) is not a component", i, componentName), 2)
-					componentCache[id][i] = component
-					i = i + 1
-				end
-			else
-				componentCache[id][i] = componentName
-				i = i + 1
-			end
-		end
-	end
-
-	-- convert the array of strings into an archetypeString
-	local archetypeString = self:getArchetypeStringFromComponents(componentCache[id])
-	-- use the string to execute the callback on its respective archetype chunks
-	self:execute(componentCache[id], self.archetypes[archetypeString], callback)
-end
 
 local function performJob(job, entities)
 	local entityIndexToId = job.entityIndexToId
 	local operation = load(job.operation)
-	for i = job.rangeMin, job.rangeMax, 1 do
-		operation(entityIndexToId[i], entities[i])
+	local a = 0
+	local b = love.timer.getTime()
+
+	-- for k, v in pairs(job) do print(k, v) end
+	print(job.data)
+
+	local data = {}
+	if job.data then
+		load(job.data)(data)
 	end
+	for i = job.rangeMin, job.rangeMax, 1 do
+		-- print(i, "j93r-feinojnipk")
+		-- operation(entityIndexToId[i], entities[i])
+		a = a + a * b
+		operation(data, i, entities[i].Renderer, entities[i].Transform)
+		-- love.timer.sleep(1 / 1500)
+	end
+	-- print(a)
 end
 
 local cstring = ffi.typeof("cstring")
 Feint.Log:logln("Thread done")
+
+local function abort(from, jobData)
+	love.event.push("thread_desync", self.id, from, jobData)
+end
+
 while true do
+	-- Feint.Core.Time:update()
 	local status
-
-	-- Feint.Log:logln("waiting for a job")
 	repeat
-		status = channel:demand(10)--Feint.Core.Time.rate)
-		-- printf("status (%s) \"%s\" channel (%s) \"%s\"\n", status, type(status), channel:peek(), type(channel:peek()))
-		-- printf("%d\n", channel:getCount())
-	until type(status) == "number" and (status ~= ENUM_THREAD_FINISHED and status ~= ENUM_THREAD_FINISHED_JOB)
-	-- printf("status (%s) \"%s\" channel (%s) \"%s\"\n", status, type(status), channel:peek(), type(channel:peek()))
+		printf("pre  %s: %s, %d\n", type(channel:peek()), channel:peek(), channel:getCount())
+		status = channel:demand(2)--Feint.Core.Time.rate)
 
-	-- Feint.Log:logln("Thread %d status: %d", self.id, status)
+		local success = status and true or false
+		if not success then
+			abort("waiting for job", -1)
+			goto ABORT
+		end
+		printf("got  %s: %s, %d\n", type(status), status, channel:getCount())
+	until type(status) == "number" and (status ~= ENUM_THREAD_FINISHED and status ~= ENUM_THREAD_FINISHED_JOB)
+	printf("done %s: %s, %d\n", type(channel:peek()), channel:peek(), channel:getCount())
 	if status == ENUM_THREAD_NEW_JOB then
 		local jobData
-	-- Feint.Log:log("RECIEVED %s ", jobData)
-	-- printf("tick: %d\n", jobData.tick)
-		jobData = channel:demand()
-		-- Feint.Log:logln("Thread %d job data: %s", self.id, jobData)
-		-- Feint.Log:logln("got job %d", jobData.id)
+		jobData = channel:demand(1)
+		printf("post %s: %s, %d\n", type(channel:peek()), channel:peek(), channel:getCount())
+
+		local success = jobData and true or false
+		if not success then
+			abort("doing job", jobData)
+			goto ABORT
+		end
+
+		Feint.Log:logln("Thread %d job data: %s", self.id, jobData)
+		Feint.Log:logln("got job %d at %f", jobData.id, love.timer.getTime())
 
 		local entities = ffi.cast(jobData.structDefinition, jobData.entityByteData:getFFIPointer())
+		local startTime = love.timer.getTime()
 		performJob(jobData, entities)
+		local endTime = love.timer.getTime() - startTime
+		-- print(Feint.ECS.execute1)
 
-		-- love.timer.sleep(0.012)
-		-- Feint.Log:logln("finished job %d, sending jobData back", jobData.id)
-
+		Feint.Log:logln("finished job %d in %0.4f ms, sending jobData back", jobData.id, endTime * 1000)
 
 		love.event.push("thread_finished_job", self.id)
-		channel:push(ENUM_THREAD_FINISHED_JOB)
+		channel:supply(ENUM_THREAD_FINISHED_JOB)
 		-- Feint.Log:logln("finished job %d", jobData.id)
-		-- channel:supply(jobData)
 	elseif status == ENUM_THREAD_NO_JOBS then -- luacheck: ignore
-		-- Feint.Log:logln("No more jobs, idling")
 		love.event.push("thread_finished", self.id)
 		channel:supply(ENUM_THREAD_FINISHED)
 	end
-	-- love.thread.getChannel("MAIN_BLOCK"):supply(1)
-	-- print("skldnksd", love.thread.getChannel("MAIN_BLOCK"):getCount())
-	-- love.thread.getChannel("MAIN_BLOCK"):push(0)
+
+	::ABORT::
+	-- channel:demand()
 end
+
+-- while true do
+-- 	local status
+--
+-- 	Feint.Log:logln("waiting for a job")
+-- 	repeat
+-- 		printf("pre  %s: %s, %d\n", type(channel:peek()), status, channel:getCount())
+-- 		-- love.timer.sleep(0.1)
+-- 		status = channel:demand(0.1)--Feint.Core.Time.rate)
+-- 		-- status = channel:peek()
+-- 		-- printf("status (%s) \"%s\" channel (%s) \"%s\"\n", status, type(status), channel:peek(), type(channel:peek()))
+-- 		printf("post %s: %s, %d\n", type(status), status, channel:getCount())
+-- 	until type(status) == "number" and (status ~= ENUM_THREAD_FINISHED and status ~= ENUM_THREAD_FINISHED_JOB)
+-- 	-- printf("status (%s) \"%s\" channel (%s) \"%s\"\n", status, type(status), channel:peek(), type(channel:peek()))
+-- 	printf("post %s: %s, %d\n", type(status), status, channel:getCount())
+-- 	love.event.push("thread_finished_job", self.id)
+-- 	channel:pop()
+--
+-- 	Feint.Log:logln("status: %d", self.id, status)
+-- 	if status == ENUM_THREAD_NEW_JOB then
+-- 		local jobData
+-- 		jobData = channel:demand()
+-- 		-- Feint.Log:log("RECIEVED %s ", jobData)
+-- 		-- printf("tick: %d\n", jobData.tick)
+-- 		Feint.Log:logln("Thread %d job data: %s", self.id, jobData)
+-- 		Feint.Log:logln("got job %d", jobData.id)
+--
+-- 		local entities = ffi.cast(jobData.structDefinition, jobData.entityByteData:getFFIPointer())
+-- 		performJob(jobData, entities)
+--
+-- 		-- love.timer.sleep(0.012)
+-- 		-- Feint.Log:logln("finished job %d, sending jobData back", jobData.id)
+--
+--
+-- 		love.event.push("thread_finished_job", self.id)
+-- 		channel:push(ENUM_THREAD_FINISHED_JOB)
+-- 		Feint.Log:logln("finished job %d", jobData.id)
+-- 		-- channel:supply(jobData)
+-- 	elseif status == ENUM_THREAD_NO_JOBS then -- luacheck: ignore
+-- 		Feint.Log:logln("No more jobs, idling")
+-- 		love.event.push("thread_finished", self.id)
+-- 		channel:supply(ENUM_THREAD_FINISHED)
+-- 	end
+-- 	-- love.thread.getChannel("MAIN_BLOCK"):supply(1)
+-- 	-- print("skldnksd", love.thread.getChannel("MAIN_BLOCK"):getCount())
+-- 	-- love.thread.getChannel("MAIN_BLOCK"):push(0)
+-- end
