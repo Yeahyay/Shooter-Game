@@ -25,12 +25,14 @@ function log:load()
 
 	function log:log(fmt, ...)
 		-- assert(self, "call with \":\" instead", 3)
-		local output = string.format("%s [%s] %s", _ENV._NAME, time(), fmt or "")
+		-- local output = string.format("%s [%s] %s", _ENV._NAME, time(), fmt or "")
+		local output = string.format("%s: %s", _ENV._NAME, fmt or "")
 		printf(output, ...)
 	end
 	function log:logln(fmt, ...)
 		-- assert(self, "call with \":\" instead", 3)
-		local output = string.format("%s [%s] %s\n", _ENV._NAME, time(), fmt or "\n")
+		-- local output = string.format("%s [%s] %s\n", _ENV._NAME, time(), fmt or "\n")
+		local output = string.format("%s: %s\n", _ENV._NAME, fmt or "\n")
 		printf(output, ...)
 	end
 	function log:file(fmt, ...)

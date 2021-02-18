@@ -6,7 +6,7 @@ local Math = Feint.Math
 local Util = Feint.Util
 local Graphics = Feint.Core.Graphics
 local LoveGraphics = love.graphics
-local Run = Feint.Core.Time
+local Time = Feint.Core.Time
 local Log = Feint.Log
 local Core = Feint.Core
 local Input = Feint.Core.Input
@@ -36,28 +36,28 @@ local fpsGraph = require("Feint_Engine.lib.FPSGraph")
 
 -- luacheck: pop ignore
 
--- local oldRate = Run.rate
+-- local oldRate = Time.rate
 function love.keypressed(key, ...)
 	if key == "space" then
-		print(Run:isPaused())
-		if Run:isPaused() then
+		print(Time:isPaused())
+		if Time:isPaused() then
 			print("PLAY")
-			Run:unpause()
+			Time:unpause()
 		else
 			print("PAUSE")
-			Run:pause()
+			Time:pause()
 		end
-		-- if Run.rate == 0 then
+		-- if Time.rate == 0 then
 		-- 	print("PLAY")
-		-- 	Run.rate = oldRate
-		-- 	Run.accum = 0
-		-- 	Run.dt = 0
-		-- 	-- Run.pause = false
+		-- 	Time.rate = oldRate
+		-- 	Time.accum = 0
+		-- 	Time.dt = 0
+		-- 	-- Time.pause = false
 		-- else
 		-- 	print("PAUSE")
-		-- 	oldRate = Run.rate
-		-- 	Run.rate = 0
-		-- 	-- Run.pause = true
+		-- 	oldRate = Time.rate
+		-- 	Time.rate = 0
+		-- 	-- Time.pause = true
 		-- end
 	end
 	if key == "q" then
@@ -111,13 +111,13 @@ function love.resize(x, y)
 	-- Graphics:draw()
 end
 function love.load()
-	Run.framerate = 60 -- framerate cap
-	Run.rate = 1 / 60 -- update dt
-	Run.sleep = 0.001 -- don't toast the CPU
-	Run:setSpeed(1) -- default game speed
+	Time.framerate = 60 -- framerate cap
+	Time.rate = 1 / 60 -- update dt
+	Time.sleep = 0.001 -- don't toast the CPU
+	Time:setSpeed(1) -- default game speed
 
 	fpsList = {}
-	for i = 1, Run.G_AVG_FPS_DELTA_ITERATIONS, 1 do
+	for i = 1, Time.G_AVG_FPS_DELTA_ITERATIONS, 1 do
 		fpsList[i] = 0
 	end
 	fpsIndex = 1
@@ -136,7 +136,7 @@ function love.load()
 	Feint.ECS:init()
 
 	-- Threads
-	for i = 1, 2, 1 do
+	for i = 1, 1, 1 do
 		Feint.Core.Thread:newWorker(i, nil)
 	end
 	-- love.timer.sleep(0.1)
@@ -161,25 +161,29 @@ end
 
 
 function love.update(dt)
-	Run:update()
-	Run:setSpeed(Mouse.PositionNormalized.x)
+	Time:update()
+	Time:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
 
 	local startTime = getTime()
 
-	if true then
-		World.DefaultWorld:update(dt) -- luacheck: ignore
+	if not Time:isPaused() and not Feint.Core.Thread:frozen() then
+		if Time.tick % 2 == 0 then
+			World.DefaultWorld:update(dt) -- luacheck: ignore
 
 		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
 		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
-		Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
-			Components.Transform.x = Components.Transform.x + 10
-		end)
-		Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
-			Components.Transform.y = Components.Transform.y - 5
-		end)
+		-- Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
+		-- 	Components.Transform.x = Components.Transform.x + 10
+		-- end)
+		-- Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
+		-- 	Components.Transform.y = Components.Transform.y - 5
+		-- end)
 
-		Feint.Core.Thread:update()
+			Feint.Core.Thread:update()
+		end
+	else
+		printf("\nFROZEN\n\n")
 	end
 
 	-- Graphics.processAddQueue()	-- process all pending draw queue insertions
@@ -191,16 +195,16 @@ function love.update(dt)
 
 	local endTime = getTime()
 
-	Run.G_UPDATE_DT = endTime - startTime
+	Time.G_UPDATE_DT = endTime - startTime
 
-	Run.G_UPDATE_TIME = Run.G_UPDATE_TIME + (Run.G_UPDATE_DT - Run.G_UPDATE_TIME) * (1 - Run.G_UPDATE_TIME_SMOOTHNESS)
+	Time.G_UPDATE_TIME = Time.G_UPDATE_TIME + (Time.G_UPDATE_DT - Time.G_UPDATE_TIME) * (1 - Time.G_UPDATE_TIME_SMOOTHNESS)
 
-	Run.G_UPDATE_TIME_PERCENT_FRAME = Run.G_UPDATE_TIME / (Run.rate) * 100
+	Time.G_UPDATE_TIME_PERCENT_FRAME = Time.G_UPDATE_TIME / (Time.rate) * 100
 
-	Graphics.UI.Immediate.Update(Run.G_RENDER_DT)
+	Graphics.UI.Immediate.Update(Time.G_RENDER_DT)
 
-	fpsGraph.updateFPS(fpsGraph1, Run.rate, Run.G_FPS)
-	fpsGraph.updateMem(memGraph1, Run.rate)
+	fpsGraph.updateFPS(fpsGraph1, Time.rate, Time.G_FPS)
+	fpsGraph.updateMem(memGraph1, Time.rate)
 end
 
 local function updateRender(dt) -- luacheck: ignore
@@ -208,27 +212,27 @@ end
 
 local function debugDraw()
 	LoveGraphics.printf(
-		Run:isPaused() and string.format("Game Speed: %s\n", "Paused") or
-		string.format("Game Speed: %.3f\n", Run:getSpeed()),
+		Time:isPaused() and string.format("Game Speed: %s\n", "Paused") or
+		string.format("Game Speed: %.3f\n", Time:getSpeed()),
 		400, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 
 	-- FPS
 	LoveGraphics.printf(
-		string.format("FPS:      %7.2f, DT:      %7.4fms\n", Run.G_FPS, 1000 * Run.G_FPS_DELTA),
+		string.format("FPS:      %7.2f, DT:      %7.4fms\n", Time.G_FPS, 1000 * Time.G_FPS_DELTA),
 		0, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 	-- [[
 	LoveGraphics.printf(
-		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Run.G_AVG_FPS, 1000 * Run.G_AVG_FPS_DELTA),
+		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Time.G_AVG_FPS, 1000 * Time.G_AVG_FPS_DELTA),
 		0, DEFAULT_FONT_HEIGHT / 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
-		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / Run.dt, 1000 * Run.dt),
+		string.format("FPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / Time.dt, 1000 * Time.dt),
 		0, DEFAULT_FONT_HEIGHT / 2 * 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 	-- UPDATE TIME
 	LoveGraphics.printf(
-		string.format("UPDATE:     %8.4fms, %6.2f%% 60Hz\n", 1000 * Run.G_UPDATE_TIME, Run.G_UPDATE_TIME_PERCENT_FRAME),
+		string.format("UPDATE:     %8.4fms, %6.2f%% 60Hz\n", 1000 * Time.G_UPDATE_TIME, Time.G_UPDATE_TIME_PERCENT_FRAME),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
@@ -236,12 +240,12 @@ local function debugDraw()
 		0, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
-		string.format("UPDATE TRUE:%8.4fms, %6.2f%% 60Hz\n", 1000 * Run.G_UPDATE_DT, Run.G_UPDATE_DT / (Run.rate) * 100),
+		string.format("UPDATE TRUE:%8.4fms, %6.2f%% 60Hz\n", 1000 * Time.G_UPDATE_DT, Time.G_UPDATE_DT / (Time.rate) * 100),
 		0, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	-- RENDER TIME
 	LoveGraphics.printf(
-		string.format("RENDER:     %8.4fms, %6.2f%% Frame\n", 1000 * Run.G_RENDER_TIME, Run.G_RENDER_TIME_PERCENT_FRAME),
+		string.format("RENDER:     %8.4fms, %6.2f%% Frame\n", 1000 * Time.G_RENDER_TIME, Time.G_RENDER_TIME_PERCENT_FRAME),
 		350, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
@@ -249,21 +253,21 @@ local function debugDraw()
 		350, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
-		string.format("RENDER TRUE:%8.4fms, %6.2f%% Frame\n", 1000 * Run.G_RENDER_DT, Run.G_RENDER_DT / (Run.rate) * 100),
+		string.format("RENDER TRUE:%8.4fms, %6.2f%% Frame\n", 1000 * Time.G_RENDER_DT, Time.G_RENDER_DT / (Time.rate) * 100),
 		350, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 
 	-- LoveGraphics.printf(
-	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", Run.G_TPS, 1000 * Run.G_TPS_DELTA),
+	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", Time.G_TPS, 1000 * Time.G_TPS_DELTA),
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 	-- LoveGraphics.printf(
-	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Run.G_AVG_TPS, 1000 * Run.G_AVG_TPS_DELTA),
+	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Time.G_AVG_TPS, 1000 * Time.G_AVG_TPS_DELTA),
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 	-- LoveGraphics.printf(
-	-- 	string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / Run.rate, 1000 * Run.rate),
+	-- 	string.format("TPS TRUE: %7.2f, DT TRUE: %7.4fms\n", 1 / Time.rate, 1000 * Time.rate),
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 
@@ -290,20 +294,20 @@ local function debugDraw()
 end
 function love.draw(dt)
 	do
-		Run.G_FPS_DELTA = Run.G_FPS_DELTA + (Run.dt - Run.G_FPS_DELTA) * (1 - Run.G_FPS_DELTA_SMOOTHNESS)
-		Run.G_FPS = 1 / Run.G_FPS_DELTA
+		Time.G_FPS_DELTA = Time.G_FPS_DELTA + (Time.dt - Time.G_FPS_DELTA) * (1 - Time.G_FPS_DELTA_SMOOTHNESS)
+		Time.G_FPS = 1 / Time.G_FPS_DELTA
 	end
 
 	do
-		fpsSum = fpsSum -	fpsList[fpsIndex] + Run.dt
-		fpsList[fpsIndex] = Run.dt
-		fpsIndex = fpsIndex % Run.G_AVG_FPS_DELTA_ITERATIONS + 1
-		Run.G_AVG_FPS_DELTA = fpsSum / Run.G_AVG_FPS_DELTA_ITERATIONS
+		fpsSum = fpsSum -	fpsList[fpsIndex] + Time.dt
+		fpsList[fpsIndex] = Time.dt
+		fpsIndex = fpsIndex % Time.G_AVG_FPS_DELTA_ITERATIONS + 1
+		Time.G_AVG_FPS_DELTA = fpsSum / Time.G_AVG_FPS_DELTA_ITERATIONS
 
-		Run.G_AVG_FPS = 1 / Run.G_AVG_FPS_DELTA
+		Time.G_AVG_FPS = 1 / Time.G_AVG_FPS_DELTA
 	end
 
-	Run.G_INT = Run.accum / math.max(0, Run.rate)
+	Time.G_INT = Time.accum / math.max(0, Time.rate)
 
 	local startTime = getTime()
 
@@ -316,7 +320,7 @@ function love.draw(dt)
 	-- 	LoveGraphics.scale(Graphics.ScreenToRenderRatio.x, Graphics.ScreenToRenderRatio.y)
 	-- 	LoveGraphics.translate(Graphics.ScreenSize.x / 2, Graphics.ScreenSize.y / 2)
 	-- 	-- LoveGraphics.setWireframe(true)
-		Graphics:updateInterpolate(Run.accum)
+		Graphics:updateInterpolate(Time.accum)
 	-- 	-- Graphics.processQueue()
 		Graphics:draw()
 	-- 	-- LoveGraphics.setWireframe(false)
@@ -328,7 +332,7 @@ function love.draw(dt)
 	-- LoveGraphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
 	-- -- LoveGraphics.draw(canvas, 50, 50, 0, 1, 1, 0, 0)
 
-	Graphics.UI.Immediate.Draw(Run.G_RENDER_DT)
+	Graphics.UI.Immediate.Draw(Time.G_RENDER_DT)
 
 	-- fpsGraph.drawGraphs(2, {fpsGraph1, memGraph1})
 	-- LoveGraphics.setFont(DEFAULT_FONT)
@@ -337,16 +341,16 @@ function love.draw(dt)
 
 	local endTime = getTime()
 
-	Run.G_RENDER_DT = endTime - startTime
+	Time.G_RENDER_DT = endTime - startTime
 
-	Run.G_RENDER_TIME = Run.G_RENDER_TIME + (Run.G_RENDER_DT - Run.G_RENDER_TIME) * (1 - Run.G_RENDER_TIME_SMOOTHNESS)
+	Time.G_RENDER_TIME = Time.G_RENDER_TIME + (Time.G_RENDER_DT - Time.G_RENDER_TIME) * (1 - Time.G_RENDER_TIME_SMOOTHNESS)
 
-	Run.G_RENDER_TIME_PERCENT_FRAME = Run.G_RENDER_TIME / (Run.rate) * 100
+	Time.G_RENDER_TIME_PERCENT_FRAME = Time.G_RENDER_TIME / (Time.rate) * 100
 
 
 	--[[
 	local f = 60
-	acc = acc + Run.G_RENDER_DT * f
+	acc = acc + Time.G_RENDER_DT * f
 	while acc > 1 / 60 do
 		updateRender(acc)
 		acc = acc - 1 / 60
