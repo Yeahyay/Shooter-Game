@@ -52,7 +52,7 @@ function debug:load()
 			for k, v in pairs(table) do
 				-- printf("%s ", k)
 				-- printf("%s\n", v)
-				printf(format or "%.10s,  %s (%s)\n", k, v, type(v))
+				printf(format or "%s,  %s (%s)\n", k, v, type(v))
 				-- print_old(k, tostring(v))
 				-- if type(v) == "table" then
 				-- 	print_old(k, v.__tostring and v.__tostring())
