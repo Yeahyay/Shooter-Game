@@ -3,6 +3,7 @@ local threading = {
 	"ECS" --[[TEMPORARY]]}
 }
 
+
 local ffi = require("ffi")
 function threading:load(isThread)
 	require("love.system")
@@ -10,18 +11,21 @@ function threading:load(isThread)
 	-- Feint.Core.Paths:Print()
 
 	Feint.Core.Paths:Add("Thread", Feint.Core.Paths.Core .. "Thread")
+	local Thread = require(Feint.Core.Paths.Thread .. "thread")
+	local Job = require(Feint.Core.Paths.Thread .. "job")
 
-	local workers = {}
-	local numWorkers = 0
+	local threads = {}
+	local numThreads = 0
 
 	-- require("love.system")
 
-	-- local ENUM_THREAD_FINISHED = 0
-	local ENUM_THREAD_NO_JOBS = 1
-	local ENUM_THREAD_NEW_JOB = 2
-	-- local ENUM_THREAD_FINISHED_JOB = 3
-	-- local ENUM_THREAD_QUERY_STATUS = 4
-	-- local ENUM_THREAD_STATUS_BUSY = 5
+	self.ENUM = {}
+	self.ENUM.THREAD_FINISHED = 0
+	self.ENUM.THREAD_NO_JOBS = 1
+	self.ENUM.THREAD_NEW_JOB = 2
+	self.ENUM.THREAD_FINISHED_JOB = 3
+	self.ENUM.THREAD_QUERY_STATUS = 4
+	self.ENUM.THREAD_STATUS_BUSY = 5
 
 	--[[
 		A job queue is maintained before every job system update.
@@ -77,6 +81,8 @@ function threading:load(isThread)
 		:LOOP:
 	]]
 
+	self.MainThread = Thread:new(true, 0)
+
 	self.MAX_CORES = love.system.getProcessorCount()
 
 	local jobQueuePointer = 0
@@ -104,40 +110,11 @@ function threading:load(isThread)
 		}
 	})
 
-	function self:createJob(id, archetypeChunk, rangeMin, rangeMax, arguments, jobData, operation)
-		local s = ffi.string(
-			archetypeChunk.data,
-			archetypeChunk.numEntities * archetypeChunk.entitySizeBytes
-		)
-		-- assert(operation and type(operation) == "function", "no operation given", 3)
-		local job = {
-			id = id;
-			tick = Feint.Core.Time.tick;
-
-			data = jobData and string.dump(jobData) or nil;
-
-			entityByteData = archetypeChunk.byteData;
-			structDefinition = archetypeChunk.structDefinition;
-			archetypeString = archetypeChunk.archetype.archetypeString;
-			archetypeChunkIndex = archetypeChunk.index;
-			entityIndexToId = archetypeChunk.entityIndexToId;
-			size = archetypeChunk.numEntities;
-			capacity = archetypeChunk.capacity;
-			-- sizeBytes = archetypeChunk.numEntities * archetypeChunk.entitySizeBytes;
-
-			dataString = s; --love.data.newByteData(s);
-			rangeMin = rangeMin or 0;
-			rangeMax = rangeMax or archetypeChunk.numEntities - 1;
-			operation = string.dump(operation);
-		}
-		return job
-	end
-
 	function self:queueArchetype(EntityManager, archetype, operation)
 		for i = 1, archetype.chunkCount, 1 do
 			local archetypeChunk = EntityManager:getArchetypeChunkTableFromArchetype(archetype)[i]
 
-			local job = self:createJob(
+			local job = Job:newFor(
 				jobQueue:size() + 1,
 				archetypeChunk,
 				0,
@@ -157,10 +134,10 @@ function threading:load(isThread)
 	end
 
 	function self:queue(archetype, archetypeChunk, arguments, jobData, operation)
-		-- if jobQueue:size() >= 2 * numWorkers then
+		-- if jobQueue:size() >= 2 * numThreads then
 		-- 	return nil
 		-- end
-		local job = self:createJob(
+		local job = Job:newFor(
 			jobQueue:size() + 1,
 			archetypeChunk,
 			0,
@@ -188,7 +165,7 @@ function threading:load(isThread)
 		for i = 1, slices - 1, 1 do
 			-- print(job.operation)
 			jobs[#jobs + 1] =
-			self:createJob(
+			Job:newFor(
 				jobQueue:size() + 1,
 				archetypeChunk,
 				i * dx,
@@ -196,37 +173,16 @@ function threading:load(isThread)
 				job.data,
 				job.operation
 			)
-			-- {
-			-- 	id = job.id + i - 1,
-			-- 	tick = Feint.Core.Time.tick,
-			--
-			-- 	entityByteData = job.entityByteData,
-			-- 	archetypeString = job.archetypeString,
-			-- 	archetypeChunkIndex = job.archetypeChunkIndex,
-			-- 	entityIndexToId = job.entityIndexToId,
-			-- 	sizeBytes = job.sizeBytes,
-			--
-			-- 	dataString = job.dataString, --love.data.newByteData(s),
-			-- 	rangeMin = i * dx,
-			-- 	rangeMax = math.min((i + 1) * dx, job.length) - 1,
-			-- 	length = job.length,
-			-- 	operation = job.operation,
-			-- }
 		end
 		return jobs
 	end
 
-	local frozen = false
-	function self:frozen()
-		return frozen
-	end
-
 	function self:sendJob(job, workerID)
 		-- assert(job, "no job given", 3)
-		local channel = workers[workerID].channel
+		local channel = threads[workerID].channel
 
 		-- Feint.Log:logln("Sending job %d range %d - %d to worker thread %d", job.id, job.rangeMin, job.rangeMax, workerID)
-		channel:push(ENUM_THREAD_NEW_JOB)
+		channel:push(self.ENUM.ENUM_THREAD_NEW_JOB)
 		local success = channel:supply(job, 0.5)
 		if not success then
 			Feint.Log:logln("THREAD %d DESYNC'D", workerID)
@@ -234,152 +190,37 @@ function threading:load(isThread)
 		end
 	end
 
-	-- local DefaultWorld = Feint.ECS.World.DefaultWorld
-	-- local DefaultWorldEntityManager = DefaultWorld.EntityManager
-	local activeThreads = {}
-	local activeThreadsCount = 0
-	-- local update
-
-	-- love.thread.newChannel("MAIN_BLOCK")
-	-- local block = love.thread.getChannel("MAIN_BLOCK")
 	if not isThread then
 		love.handlers["thread_finished_job"] = function(a) -- luacheck: ignore
-			local channel = workers[a].channel
-			channel:pop()
-			-- local job = channel:demand():
+		end
 
-			if jobQueue:size() > 0 then
-				self:sendJob(jobQueue:remove(), a)
-			else
-				Feint.Log:logln("no more jobs available")
-				local success = channel:supply(ENUM_THREAD_NO_JOBS, 0.1)
-				if not success then
-					Feint.Log:logln("THREAD %d DESYNC'D", a)
-					Feint.Core.Time:pause()
-				end
-			end
+		love.handlers["thread_finished"] = function() -- luacheck: ignore
 		end
-		love.handlers["thread_finished"] = function(a) -- luacheck: ignore
-			local channel = workers[a].channel
-			channel:pop()
-			-- channel:clear()
-			-- printf("THREAD %d COMPLETED\n", a)
-			-- activeThreads = activeThreads - 1
-			activeThreads[a] = false
-			activeThreadsCount = activeThreadsCount - 1
-			if activeThreadsCount <= 0 then
-				frozen = false
-			end
-			Feint.Log:logln("%d threads active", activeThreadsCount)
-			-- if activeThreads <= 0 then
-				-- print("DONE DONE DONE DONE")
-				-- update()
-			-- end
-		end
-		love.handlers["thread_desync"] = function(threadID, from, jobData) -- luacheck: ignore
-			Feint.Log:logln("THREAD %d DESYNC'D\n Aborted from %s\n Job data: %s\n count: %d",
-				threadID, from, jobData, workers[threadID].channel:getCount())
-			assert(jobData ~= -1, "oh god oh fuck")
-			Feint.Core.Time:pause()
+
+		love.handlers["thread_desync"] = function() -- luacheck: ignore
 		end
 	end
 
-	-- for k, v in pairs(love.handlers) do
-	-- 	print(k, v)
-	-- end
-	-- function love.thread_finished_job(status)
-	-- 	print('ineoninegnwoeqfieowrinogejfip')
-	-- end
-
-	local update
+	function self:startWorkers()
+		for i = 1, numThreads do
+			threads[i]:start()
+		end
+	end
 
 	function self:update()
-		if activeThreadsCount == 0 then
-			frozen = true
-			-- Feint.Log:logln("%d jobs queued", jobQueue:size())
-			local numJobs = math.min(jobQueue:size(), self:getNumWorkers())
-			for i = 1, numJobs, 1 do
-				self:sendJob(jobQueue:remove(), i)
-				if not activeThreads[i] then
-					activeThreadsCount = activeThreadsCount + 1
-				end
-				activeThreads[i] = true
-				-- Feint.Log:logln("%d jobs queued", jobQueue:size())
-			end
-			Feint.Log:logln("sent %d jobs", numJobs)
-		-- update()
-		end
-		-- Feint.Log:logln("%d threads active", activeThreadsCount)
 	end
 
-	update = coroutine.wrap(function(self)
-	end)
-	-- 	-- update()
-	-- 	-- activeThreadsCount = 0
-	-- 	-- Feint.Log:logln("%d jobs queued", jobQueue:size())
-	-- 	-- for i = 1, math.min(jobQueue:size(), self:getNumWorkers()), 1 do
-	-- 	-- 	self:sendJob(jobQueue:remove(), i)
-	-- 	-- 	if not activeThreads[i] then
-	-- 	-- 		activeThreadsCount = activeThreadsCount + 1
-	-- 	-- 	end
-	-- 	-- 	activeThreads[i] = true
-	-- 	-- 	Feint.Log:logln("%d jobs queued", jobQueue:size())
-	-- 	-- end
-	-- 	-- Feint.Log:logln("%d threads active", activeThreadsCount)
-	--
-	-- 	-- [[
-	-- 	local i = 1
-	-- 	while activeThreadsCount > 0 and i < 1000 do
-	-- 		for n, a in love.event.poll() do
-	-- 			if n == "thread_finished_job" then
-	-- 				-- local channel = workers[a].channel
-	-- 				love.handlers["thread_finished_job"](a) -- luacheck: ignore
-	-- 			elseif n == "thread_finished" then
-	-- 				love.handlers["thread_finished"](a) -- luacheck: ignore
-	-- 			end
-	-- 		end
-	--
-	-- 		love.timer.sleep(1 / 1000)
-	-- 		-- block:demand(Feint.Core.Time.rate * (1 / (numWorkers * 2)))
-	-- 		i = i + 1
-	-- 	end
-	-- 	--]]
-	--
-	-- 	Feint.Log:logln("ALL JOBS DONE")
-	--
-	-- 	::stop::
-	-- end)
-
 	function self:newWorker(id)
-		-- Feint.Log:log("Creating new worker thread \"THREAD_%02d\"\n", id)
-		local newThread = {
-			thread = love.thread.newThread(Feint.Core.Paths:SlashDelimited(Feint.Core.Paths.Thread) .. "threadBootstrap.lua");
-			id = not workers[id] and id or #workers + 1;
-			running = false;
-			channel = love.thread.getChannel("thread_data_" .. id);
-			main = love.thread.getChannel("MAIN_BLOCK");
-
-			-- start = function(self, ...)
-			-- 	self.thread:start(...)
-			-- end,
-		}
-
-		numWorkers = numWorkers + 1
-		workers[#workers + 1] = newThread
-		activeThreads[numWorkers] = false
-		return newThread
+		numThreads = numThreads + 1
+		local thread = Thread:new(false, id)
+		threads[#threads + 1] = thread
 	end
 
 	function self:getWorkers()
-		return workers
+		return threads
 	end
 	function self:getNumWorkers()
-		return numWorkers
-	end
-
-	function self:startWorker(workerID, ...)
-		local threadObject = workers[workerID]
-		threadObject.thread:start(string.dump(_G.initEnv), threadObject, ...)
+		return numThreads
 	end
 end
 
