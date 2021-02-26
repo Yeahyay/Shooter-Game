@@ -13,7 +13,7 @@ function RenderSystem:start(EntityManager)
 	local world = World.DefaultWorld
 	local Renderer, Transform = world:getComponent("Renderer"), world:getComponent("Transform")
 	local archetype = EntityManager:newArchetypeFromComponents{Renderer, Transform}
-	for i = 1, 45000, 1 do
+	for i = 1, 1000, 1 do
 		EntityManager:createEntityFromArchetype(archetype)
 	end
 
@@ -23,36 +23,27 @@ function RenderSystem:start(EntityManager)
 		-- print(#r, r[#r])
 	end
 
-	local graphics = Feint.Core.Graphics
+	-- local graphics = Feint.Core.Graphics
 	if Feint.ECS.FFI_OPTIMIZATIONS then
-		EntityManager:forEachNotParallel("ri", function(Data)
-				Data.graphics = Feint.Core.Graphics
-				Data.time = Feint.Core.Time:getTime()
-			end,
-			function(Data, Entity, Renderer, Transform)
-				-- print(Data[Entity], Entity)
-				-- Transform.x = random2(Feint.Core.Graphics.RenderSize.x / 2)
-				-- Transform.y = random2(-Feint.Core.Graphics.RenderSize.y / 2, Feint.Core.Graphics.RenderSize.y / 2 - 300)
-				Transform.trueSizeX = Transform.scaleX / Transform.sizeX
-				Transform.trueSizeY = Transform.scaleY / Transform.sizeY
+		EntityManager:forEachNotParallel2("rendersystem_start", function()
+			local graphics = Feint.Core.Graphics
 
+			local function execute(Data, Entity, Renderer, Transform)
 				local trueSizeX = Transform.trueSizeX
 				local trueSizeY = Transform.trueSizeY
-				-- local rand = math.floor(random2(1, 9))
-				-- Renderer.texture = ffi.cast("uint8_t*", r[rand])
-				-- Renderer.textureSize = r[rand]:len()
-				-- print(r[rand]:len())
-				-- print(Feint.Core.Graphics:getTextures()["Test Texture 1.png"])
+
 				Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
-				Renderer.id = Data.graphics:addRectangle(
+				Renderer.id = graphics:addRectangle(
 					Renderer.texture,-- Renderer.textureLength,
 					Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY
 				)
 				-- Renderer.id = math.floor(Feint.Math.random2(1, 100))
 				-- print(Renderer.id)
 			end
-		)
+			return execute
+		end)
 	else
+		-- luacheck: push ignore
 		EntityManager:forEach("ri", function(Data, Entity, Renderer, Transform)
 			-- Feint.Log.log("Entity %02d: Transform[x: %0.4f, y: %0.4f]\n", Entity, Data[Transform], Data[Transform + 1])
 			-- local x = Data[Transform]
@@ -76,6 +67,7 @@ function RenderSystem:start(EntityManager)
 			-- 	x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY
 			-- )
 		end)
+		-- luacheck: pop ignore
 	end
 end
 
@@ -94,59 +86,48 @@ function RenderSystem:update(EntityManager, dt)
 	-- end
 
 	local sin, cos, pi = math.sin, math.cos, math.pi
-	local graphics = Feint.Core.Graphics
+	-- local graphics = Feint.Core.Graphics
 	local time = Feint.Core.Time:getTime()
-	local oscillate = Feint.Math.oscillateManualSigned
+	-- local oscillate = Feint.Math.oscillateManualSigned
 	-- print("time", time)
-	for i = 1, 1, 1 do
-		if Feint.ECS.FFI_OPTIMIZATIONS then
-			EntityManager:forEachNotParallel("main", function(Data)
-					Data.sin = math.sin
-					Data.cos = math.cos
-					Data.pi = math.pi
-					Data.graphics = Feint.Core.Graphics
-					Data.time = Feint.Core.Time:getTime()
-					Data.oscillate = Feint.Math.oscillateManualSigned
-				end,
-				function(Data, Entity, Renderer, Transform)
-					-- print(Data, Entity, Renderer, Transform)
-					Transform.angle = (Data.time + Entity / 10) * Data.pi -- + Entity * 6
-					local offsetX = Data.oscillate(Data.time, 50, 2, Entity)
-					local offsetY = Data.oscillate(Data.time, 50, 2, (Entity * Entity) % (2 * Data.pi))
+	if Feint.ECS.FFI_OPTIMIZATIONS then
+		EntityManager:forEachNotParallel2("rendersystem_main", function()
+			-- local sin = math.sin
+			-- local cos = math.cos
+			-- local pi = math.pi
+			local graphics = Feint.Core.Graphics
+			-- local time = Feint.Core.Time:getTime()
+			-- local oscillate = Feint.Math.oscillateManualSigned
 
-					local trueSizeX = Transform.trueSizeX
-					local trueSizeY = Transform.trueSizeY
+			local function execute(Data, Entity, Renderer, Transform)
+				graphics:modify(
+					Renderer.texture,
+					Renderer.id,
+					Transform.x,
+					Transform.y,
+					Transform.angle,
+					Transform.trueSizeX,
+					Transform.trueSizeY
+				)
+			end
+			return execute
+		end)
+	else
+		EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
+			local x = Data[Transform]
+			local y = Data[Transform + 1]
+			local angle = Data[Transform + 2]
+			-- local trueSizeX = Data[Transform + 7]
+			-- local trueSizeY = Data[Transform + 8]
 
-					-- oscillate(trueSizeX, trueSizeY, offsetX, offsetY)
+			-- rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
 
-					-- print(Renderer.id)
+			angle = angle + 1 / 60 * pi + Entity
 
-					Data.graphics:modify(
-						Renderer.texture,-- Renderer.textureLength,
-						Renderer.id,
-						offsetX + Transform.x - trueSizeX / 2,
-						offsetY + Transform.y - trueSizeY / 2,
-						Transform.angle, trueSizeX, trueSizeY
-					)
-				end
-			)
-		else
-			EntityManager:forEach("main", function(Data, Entity, Renderer, Transform)
-				local x = Data[Transform]
-				local y = Data[Transform + 1]
-				local angle = Data[Transform + 2]
-				-- local trueSizeX = Data[Transform + 7]
-				-- local trueSizeY = Data[Transform + 8]
-
-				-- rect(x - trueSizeX / 2, y - trueSizeY / 2, angle, trueSizeX, trueSizeY)
-
-				angle = angle + 1 / 60 * pi + Entity
-
-				Data[Transform + 2] = angle
-				Data[Transform] = x + sin(time * 2 + Entity * 0.25) * 0.5
-				Data[Transform + 1] = y + cos(time * 2 + Entity * 0.25) * 0.5
-			end)
-		end
+			Data[Transform + 2] = angle
+			Data[Transform] = x + sin(time * 2 + Entity * 0.25) * 0.5
+			Data[Transform + 1] = y + cos(time * 2 + Entity * 0.25) * 0.5
+		end)
 	end
 end
 

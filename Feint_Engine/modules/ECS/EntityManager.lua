@@ -4,7 +4,7 @@ local Paths = Feint.Core.Paths
 
 local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
 local EntityManagerArchetypeMethods = require(Paths.ECS .. "EntityManagerArchetypeMethods")
-local EntityManagerExecuteFunctions = require(Paths.ECS .. "EntityManagerExecuteFunctions")
+local ExecuteFunctions = require(Paths.ECS .. "EntityManagerExecuteFunctions")
 
 function EntityManager:new(...)
 	local object = {}
@@ -20,8 +20,8 @@ setmetatable(EntityManager, {
 			return rawget(t, k)
 		elseif EntityManagerArchetypeMethods[k] then
 			return EntityManagerArchetypeMethods[k]
-		elseif EntityManagerExecuteFunctions[k] then
-			return EntityManagerExecuteFunctions[k]
+		-- elseif EntityManagerExecuteFunctions[k] then
+		-- 	return EntityManagerExecuteFunctions[k]
 		end
 	end
 })
@@ -40,7 +40,7 @@ function EntityManager:init(world --[[name]])
 	self.archetypeChunksOpenStacks = setmetatable({}, {__mode = "k, v"}) -- queue of open archetype chunks
 
 	EntityManagerArchetypeMethods:load(self)
-	EntityManagerExecuteFunctions:load(self)
+	ExecuteFunctions:load(self)
 
 	self.forEachJobs = {}
 
@@ -121,41 +121,112 @@ function EntityManager:getEntitiesFromQuery(query)
 end
 -- Feint.Util.Memoize(EntityManager.getEntitiesFromQuery)
 
-local componentCache = {}
--- local argumentCache = {}
-function EntityManager:preQueue(id, jobData, callback)
-	assert(id and callback, "missing argument")
-	assert((jobData and type(jobData) == "function") or jobData == nil, "job data invalid type given", 3)
+local argumentCache = {}
+local function cacheArguments(id, callback)
+	assert(id, "missing id")
 	-- get the function arguments and store them as an array of strings
-	if not componentCache[id] then
-		componentCache[id] = {}
-		-- argumentCache[id] = {}
+	if not argumentCache[id] then
+		assert(callback, "missing callback")
+		argumentCache[id] = {}
 
-		local funcInfo = debug.getinfo(callback)
-		-- for k, v in pairs(funcInfo) do print(k, v) end
-		local i = 1
-		componentCache[id].arguments = {}
+		local func = callback() -- get the execute function from the callback
+		local funcInfo = debug.getinfo(func)
+
 		for j = 1, funcInfo.nparams, 1 do
-			local argument = debug.getlocal(callback, j)
-			componentCache[id].arguments[j] = argument
-			if argument ~= "Data" and argument ~= "Entity" then
-				assert(self.World.components[argument], "component " .. argument .. " is not registered")
-				local component = self.World.components[argument]
-				if component.componentData then
-					assert(component, string.format("arg %d (%s) is not a component", i, argument), 2)
-					componentCache[id][i] = component
-					componentCache[id].execute = self.executeEntity --AndData
-
-					i = i + 1
-				end
-			else
-				componentCache[id][i] = argument
-				componentCache[id].execute = self["execute" .. funcInfo.nparams]
-				i = i + 1
-			end
+			local argument = debug.getlocal(func, j)
+			argumentCache[id][j] = argument
 		end
 	end
-	return componentCache[id]
+end
+
+local queueCache = {}
+function EntityManager:preQueue2(id, callback)
+	if not queueCache[id] then
+		cacheArguments(id, callback)
+
+		queueCache[id] = {}
+		local currentQueue = queueCache[id]
+
+		currentQueue.componentArguments = self:argumentsToComponents2(id, callback)
+
+		-- convert the array of strings into an archetypeString
+		currentQueue.archetypeString = self:getArchetypeStringFromComponents(currentQueue.componentArguments)
+		currentQueue.archetype = self.archetypes[currentQueue.archetypeString]
+
+		if currentQueue.componentArguments[1] == "Data" and currentQueue.componentArguments[2] == "Entity" then
+			currentQueue.execute = ExecuteFunctions.executeEntity2
+		else
+			currentQueue.execute = ExecuteFunctions["execute" .. #currentQueue.componentArguments]
+		end
+	end
+	return queueCache[id]
+end
+function EntityManager:argumentsToComponents2(id, callback)
+	local componentArguments = {}
+
+	-- uses the cached function arguments to find their respective components
+	local cachedArguments = argumentCache[id]
+	for i = 1, #cachedArguments, 1 do
+		local argument = cachedArguments[i]
+		if argument ~= "Data" and argument ~= "Entity" then
+			assert(self.World.components[argument], "component " .. argument .. " is not registered")
+			local component = self.World.components[argument]
+			if component.componentData then
+				assert(component, string.format("arg %d (%s) is not a component", i, argument), 2)
+				componentArguments[i] = component
+			end
+		else
+			componentArguments[i] = argument
+		end
+	end
+	return componentArguments
+end
+
+
+--[[
+function EntityManager:preQueue(id, jobData, callback)
+	if not queueCache[id] then
+		queueCache[id] = {}
+		local currentQueue = queueCache[id]
+
+		currentQueue.componentArguments = self:argumentsToComponents(id, jobData, callback)
+
+		-- convert the array of strings into an archetypeString
+		currentQueue.archetypeString = self:getArchetypeStringFromComponents(currentQueue.componentArguments)
+		currentQueue.archetype = self.archetypes[currentQueue.archetypeString]
+
+		if currentQueue.componentArguments[1] == "Data" and currentQueue.componentArguments[2] == "Entity" then
+			currentQueue.execute = ExecuteFunctions.executeEntity
+		else
+			currentQueue.execute = ExecuteFunctions["execute" .. #currentQueue.componentArguments]
+		end
+	end
+	return queueCache[id]
+end
+
+function EntityManager:argumentsToComponents(id, jobData, callback)
+	cacheArguments(id, callback)
+	print(unpack(argumentCache[id]))
+
+	local componentArguments = {}
+
+	assert((jobData and type(jobData) == "function") or jobData == nil, "job data invalid type given", 3)
+	-- uses the cached function arguments to find their respective components
+	local cachedArguments = argumentCache[id]
+	for i = 1, #cachedArguments, 1 do
+		local argument = cachedArguments[i]
+		if argument ~= "Data" and argument ~= "Entity" then
+			assert(self.World.components[argument], "component " .. argument .. " is not registered")
+			local component = self.World.components[argument]
+			if component.componentData then
+				assert(component, string.format("arg %d (%s) is not a component", i, argument), 2)
+				componentArguments[i] = component
+			end
+		else
+			componentArguments[i] = argument
+		end
+	end
+	return componentArguments
 end
 
 function EntityManager:forEach(id, jobData, callback)
@@ -164,32 +235,48 @@ function EntityManager:forEach(id, jobData, callback)
 	local query = self:buildQueryFromComponents(preQueueData)
 	query:getArchetypeChunks(self.archetypeChunks)
 
-	-- convert the array of strings into an archetypeString
-	local archetypeString = self:getArchetypeStringFromComponents(preQueueData)
 	-- use the string to execute the callback on its respective archetype chunks
 	-- preQueueData.execute(self, preQueueData, self.archetypes[archetypeString], callback)
-	for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(archetypeString)) do
+	for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(preQueueData.archetypeString)) do
 		Feint.Core.Thread:queue(self, archetypeChunk, preQueueData.arguments, jobData, callback)
 	end
 	-- Feint.Core.Thread:queue(self.archetypeChunks[archetypeString], self.archetypes[archetypeString], callback)
 
-end
-function EntityManager:forEachNotParallel(id, jobData, callback)
-	local preQueueData = self:preQueue(id, jobData, callback)
+end--]]
+function EntityManager:forEachNotParallel2(id, callback)
+	local preQueueData = self:preQueue2(id, callback)
 
-	local query = self:buildQueryFromComponents(preQueueData)
+	local query = self:buildQueryFromComponents(preQueueData.componentArguments)
 	query:getArchetypeChunks(self.archetypeChunks)
 
-	-- convert the array of strings into an archetypeString
-	local archetypeString = self:getArchetypeStringFromComponents(preQueueData)
-	-- use the string to execute the callback on its respective archetype chunks
-	preQueueData.execute(self, jobData, preQueueData, self.archetypes[archetypeString], callback)
+	-- Feint.Util.Debug.DEBUG_PRINT_TABLE(preQueueData)
+
+	preQueueData.execute(self, preQueueData.componentArguments, preQueueData.archetype, callback)
+
 	-- for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(archetypeString)) do
 	-- 	Feint.Core.Thread:queue(self, archetypeChunk, preQueueData.arguments, jobData, callback)
 	-- end
 	-- Feint.Core.Thread:queue(self.archetypeChunks[archetypeString], self.archetypes[archetypeString], callback)
 
 end
+--[[
+function EntityManager:forEachNotParallel(id, jobData, callback)
+	local preQueueData = self:preQueue(id, jobData, callback)
+
+	local query = self:buildQueryFromComponents(preQueueData.componentArguments)
+	query:getArchetypeChunks(self.archetypeChunks)
+
+	-- Feint.Util.Debug.DEBUG_PRINT_TABLE(preQueueData)
+
+	preQueueData.execute(self, jobData, preQueueData.componentArguments, preQueueData.archetype, callback)
+
+	-- for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(archetypeString)) do
+	-- 	Feint.Core.Thread:queue(self, archetypeChunk, preQueueData.arguments, jobData, callback)
+	-- end
+	-- Feint.Core.Thread:queue(self.archetypeChunks[archetypeString], self.archetypes[archetypeString], callback)
+
+end
+--]]
 -- Feint.Util.Memoize(EntityManager.forEach)
 
 Feint.Util.Table.makeTableReadOnly(EntityManager, function(self, k)

@@ -9,7 +9,11 @@ function ExecuteFunctions:load(EntityManager)
 		if not self[name] then
 			local args = {}
 			for j = 1, num, 1 do
-				local s = [=[
+				local s =
+				[=[
+
+					-- EXECUTE FUNCTION []
+
 					local a[] = arguments[[]]
 					local a[]Name = a[] and a[].Name or nil
 				]=]
@@ -44,7 +48,9 @@ function ExecuteFunctions:load(EntityManager)
 				end
 			]]
 
-			-- code = code:gsub("\t", "")
+			code = code:gsub("\t\t\t", "", 6)
+			code = code:gsub("\t", "   ")
+			-- print(code)
 			local chunk = load(code, name)
 			rawset(self, name, chunk)
 			self.size = self.size + 1
@@ -54,7 +60,7 @@ function ExecuteFunctions:load(EntityManager)
 			return self[name]
 		end
 	end
-	for i = 1, 10, 1 do
+	for i = 1, 1, 1 do
 		ExecuteFunctions:generateExecuteFunction(i, "execute" .. i)
 	end
 
@@ -81,13 +87,36 @@ function ExecuteFunctions:load(EntityManager)
 				end
 			end
 		end
+		function ExecuteFunctions:executeEntity2(arguments, archetype, callback)
+			local archetypeChunks = self.archetypeChunks
+			-- luacheck: push ignore
+			local a1, a2, a3, a4, a5, a6 = unpack(arguments)
+			local a1Name, a2Name = a1 and a1.Name or nil, a2 and a2.Name or nil
+			local a3Name, a4Name = a3 and a3.Name or nil, a4 and a4.Name or nil
+			-- luacheck: pop ignore
+
+			local operation = callback()
+
+			for i = 1, self.archetypeChunksCount[archetype], 1 do
+				local archetypeChunk = archetypeChunks[archetype][i]
+				-- local idList = archetypeChunk.entityIndexToId
+				local entities = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
+
+				for j = archetypeChunk.numEntities - 1, 0, -1 do
+					operation(nil, j, entities[j][a3Name], entities[j][a4Name])
+				end
+			end
+		end
+		--[[
 		function ExecuteFunctions:executeEntity(jobData, arguments, archetype, callback)
 			local archetypeChunks = self.archetypeChunks
-			local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-			local a3Name, a4Name = a3.Name, a4.Name
+			-- luacheck: push ignore
+			local a1, a2, a3, a4, a5, a6 = unpack(arguments)
+			local a1Name, a2Name = a1 and a1.Name or nil, a2 and a2.Name or nil
+			local a3Name, a4Name = a3 and a3.Name or nil, a4 and a4.Name or nil
+			-- luacheck: pop ignore
 
 			local data = {}
-			print(jobData, arguments, archetype, callback)
 			jobData(data)
 
 			for i = 1, self.archetypeChunksCount[archetype], 1 do
@@ -100,6 +129,7 @@ function ExecuteFunctions:load(EntityManager)
 				end
 			end
 		end
+		--]]
 		-- function ExecuteFunctions:executeEntityAndData(arguments, archetype, callback)
 		-- 	local archetypeChunks = self.archetypeChunks
 		-- 	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
