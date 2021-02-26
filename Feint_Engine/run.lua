@@ -10,6 +10,7 @@ local Time = Feint.Core.Time
 local Log = Feint.Log
 local Core = Feint.Core
 local Input = Feint.Core.Input
+Util.Debug.logLevel = 2
 
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
@@ -136,20 +137,22 @@ function love.load()
 	Feint.ECS:init()
 
 	-- Threads
-	for i = 1, 1, 1 do
-		Feint.Core.Thread:newWorker(i, nil)
+	for i = 1, 0, 1 do
+		Feint.Core.Thread:newWorker(i)
 	end
+	Feint.Core.Thread:startWorkers()
+
 	-- love.timer.sleep(0.1)
-	for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
-		Log:logln("STARTING THREAD %d", i)
-		Feint.Core.Thread:startWorker(i)
-	end
+	-- for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
+	-- 	Log:logln("STARTING THREAD %d", i)
+	-- 	Feint.Core.Thread:startWorker(i)
+	-- end
 	for i = 1, Feint.Core.Thread:getNumWorkers(), 1 do
 		local channel = love.thread.getChannel("thread_data_"..i)
 		Log:logln("WAITING FOR THREAD %d", i)
 
 		local status
-		status = channel:demand(2)
+		status = channel:demand(1)
 
 		Log:logln("RECIEVED FROM THREAD %d: %s", i, status)
 		-- Log:logln("DONE WAITING FOR THREAD %d", i)
@@ -167,9 +170,8 @@ function love.update(dt)
 
 	local startTime = getTime()
 
-	if not Time:isPaused() and not Feint.Core.Thread:frozen() then
-		if Time.tick % 2 == 0 then
-			World.DefaultWorld:update(dt) -- luacheck: ignore
+	if Time.tick % 1 == 0 then
+		World.DefaultWorld:update(dt) -- luacheck: ignore
 
 		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
 		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
@@ -180,10 +182,7 @@ function love.update(dt)
 		-- 	Components.Transform.y = Components.Transform.y - 5
 		-- end)
 
-			Feint.Core.Thread:update()
-		end
-	else
-		printf("\nFROZEN\n\n")
+		Feint.Core.Thread:update()
 	end
 
 	-- Graphics.processAddQueue()	-- process all pending draw queue insertions

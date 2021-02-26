@@ -2,7 +2,7 @@ local Transform
 
 if Feint.ECS.FFI_OPTIMIZATIONS then
 	Transform = Feint.ECS.Component:new("Transform", {
-		x = 100,						-- 0
+		x = 0,						-- 0
 		y = 0,						-- 1
 		angle = 0,					-- 2
 		sizeX = 32,					-- 3

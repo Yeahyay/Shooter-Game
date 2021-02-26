@@ -155,14 +155,17 @@ function graphics:load(isThread)
 		local batch = drawable.batch
 		batch:set(id, dx, dy, r,
 			width, height,
-			drawable.sizeX, drawable.sizeY)
-		love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
+			drawable.sizeX / 2, drawable.sizeY / 2
+		)
+		-- love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
 	end
 
 	function self:addRectangle(name, x, y, r, width, height)
-		-- local id = TEXTURE_ASSETS[ffi.string(name.string, #name)].batch:add(x, y, r, width, height)
+		local string = ffi.string(name.string, #name)
+		assert(string, "string is broken")
+		local id = TEXTURE_ASSETS[string].batch:add(x, y, r, width, height, width / 2, height / 2)
 		-- self.drawables[id] = {x = x, y = y, r = r, width = width, height = height}
-		return 0--id
+		return id
 	end
 
 	function self:clear()
@@ -233,7 +236,7 @@ function graphics:load(isThread)
 
 		local sx = self.RenderToScreenRatio.x / self.RenderScale.x
 		local sy = self.RenderToScreenRatio.y / self.RenderScale.y
-		-- love.graphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
+		love.graphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
 	end
 
 	function self:updateInterpolate(value)
