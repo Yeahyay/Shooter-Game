@@ -12,8 +12,8 @@ end
 function TransformSystem:start(EntityManager)
 	EntityManager:forEachNotParallel2("rendersystem_start", function()
 		local function execute(Data, Entity, Renderer, Transform)
-			Transform.trueSizeX = Transform.scaleX / Transform.sizeX
-			Transform.trueSizeY = Transform.scaleY / Transform.sizeY
+			Transform.x = fmath.random2(-Feint.Core.Graphics.ScreenSize.x, Feint.Core.Graphics.ScreenSize.x)
+			Transform.y = fmath.random2(-Feint.Core.Graphics.ScreenSize.y, Feint.Core.Graphics.ScreenSize.y)
 		end
 		return execute
 	end)
@@ -35,18 +35,18 @@ function TransformSystem:update(EntityManager, dt)
 			-- local graphics = Feint.Core.Graphics
 			local time = Feint.Core.Time:getTime()
 			-- local speed = Feint.Core.Time:getSpeed()
-			local oscillate = Feint.Math.oscillateManualSigned
+			local oscillate = Feint.Math.oscillateManualSigned--triangle
 			local RenderSizeX = Feint.Core.Graphics.RenderSize.x / 2
 			local RenderSizeY = Feint.Core.Graphics.RenderSize.y / 2
 			local execute = function(Data, Entity, Renderer, Transform)
 				-- print(Data, Entity, Renderer, Transform)
-				Transform.angle = (time + Entity / 10) * pi -- + Entity * 6
 				local offsetX = oscillate(time, RenderSizeX, 2, Entity)
-				local offsetY = oscillate(time, RenderSizeY, 2, (Entity * Entity) % (2 * pi))
+				local offsetY = oscillate(time, RenderSizeY, 2, (Entity * Entity))
 				-- print(Entity)
 
-				Transform.x = offsetX
-				Transform.y = offsetY
+				-- Transform.x = offsetX
+				-- Transform.y = offsetY
+				Transform.angle = (time + Entity / 10) * pi -- + Entity * 6
 			end
 
 			return execute

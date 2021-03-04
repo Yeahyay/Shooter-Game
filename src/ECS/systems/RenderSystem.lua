@@ -29,13 +29,16 @@ function RenderSystem:start(EntityManager)
 			local graphics = Feint.Core.Graphics
 
 			local function execute(Data, Entity, Renderer, Transform)
+				Transform.trueSizeX = Transform.scaleX / Transform.sizeX
+				Transform.trueSizeY = Transform.scaleY / Transform.sizeY
 				local trueSizeX = Transform.trueSizeX
 				local trueSizeY = Transform.trueSizeY
 
 				Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
 				Renderer.id = graphics:addRectangle(
 					Renderer.texture,-- Renderer.textureLength,
-					Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY
+					Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,
+					Transform.sizeX / 2, Transform.sizeY / 2
 				)
 				-- Renderer.id = math.floor(Feint.Math.random2(1, 100))
 				-- print(Renderer.id)
