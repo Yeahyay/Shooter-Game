@@ -147,6 +147,11 @@ function EntityManager:preQueue2(id, callback)
 		queueCache[id] = {}
 		local currentQueue = queueCache[id]
 
+		currentQueue.id = id
+		currentQueue.startTime = 0
+		currentQueue.endTime = 0
+		currentQueue.runTime = 0
+
 		currentQueue.componentArguments = self:argumentsToComponents2(id, callback)
 
 		-- convert the array of strings into an archetypeString
@@ -181,7 +186,19 @@ function EntityManager:argumentsToComponents2(id, callback)
 	end
 	return componentArguments
 end
-
+function EntityManager:getQueueCacheDebug()
+	return queueCache
+end
+function EntityManager:getEntityCount()
+	local count = 0
+	for k, archetypeChunkTable in pairs(self.archetypeChunks) do
+		for index, archetypeChunk in pairs(archetypeChunkTable) do
+			-- print(index, archetypeChunk, archetypeChunk.numEntities)
+			count = count + archetypeChunk.numEntities
+		end
+	end
+	return count
+end
 
 --[[
 function EntityManager:preQueue(id, jobData, callback)
@@ -251,7 +268,11 @@ function EntityManager:forEachNotParallel2(id, callback)
 
 	-- Feint.Util.Debug.DEBUG_PRINT_TABLE(preQueueData)
 
+	preQueueData.startTime = love.timer.getTime()
 	preQueueData.execute(self, preQueueData.componentArguments, preQueueData.archetype, callback)
+	preQueueData.endTime = love.timer.getTime()
+	preQueueData.runTime = preQueueData.endTime - preQueueData.startTime
+
 
 	-- for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(archetypeString)) do
 	-- 	Feint.Core.Thread:queue(self, archetypeChunk, preQueueData.arguments, jobData, callback)

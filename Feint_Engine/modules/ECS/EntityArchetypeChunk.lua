@@ -23,7 +23,7 @@ function EntityChunk:init(archetype, ...)
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		-- self.ffiDataType =
 		-- self.data =
-		-- 	ffi.new("archetype_" .. self.archetype.archetypeString .. "[?]", self.capacityBytes / self.entitySizeBytes)
+		-- 	ffi.new("struct archetype_" .. self.archetype.archetypeString .. "[?]", self.capacityBytes / self.entitySizeBytes)
 		local tp = ffi.typeof("struct archetype_" .. self.archetype.archetypeString .. "[$]", self.capacity)
 		-- self.data = ffi.new(tp, self.archetype.initializer)
 		self.rawData = ffi.new(tp, self.archetype.initializer)
