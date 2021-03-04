@@ -111,6 +111,7 @@ function love.resize(x, y)
 	-- love.draw()
 	-- Graphics:draw()
 end
+
 function love.load()
 	Time.framerate = 60 -- framerate cap
 	Time.rate = 1 / 60 -- update dt
@@ -173,8 +174,8 @@ function love.update(dt)
 	if Time.tick % 1 == 0 then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 
-		local arc = Feint.ECS.World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
-		local chunk = Feint.ECS.World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
+		local arc = World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
+		local chunk = World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
 		-- Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
 		-- 	Components.Transform.x = Components.Transform.x + 10
 		-- end)
@@ -256,6 +257,11 @@ local function debugDraw()
 		350, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
+	LoveGraphics.printf(
+		string.format("FRAME BUDGET: %6.2f%% Frame\n", Time.G_UPDATE_TIME_PERCENT_FRAME + Time.G_RENDER_TIME_PERCENT_FRAME),
+		400, DEFAULT_FONT_HEIGHT / 2 * 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+
 
 	-- LoveGraphics.printf(
 	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", Time.G_TPS, 1000 * Time.G_TPS_DELTA),
@@ -290,6 +296,18 @@ local function debugDraw()
 		0, DEFAULT_FONT_HEIGHT / 2 * 13, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	--]]
+
+	LoveGraphics.printf(string.format("Entity Count: %d", World.DefaultWorld.EntityManager:getEntityCount()),
+		0, DEFAULT_FONT_HEIGHT / 2 * 15, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+	)
+	local queueCacheData = World.DefaultWorld.EntityManager:getQueueCacheDebug()
+	local i = 0
+	for k, v in pairs(queueCacheData) do
+		i = i + 1
+		LoveGraphics.printf(string.format("%-20.20s: %0.6f ms", k, v.runTime * 1000),
+			0, DEFAULT_FONT_HEIGHT / 2 * (16 + i - 1), Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
+		)
+	end
 end
 function love.draw(dt)
 	do
