@@ -13,6 +13,10 @@ function extendedMath:load()
 	self.G_INF = math.huge
 	self.G_SEED = 2--love.timer.getTime())
 
+	function self:getDigits(number)
+		return math.floor(math.log10(number) + 1)
+	end
+
 	local sin = math.sin
 	local cos = math.cos
 	function self.round(num, numDecimalPlaces)
@@ -34,17 +38,21 @@ function extendedMath:load()
 	end
 
 	local util = Feint.Core.Util
-	function self.oscillateManual(time, amplitude, rate, offset)
-		return (cos(time * rate + offset) * 0.5 + 0.5) * amplitude
+	function self.oscillateManual(theta, amplitude, rate, offset)
+		return (cos(theta * rate + offset) * 0.5 + 0.5) * amplitude
 	end
-	function self.oscillateManualSigned(time, amplitude, rate, offset)
-		return cos(time * rate + offset) * amplitude
+	function self.oscillateManualSigned(theta, amplitude, rate, offset)
+		return cos(theta * rate + offset) * amplitude
 	end
 	function self.oscillate(amplitude, rate, offset)
 		return self.oscillateManual(util.getTime(), amplitude, rate, offset)
 	end
 	function self.oscillateSigned(amplitude, rate, offset)
 		return self.oscillateManualSigned(util.getTime(), amplitude, rate, offset)
+	end
+
+	function self.triangle(theta, amplitude, rate, offset)
+		return ((math.asin(math.cos(theta * rate + offset)) / (math.pi * 0.5))) * amplitude
 	end
 
 	local random = love.math.random
