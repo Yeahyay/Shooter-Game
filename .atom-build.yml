@@ -27,16 +27,17 @@ targets:
     keymap:  ctrl-b
   "Lizard":
     # cwd:   "{PROJECT_PATH}"
-    cmd:     "lizard -l lua ./ -x\"*/lib/*\" -x\"*/DataStructures/*\""
+    cmd:     "lizard"
     name:    "Lizard"
     args:
-       # \".\\Feint_Engine\\*\""
-      # - "-l lua"
-      # # - "-t 4"
-      # - "./src"
-      # - "--exclude \"./src/*\""
-      # - "-x\"*/DataStructures/*\""
-      # - "\"{PROJECT_PATH}\\\""
+      - "-l lua"
+      - "./"
+      - "-x\"*/lib/*\""
+      - "-x\"*/DataStructures/*\""
+      - "-x\"*__*\""
+      - "-x\"Kaitai_Struct\""
+      - "-x\"*PepperFish*\""
+      - "-x\"./conf.lua\""
     sh:      true
     keymap:  ctrl-alt-shift-a
   "Lizard Duplicate":
