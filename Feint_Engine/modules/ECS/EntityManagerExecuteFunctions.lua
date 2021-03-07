@@ -65,6 +65,9 @@ function ExecuteFunctions:load(EntityManager)
 	end
 
 	if Feint.ECS.FFI_OPTIMIZATIONS then
+		function ExecuteFunctions:noarg()
+			error("no arguments given")
+		end
 		function ExecuteFunctions:execute(arguments, archetype, callback)
 			local archetypeChunks = self.archetypeChunks
 			local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
@@ -107,44 +110,6 @@ function ExecuteFunctions:load(EntityManager)
 				end
 			end
 		end
-		--[[
-		function ExecuteFunctions:executeEntity(jobData, arguments, archetype, callback)
-			local archetypeChunks = self.archetypeChunks
-			-- luacheck: push ignore
-			local a1, a2, a3, a4, a5, a6 = unpack(arguments)
-			local a1Name, a2Name = a1 and a1.Name or nil, a2 and a2.Name or nil
-			local a3Name, a4Name = a3 and a3.Name or nil, a4 and a4.Name or nil
-			-- luacheck: pop ignore
-
-			local data = {}
-			jobData(data)
-
-			for i = 1, self.archetypeChunksCount[archetype], 1 do
-				local archetypeChunk = archetypeChunks[archetype][i]
-				-- local idList = archetypeChunk.entityIndexToId
-				local entities = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
-
-				for j = archetypeChunk.numEntities - 1, 0, -1 do
-					callback(data, j, entities[j][a3Name], entities[j][a4Name])
-				end
-			end
-		end
-		--]]
-		-- function ExecuteFunctions:executeEntityAndData(arguments, archetype, callback)
-		-- 	local archetypeChunks = self.archetypeChunks
-		-- 	local a1, a2, a3, a4, a5, a6 = unpack(arguments) --luacheck: ignore
-		-- 	local a3Name, a4Name = a3.Name, a4.Name
-		--
-		-- 	for i = 1, self.archetypeChunksCount[archetype], 1 do
-		-- 		local archetypeChunk = archetypeChunks[archetype][i]
-		-- 		local idList = archetypeChunk.entityIndexToId
-		-- 		local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
-		--
-		-- 		for j = archetypeChunk.numEntities - 1, 0, -1 do
-		-- 			callback(data, idList[j + 1], data[j][a3Name], data[j][a4Name])
-		-- 		end
-		-- 	end
-		-- end
 	else
 		function ExecuteFunctions:execute(arguments, archetype, callback)
 			-- printf("Calling function on entities\n")
