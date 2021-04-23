@@ -12,7 +12,7 @@ function EntityArchetype:init(components, ...)
 	-- self.componentData_componentName = {}
 	-- self.componentData_fieldCount = {}
 	-- self.componentData_fieldName = {}
-	self.archetypeString = nil
+	self.signature = nil
 	self.chunkCount = 0
 	self.numInstances = 0
 	-- self.chunkCapacity = 32
@@ -22,6 +22,25 @@ function EntityArchetype:init(components, ...)
 
 	self:createArchetype()
 	return self
+end
+
+function EntityArchetype:getArchetypeSignatureFromComponents(components)
+	local stringTable = {}
+	assert(components, "no components", 3)
+	local unique = {}
+	for i = 1, #components do
+		local v = components[i]
+		if v.componentData then
+			stringTable[#stringTable + 1] = v.Name
+			assert(not unique[v.Name], "duplicate component \"" .. v.Name .. "\" for archetype", 2)
+			unique[v.Name] = true
+		end
+	end
+	table.sort(stringTable, function(a, b) return a < b end)
+	local rawArchetypeSignature = table.concat(stringTable)
+	stringTable[#stringTable + 1] = "_signature"
+	local archetypeSignature = table.concat(stringTable)
+	return archetypeSignature, rawArchetypeSignature
 end
 
 function EntityArchetype:createArchetype()

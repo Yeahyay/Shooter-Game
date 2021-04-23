@@ -72,7 +72,7 @@ end
 
 function EntityManager:createEntityFromArchetype(archetype)
 	-- print(archetype)
-	-- Feint.Log:logln("Creating entity from archetype ".. archetype.archetypeString)
+	-- Feint.Log:logln("Creating entity from archetype ".. archetype.signature)
 	local archetypeChunk = self:getNextArchetypeChunk(archetype)
 	assert(archetypeChunk)
 	local id

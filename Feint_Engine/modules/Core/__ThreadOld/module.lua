@@ -118,7 +118,7 @@ function threading:load(isThread)
 
 			entityByteData = archetypeChunk.byteData;
 			structDefinition = archetypeChunk.structDefinition;
-			archetypeString = archetypeChunk.archetype.archetypeString;
+			archetypeSignature = archetypeChunk.archetype.signature;
 			archetypeChunkIndex = archetypeChunk.index;
 			entityIndexToId = archetypeChunk.entityIndexToId;
 			size = archetypeChunk.numEntities;
@@ -201,7 +201,7 @@ function threading:load(isThread)
 			-- 	tick = Feint.Core.Time.tick,
 			--
 			-- 	entityByteData = job.entityByteData,
-			-- 	archetypeString = job.archetypeString,
+			-- 	archetypeSignature = job.signature,
 			-- 	archetypeChunkIndex = job.archetypeChunkIndex,
 			-- 	entityIndexToId = job.entityIndexToId,
 			-- 	sizeBytes = job.sizeBytes,

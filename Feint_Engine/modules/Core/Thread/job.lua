@@ -17,7 +17,7 @@ function job:newFor(id, archetypeChunk, rangeMin, rangeMax, arguments, jobData, 
 		entityIndexToId				= archetypeChunk.entityIndexToId;
 
 		archetypeStructDefinition	= archetypeChunk.structDefinition;
-		archetypeString				= archetypeChunk.archetype.archetypeString;
+		archetypeSignature				= archetypeChunk.archetype.signature;
 		archetypeChunkIndex			= archetypeChunk.index;
 		archetypeChunksize			= archetypeChunk.numEntities;
 		archetypeChunkCapacity		= archetypeChunk.capacity;
