@@ -1,0 +1,46 @@
+Entity Component System
+
+World
+- has an entity manager
+- stores systems
+- invokes all systems callbacks
+- keeps track of box2d world
+
+System
+- has callbacks for different game states
+- has access to the World's EntityManager
+- where game logic is stored
+
+EntityManager
+- stores ArchetypeChunkLists
+- manages entity creation and deletion
+- APIs for Systems to access archetype chunk data
+	- uses EntityQueries to find archetype chunks
+	- code generated loops for variable argument forEach call
+
+EntityQueryBuilder
+- creates EntityQueries based on a given archetype signature
+
+EntityQuery
+- queries for ArchetypeChunks pertaining to the given archetype signature
+- is created by the EntityQueryBuilder
+
+ArchetypeChunkManager
+- stores ArchetypeChunks
+- keeps track of size
+- manages ArchetypeChunk creation and deletion
+
+ArchetypeChunk
+- Archetype struct to array of Archetpe struct code generation; stored as a Love2D ffi pointer
+- fixed size of about 16Kib each
+
+Archetype
+- keeps track of Components
+- component signature
+- table of Components to struct of components ffi code generation
+- size is sum of all component sizes and other related information
+
+Component
+- component data
+- lua table to ffi struct code generation
+- size in bytes

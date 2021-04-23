@@ -262,7 +262,7 @@ function moduleLoader:loadModule(index, fullName, ...)
 	end
 
 	Feint.LoadedModules[fullName] = module.Module
-	-- io.write(string.format("* Loaded  module %s\n", fullName))
+	io.write(string.format("* Loaded  module %s\n", fullName))
 	-- print()
 
 end

@@ -3,9 +3,11 @@ local EntityManager = {}
 local Paths = Feint.Core.Paths
 
 local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
-local EntityManagerArchetypeMethods = require(Paths.ECS .. "EntityManagerArchetypeMethods")
+local EntityArchetype = Feint.ECS.EntityArchetype
+-- local ArchetypeMethods = require(Paths.ECS .. "EntityManagerArchetypeMethods")
 local ExecuteFunctions = require(Paths.ECS .. "EntityManagerExecuteFunctions")
 local EntityQueryBuilderAPI = require(Paths.ECS .. "EntityManagerQueryBuilder")
+local ArchetypeChunkManager = Feint.ECS.EntityArchetypeChunkManager
 
 function EntityManager:new(...)
 	local object = {}
@@ -19,8 +21,8 @@ setmetatable(EntityManager, {
 	__index = function(t, k)
 		if rawget(t, k) then
 			return rawget(t, k)
-		elseif EntityManagerArchetypeMethods[k] then
-			return EntityManagerArchetypeMethods[k]
+		-- elseif ArchetypeMethods[k] then
+		-- 	return ArchetypeMethods[k]
 		elseif EntityQueryBuilderAPI[k] then
 			return EntityQueryBuilderAPI[k]
 		end
@@ -34,13 +36,14 @@ function EntityManager:init(world --[[name]])
 	self.entityID = {} -- {[idIndex] = id}
 	self.entityIDState = {} -- {[idIndex] = state}
 
-	self.archetypes = {} -- all entity archetypes
-	self.archetypeCount = 0
-	self.archetypeChunks = {} -- a hash table of a list of archetype chunks
-	self.archetypeChunksCount = {}
-	self.archetypeChunksOpenStacks = setmetatable({}, {__mode = "k, v"}) -- queue of open archetype chunks
+	-- self.archetypes = setmetatable({}, {__index = {size = 0}}) -- all entity archetypes
+	-- self.archetypeCount = 0
+	-- self.archetypeChunks = {} -- a hash table of a list of archetype chunks
+	self.archetypeChunkManager = ArchetypeChunkManager:new()
+	-- self.archetypeChunksCount = {}
+	-- self.archetypeChunksOpenStacks = setmetatable({}, {__mode = "k, v"}) -- queue of open archetype chunks
 
-	EntityManagerArchetypeMethods:load(self)
+	-- ArchetypeMethods:load(self)
 	ExecuteFunctions:load(self)
 	EntityQueryBuilderAPI:load(self)
 
@@ -67,9 +70,58 @@ function EntityManager:getNewEntityId()
 
 	self.entitiesCount = self.entitiesCount + 1
 	-- self.entities
-	return math.floor(love.math.random() * 100000000) --self.entitiesCount --newID
+
+	local id
+	repeat
+		id = math.floor(love.math.random() * 100000000)
+	until not self.entities[id]
+	return id --self.entitiesCount --newID
 end
 
+function EntityManager:createEntity(archetypeChunk)
+	assert(archetypeChunk)
+	-- print(archetypeChunk.numEntities)
+	-- local id
+	-- repeat
+	-- 	id = self:getNewEntityId()
+	-- until not archetypeChunk.entityIdToIndex[id]
+	-- assert(id)
+	local id = self:getNewEntityId()
+	-- assosciate the entity id with its respective chunk
+	self.entities[id] = {archetypeChunk, archetypeChunk.entityIdToIndex[id]}
+	archetypeChunk:newEntity(id)
+return id
+
+end
+function EntityManager:createEntityFromArchetype(archetype)
+	assert(archetype, "no archetype given", 2)
+	assert(archetype.name == "EntityArchetype", "not given an EntityArchetype")
+
+	-- Feint.Log:logln("Creating entity from archetype " .. archetype.signature)
+	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
+	-- print(archetypeChunkGroup.archetype)
+	local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
+	return self:createEntity(archetypeChunk)
+end
+function EntityManager:createEntityFromArchetypeSignature(signature)
+
+end
+function EntityManager:createEntityFromComponents(components)
+	assert(components, "argument components is nil", 2)
+	assert(type(components) == "table", "components need to be in a table", 2)
+	assert(#components > 0, "no components given", 2)
+
+	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
+	local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
+	return self:createEntity(archetypeChunk)
+end
+
+-- WRAPPERS
+function EntityManager:newArchetypeFromComponents(components)
+	return self.archetypeChunkManager:newArchetypeFromComponents(components)
+end
+
+--[[
 function EntityManager:createEntityFromArchetype(archetype)
 	-- print(archetype)
 	-- Feint.Log:logln("Creating entity from archetype ".. archetype.signature)
@@ -181,47 +233,52 @@ function EntityManager:argumentsToComponents2(id, callback)
 			local component = self.World.components[argument]
 			if component.componentData then
 				assert(component, string.format("arg %d (%s) is not a component", i, argument), 2)
-				componentArguments[i] = component
+				componentArguments[j] = component
+				all[i] = component
+
+				assert(not uniqueComponents[component], "given duplicate component " .. component.Name, 2)
+				uniqueComponents[component] = true
 			end
+			j = j + 1
 		else
-			componentArguments[i] = argument
+			extraArgs[k] = argument
+			all[i] = argument
+			k = k + 1
 		end
 	end
-	return componentArguments
+	return {componentArguments = componentArguments, extraArguments = extraArgs, all = all}
 end
 function EntityManager:getQueueCacheDebug()
 	return queueCache
 end
-function EntityManager:getEntityCount()
-	local count = 0
-	for k, archetypeChunkTable in pairs(self.archetypeChunks) do
-		for index, archetypeChunk in pairs(archetypeChunkTable) do
-			-- print(index, archetypeChunk, archetypeChunk.numEntities)
-			count = count + archetypeChunk.numEntities
-		end
-	end
-	return count
-end
 
-function EntityManager:forEachNotParallel2(id, callback)
-	local preQueueData = self:preQueue2(id, callback)
+function EntityManager:forEachNotParallel(id, callback)
+	assert(id, "No id given", 2)
+	assert(callback, "No callback given", 2)
+	assert(type(callback) == "function", "callback is not a function")
+
+	local func = callback()
+	local preQueueData = self:preQueue(id, func)
 
 	local query = self:buildQueryFromComponents(preQueueData.componentArguments)
-	query:getArchetypeChunks(self.archetypeChunks)
+	local archetypeChunks = query:getArchetypeChunks(self)
+
+	-- print(id, #archetypeChunks)
 
 	-- Feint.Util.Debug.DEBUG_PRINT_TABLE(preQueueData)
 
 	preQueueData.startTime = love.timer.getTime()
-	preQueueData.execute(self, preQueueData.componentArguments, preQueueData.archetype, callback)
+	local status, message = pcall(function()
+		local status = preQueueData.execute(self, preQueueData.source, preQueueData.componentArguments, preQueueData.archetype, archetypeChunks, func)
+		assert(status == 0)
+	end)
+	if not status then
+		error(message)
+		Feint.Core.Time:pause()
+	end
 	preQueueData.endTime = love.timer.getTime()
 	preQueueData.runTime = preQueueData.endTime - preQueueData.startTime
-
-
-	-- for _, archetypeChunk in pairs(self:getArchetypeChunkTableFromString(archetypeString)) do
-	-- 	Feint.Core.Thread:queue(self, archetypeChunk, preQueueData.arguments, jobData, callback)
-	-- end
-	-- Feint.Core.Thread:queue(self.archetypeChunks[archetypeString], self.archetypes[archetypeString], callback)
-
+	-- print('komkl')
 end
 -- Feint.Util.Memoize(EntityManager.forEach)
 

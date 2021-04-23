@@ -13,6 +13,7 @@ function ECS:load()
 
 	self.EntityArchetype = require(Paths.ECS .. "EntityArchetype")
 	self.EntityArchetypeChunk = require(Paths.ECS .. "EntityArchetypeChunk")
+	self.EntityArchetypeChunkManager = require(Paths.ECS .. "EntityArchetypeChunkManager")
 
 	self.EntityQuery = require(Paths.ECS .. "EntityQuery")
 	self.EntityQueryBuilder = require(Paths.ECS .. "EntityQueryBuilder")
@@ -58,8 +59,7 @@ function ECS:load()
 			end
 		end
 
-		local Log = Feint.Log
-		Log.log("\n%s update order:\n", self.World.DefaultWorld.Name)
+		printf("\n%s update order:\n", self.World.DefaultWorld.Name)
 		self.World.DefaultWorld:generateUpdateOrderList()
 		for k, v in ipairs(self.World.DefaultWorld.updateOrder) do
 			printf("%d: %s\n", k, self.World.DefaultWorld.systems[k].Name)
