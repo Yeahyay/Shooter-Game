@@ -13,3 +13,4 @@ exclude_files = {
 -- file["Feint_Engine/"]
 
 ignore = {"422", "423", "431", "432"}
+max_line_length = false
