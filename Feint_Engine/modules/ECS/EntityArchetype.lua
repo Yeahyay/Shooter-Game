@@ -33,49 +33,49 @@ function EntityArchetype:createArchetype()
 		self.totalSizeBytes = self.totalSizeBytes + self.components[i].sizeBytes
 	end
 	table.sort(components, function(a, b) return a < b end)
-	self.archetypeString = table.concat(components)
-	self.Name = self.archetypeString -- redundant?
-	-- Feint.Log:logln(self.archetypeString)
+	components[#components + 1] = "_signature"
+	self.signature = table.concat(components)
+	self.Name = self.signature -- redundant?
+	-- Feint.Log:logln(self.signature)
 
-	if Feint.ECS.FFI_OPTIMIZATIONS then
-		local structMembers = {}
-		for k, v in pairs(self.components) do
-			structMembers[k] = "struct component_" .. v.Name .. " " .. v.Name
-		end
-		local s = string.format([[
-			struct archetype_%s {
-				%s
-			}
-		]], self.archetypeString, table.concat(structMembers, ";\n") .. ";")
-		-- print(s)
-		ffi.cdef(s)
-
-		local ct = ffi.typeof("struct archetype_" .. self.archetypeString)
-		local final = ffi.metatype(ct, {
-			__pairs = function(t)
-				local function iter(t, k)
-					k = k + 1
-					if k <= #structMembers then
-						local name = self.components[k].Name
-						return k, name, t[name]
-					end
-				end
-				return iter, t, 0
-			end
-		})
-		self.ffiType = final
-
-		self.initValues = {}
-		for i = 1, #self.components, 1 do
-			local name = self.components[i].Name
-			self.initValues[name] = self.components[i].data --{}
-			-- for k, v in ipairs(self.components[i].values) do
-			-- 	local field = self.components[i].keys[k]
-			-- 	self.initValues[name][field] = v
-			-- end
-		end
-		self.initializer = ffi.new("struct archetype_" .. self.archetypeString, self.initValues)
+	local structMembers = {}
+	for k, v in pairs(self.components) do
+		structMembers[k] = "struct component_" .. v.Name .. " " .. v.Name
 	end
+	local s = string.format([[
+		struct archetype_%s {
+			%s
+		}
+	]], self.signature, table.concat(structMembers, ";\n") .. ";")
+	-- print(s)
+	ffi.cdef(s)
+
+	local ct = ffi.typeof("struct archetype_" .. self.signature)
+	local final = ffi.metatype(ct, {
+		__pairs = function(t)
+			local function iter(t, k)
+				k = k + 1
+				if k <= #structMembers then
+					local name = self.components[k].Name
+					return k, name, t[name]
+				end
+			end
+			return iter, t, 0
+		end
+	})
+	self.ffiType = final
+
+	self.initValues = {}
+	for i = 1, #self.components, 1 do
+		local name = self.components[i].Name
+		self.initValues[name] = self.components[i].data --{}
+		-- for k, v in ipairs(self.components[i].values) do
+		-- 	local field = self.components[i].keys[k]
+		-- 	self.initValues[name][field] = v
+		-- end
+	end
+	self.initializer = ffi.new("struct archetype_" .. self.signature, self.initValues)
+
 
 	return self
 end

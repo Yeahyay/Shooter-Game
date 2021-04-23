@@ -6,7 +6,7 @@ local EntityChunk = ECSutils.newClass("EntityChunk")
 function EntityChunk:init(archetype, ...)
 	assert(Feint.Core.Util:type(archetype) == "table", "EntityArchetypeChunk needs an archetype", 1)
 	self.archetype = archetype
-	self.Name = archetype.Name.."_ArchetypeChunk"
+	-- self.Name = archetype.Name .. "_ArchetypeChunk"
 	self.isFull_cached = false
 
 	self.entitySize = self.archetype.totalSize
@@ -19,22 +19,22 @@ function EntityChunk:init(archetype, ...)
 	self.entityIdToIndex = {}
 	self.entityIndexToId = {}
 
-	self.structDefinition = "struct archetype_" .. self.archetype.archetypeString .. "*"
-	if Feint.ECS.FFI_OPTIMIZATIONS then
-		-- self.ffiDataType =
-		-- self.data =
-		-- 	ffi.new("struct archetype_" .. self.archetype.archetypeString .. "[?]", self.capacityBytes / self.entitySizeBytes)
-		local tp = ffi.typeof("struct archetype_" .. self.archetype.archetypeString .. "[$]", self.capacity)
-		-- self.data = ffi.new(tp, self.archetype.initializer)
-		self.rawData = ffi.new(tp, self.archetype.initializer)
-		self.byteData = love.data.newByteData(self.capacity * self.entitySizeBytes)
-		local data = self.byteData:getFFIPointer()
-		ffi.copy(data, self.rawData, self.capacity * self.entitySizeBytes)
-		self.data = data--ffi.cast(self.structDefinition, data)
-	else
-		self.data = Feint.Util.Table.preallocate(self.capacity * self.archetype.totalSize, 0)
-		self.dataStatus = Feint.Util.Table.preallocate(self.capacity)
-	end
+	self.Name = "ArchetypeChunk: " .. tostring(self)
+	getmetatable(self).__tostring = function() return self.Name end
+
+	self.structDefinition = "struct archetype_" .. self.archetype.signature .. "*"
+
+	-- self.ffiDataType =
+	-- self.data =
+	-- 	ffi.new("struct archetype_" .. self.archetype.signature .. "[?]", self.capacityBytes / self.entitySizeBytes)
+	local tp = ffi.typeof("struct archetype_" .. self.archetype.signature .. "[$]", self.capacity)
+	-- self.data = ffi.new(tp, self.archetype.initializer)
+	self.rawData = ffi.new(tp, self.archetype.initializer)
+	self.byteData = love.data.newByteData(self.capacity * self.entitySizeBytes)
+	local data = self.byteData:getFFIPointer()
+	ffi.copy(data, self.rawData, self.capacity * self.entitySizeBytes)
+	self.data = data--ffi.cast(self.structDefinition, data)
+
 	self:preallocate(self.capacity)
 
 	-- self.dataStatus = {}
@@ -44,19 +44,6 @@ function EntityChunk:init(archetype, ...)
 
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
 	self.index = self.archetype.chunkCount
-
-	-- local s = 40
-	-- for k, v in pairs(self) do
-	-- 	if type(k) == "string" then
-	-- 		s = s + 40
-	-- 	elseif type(k) == "number" then
-	-- 		s = s + 16
-	-- 	end
-	-- end
-	-- self.capacityBytes = self.capacityBytes - s
-	-- self.capacityBytes = math.floor(self.capacityBytes / 64) * 64
-	-- self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
-	-- print(self.capacity, self.capacityBytes, self.capacity * self.entitySizeBytes)
 end
 function EntityChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1
