@@ -68,7 +68,7 @@ function graphics:load(isThread)
 			resizable = true,
 			borderless = false,
 			centered = true,
-			display = 1,
+			-- display = 1,
 			minwidth = 1,
 			minheight = 1,
 			highdpi = false,

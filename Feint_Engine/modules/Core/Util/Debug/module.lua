@@ -1,8 +1,11 @@
 local debug = {
-	logLevel = 0
+	logLevel = 0;
+	depends = {"Core.Paths"}
 }
 
 function debug:load()
+	Feint.Core.Paths:Add("Core", Feint.Core.Paths.Modules .. "Core")
+
 	debug.PRINT_ENV_Level = 3
 	function debug.PRINT_ENV(env, verbose, restrict)
 		if true then
@@ -60,6 +63,14 @@ function debug:load()
 			end
 			printf("---\n")
 		end
+	end
+
+	local debugLevel = 0
+	function self:setDebugLevel(level)
+		debugLevel = 0
+	end
+	function self:getDebugLevel()
+		return debugLevel
 	end
 end
 

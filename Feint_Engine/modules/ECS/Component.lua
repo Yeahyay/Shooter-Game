@@ -59,7 +59,7 @@ function Component:init(data, ...)
 				return iter, t, 0
 			end,
 		})
-		print(self.ffiType)
+		-- print(self.ffiType)
 
 		-- print(self.sizeBytes)
 	else

@@ -9,7 +9,7 @@ function core:load()
 
 	require("love.event")
 
-	Feint.Core.Paths:Add("Core", Feint.Core.Paths.Modules .. "Core")
+	Feint.Core.Paths:Add("Core.Util", Feint.Core.Paths.Modules .. "Core.Util")
 
 	do
 		local printOld = print

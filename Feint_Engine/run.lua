@@ -10,7 +10,9 @@ local Time = Feint.Core.Time
 local Log = Feint.Log
 local Core = Feint.Core
 local Input = Feint.Core.Input
-Util.Debug.logLevel = 2
+local Debug = Feint.Core.Util.Debug
+-- Util.Debug.logLevel = 2
+Debug:setDebugLevel(10)
 
 -- It sets up a default world and passes love callbacks to the ECS
 local World = Feint.ECS.World
@@ -377,7 +379,7 @@ end
 function love.quit()
 end
 
-Util.Debug.PRINT_ENV(_G, false)
+Debug.PRINT_ENV(_G, false)
 
 printf("\n")
 Log.log("Exiting run.lua\n")

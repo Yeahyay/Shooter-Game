@@ -6,7 +6,7 @@ Feint:init(false)
 printf("\n")
 Feint.Log.log("Initializing Feint Engine\n\n")
 
-Feint.Util.Debug.PRINT_ENV(_ENV, false)
+Feint.Core.Util.Debug.PRINT_ENV(_ENV, false)
 
 printf("\n")
 Feint.Log.log("Initialized\n")
