@@ -4,25 +4,41 @@ local ECSUtils = Feint.ECS.Util
 local EntityQuery = Feint.ECS.EntityQuery
 local EntityQueryBuilder = ECSUtils.newClass("EntityQueryBuilder")
 function EntityQueryBuilder:init()
-	self.queryComponents_With = setmetatable({},{__mode = 'v'})
 	self.queryComponents_With_Count = 0
-	self.queryComponents_WithAll = setmetatable({},{__mode = 'v'})
+	self.queryComponents_With = setmetatable({},{
+		__tostring = function()
+			return "EntityQuery_With"
+		end;
+		__mode = 'v';
+	})
 	self.queryComponents_WithAll_Count = 0
-	self.queryComponents_Without = setmetatable({},{__mode = 'v'})
+	self.queryComponents_WithAll = setmetatable({},{
+		__tostring = function()
+			return "EntityQuery_WithAll"
+		end;
+		__mode = 'v';
+	})
 	self.queryComponents_Without_Count = 0
+	self.queryComponents_Without = setmetatable({},{
+		__tostring = function()
+			return "EntityQuery_Without"
+		end;
+		__mode = 'v';
+	})
 end
 function EntityQueryBuilder:withAll(components)
 	local componentCount = #components
-	local componentWithAllCount = self.queryComponents_WithAll_Count
+	local count = 0
 	for i = 1, componentCount do
 		local v = components[i]
 		if v.componentData then
-			componentWithAllCount = componentWithAllCount + 1
-			self.queryComponents_WithAll[componentWithAllCount] = v
+			count = count + 1
+			self.queryComponents_WithAll[count] = v
 		end
 	end
-	self.queryComponents_WithAll_Count = componentWithAllCount--self.queryComponents_WithAll_Count + 1
-	-- print(#self.queryComponents_WithAll, componentWithAllCount)
+	-- print(#self.queryComponents_WithAll, count)
+	self.queryComponents_WithAll_Count = count--self.queryComponents_WithAll_Count + 1
+	-- print(self.queryComponents_WithAll_Count)
 	return self
 end
 function EntityQueryBuilder:with(components)
@@ -85,9 +101,9 @@ function EntityQueryBuilder:build()
 	-- create query
 	-- printf("Building entity query\n")
 	local query = EntityQuery:new(
-		self.queryComponents_With, self.queryComponents_WithCount,
-		self.queryComponents_WithAll, self.queryComponents_WithAllCount,
-		self.queryComponents_Without, self.queryComponents_WithoutCount
+		self.queryComponents_With, self.queryComponents_With_Count,
+		self.queryComponents_WithAll, self.queryComponents_WithAll_Count,
+		self.queryComponents_Without, self.queryComponents_Without_Count
 	)
 	-- setup for next query
 	self.queryComponents_With_Count = 0
@@ -111,5 +127,6 @@ end
 -- EntityQueryBuilder.withAll = Feint.Util.Memoize(EntityQueryBuilder.withAll)
 -- EntityQueryBuilder.without = Feint.Util.Memoize(EntityQueryBuilder.without)
 -- EntityQueryBuilder.build = Feint.Util.Memoize(EntityQueryBuilder.build) -- DON'T DO THIS
+
 
 return EntityQueryBuilder

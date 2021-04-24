@@ -14,6 +14,7 @@ end
 
 -- jit.off()
 -- jit.on()
+-- assert = function(...) end
 
 print(luaInfo())
 print(love.getVersion())

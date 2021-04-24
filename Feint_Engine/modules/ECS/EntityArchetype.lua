@@ -1,8 +1,22 @@
 local ffi = require("ffi")
 
-local ECSutils = Feint.ECS.Util
+-- local ECSutils = Feint.ECS.Util
 
-local EntityArchetype = ECSutils.newClass("EntityArchetype")
+local EntityArchetype = {}--ECSutils.newClass("EntityArchetype")
+function EntityArchetype:new(...)
+	local newArchetype = {name = "EntityArchetype"}
+	setmetatable(newArchetype, {
+		__index = self;
+		__tostring = function()
+			return string.format("EntityArchetype \"%s\"", newArchetype.Name)
+		end
+	})
+	newArchetype:init(...)
+	return newArchetype
+end
+-- setmetatable(EntityArchetype, {
+-- 	__index = EntityArchetype
+-- })
 
 function EntityArchetype:init(components, ...)
 	assert(type(components) ~= "string", nil, 1)

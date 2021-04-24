@@ -162,66 +162,120 @@ function EntityManager:setComponentData(entity, component, data)
 	end
 end
 
--- QUERY BUILDER API
--- Feint.Util.Memoize(EntityManager.getEntitiesFromQuery)
+--]]
+
+function EntityManager:getEntityCount()
+	local count = 0
+	-- print(self.archetypeChunkManager.archetypeChunkGroups, "in90jionj9-0ikoio", "\n\n\n\n")
+	for k, archetypeChunkGroup in pairs(self.archetypeChunkManager.archetypeChunkGroups) do
+		if k == "size" then goto continue end
+		for index, archetypeChunk in pairs(archetypeChunkGroup:getArchetypeChunks()) do
+			-- print(index, archetypeChunk, archetypeChunk.numEntities)
+			count = count + archetypeChunk.numEntities
+		end
+		::continue::
+	end
+	return count
+end
 
 local argumentCache = {}
-local function cacheArguments(id, callback)
+function EntityManager:cacheArguments(id, callback)
 	assert(id, "missing id")
 	-- get the function arguments and store them as an array of strings
 	if not argumentCache[id] then
 		assert(callback, "missing callback")
 		argumentCache[id] = {}
 
-		local func = callback() -- get the execute function from the callback
-		local funcInfo = debug.getinfo(func)
+		local funcInfo = debug.getinfo(callback)
 
-		if funcInfo.nparams > 0 then
+		-- print(self.World.components[debug.getlocal(callback, 2)], debug.getlocal(callback, 2), "knomknjopk")
+		if funcInfo.nparams == 1 or (self.World.components[debug.getlocal(callback, 2)] and funcInfo.nparams >= 2) then
 			for j = 1, funcInfo.nparams, 1 do
-				local argument = debug.getlocal(func, j)
+				local argument = debug.getlocal(callback, j)
 				argumentCache[id][j] = argument
 			end
 		else
 			argumentCache[id][1] = "NOARG"
 		end
+
+		argumentCache[id].info = funcInfo
+		-- for k, v in pairs(getfenv(4)) do
+		-- 	print(k, v)
+		-- end
+		-- local _, systems = debug.getlocal(5, 3)
+		-- local _, index = debug.getlocal(5, 5)
+		local _, source = debug.getlocal(4, 1)
+		argumentCache[id].Source = source.Name
+		-- print(systems[index])
+		-- print(debug.getlocal(4, 1))
+		-- print("saidmk", debug.getlocal(5, 3), debug.getlocal(5, 5))
+		-- for k, v in pairs(debug.getinfo(5, "n")) do
+		-- 	print(k, v)
+		-- end
 	end
 end
 
 local queueCache = {}
-function EntityManager:preQueue2(id, callback)
+function EntityManager:preQueue(id, func)
+	assert(id, "No id given", 2)
+	assert(func, "No callback given", 2)
+	assert(type(func) == "function", "callback is not a function")
+
 	if not queueCache[id] then
-		cacheArguments(id, callback)
+		-- local func = callback() -- get the execute function from the callback
+		self:cacheArguments(id, func)
 
 		queueCache[id] = {}
 		local currentQueue = queueCache[id]
+
+		currentQueue.source = argumentCache[id].Source
 
 		currentQueue.id = id
 		currentQueue.startTime = 0
 		currentQueue.endTime = 0
 		currentQueue.runTime = 0
 
-		currentQueue.componentArguments = self:argumentsToComponents2(id, callback)
+		local arguments = self:argumentsToComponents(id, func)
+		currentQueue.componentArguments = arguments.componentArguments
+		currentQueue.extraArguments = arguments.extraArguments
+		currentQueue.arguments = arguments.all
 
-		-- convert the array of strings into an archetypeString
-		currentQueue.archetypeString = self:getArchetypeStringFromComponents(currentQueue.componentArguments)
-		currentQueue.archetype = self.archetypes[currentQueue.archetypeString]
+		-- convert the array of strings into an archetypeSignature
+		currentQueue.signature = EntityArchetype:getArchetypeSignatureFromComponents(currentQueue.componentArguments)
+		assert(currentQueue.signature, "pre queue failed to get archetype string")
+		currentQueue.archetype = self.archetypeChunkManager:getArchetypeFromComponents(currentQueue.componentArguments)--self.archetypes[currentQueue.signature]
+		assert(currentQueue.archetype, "pre queue failed to get archetype \"" .. tostring(currentQueue.archetype) .. "\"")
 
-		-- print(argumentCache[id][1], "kokpmkl")
-		if currentQueue.componentArguments[1] == "Data" and currentQueue.componentArguments[2] == "Entity" then
-			currentQueue.execute = ExecuteFunctions.executeEntity2
-		elseif argumentCache[id][1] == "NOARG" then
+		-- if currentQueue.componentArguments[1] == "Data" and currentQueue.componentArguments[2] == "Entity" then
+		-- 	currentQueue.execute = ExecuteFunctions.executeEntity2
+		-- else
+		if argumentCache[id][1] == "NOARG" then
 			currentQueue.execute = ExecuteFunctions.noarg
 		else
-			currentQueue.execute = ExecuteFunctions["execute" .. #currentQueue.componentArguments]
+			-- currentQueue.execute = ExecuteFunctions["execute" .. #currentQueue.componentArguments]
+			currentQueue.execute = ExecuteFunctions:getExecuteFunction(#currentQueue.componentArguments)
+			-- for k, v in pairs(ExecuteFunctions) do
+			-- 	print(k, v)
+			-- end
 		end
 	end
 	return queueCache[id]
 end
-function EntityManager:argumentsToComponents2(id, callback)
+function EntityManager:argumentsToComponents(id, callback)
+	assert(id, "No id given", 2)
+	assert(callback, "No callback given", 2)
+	assert(type(callback) == "function", "callback is not a function")
+
 	local componentArguments = {}
+	local extraArgs = {}
+	local all = {}
+
+	local uniqueComponents ={}
 
 	-- uses the cached function arguments to find their respective components
 	local cachedArguments = argumentCache[id]
+	local j = 1
+	local k = 1
 	for i = 1, #cachedArguments, 1 do
 		local argument = cachedArguments[i]
 		if argument == "NOARG" then

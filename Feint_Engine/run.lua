@@ -176,8 +176,8 @@ function love.update(dt)
 	if Time.tick % 1 == 0 then
 		World.DefaultWorld:update(dt) -- luacheck: ignore
 
-		local arc = World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
-		local chunk = World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
+		-- local arc = World.DefaultWorld.EntityManager.archetypes["RendererTransform"]
+		-- local chunk = World.DefaultWorld.EntityManager.archetypeChunks[arc][1]
 		-- Feint.Core.Thread:queue(arc, chunk, function(Entity, Components)
 		-- 	Components.Transform.x = Components.Transform.x + 10
 		-- end)
