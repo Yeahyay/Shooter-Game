@@ -41,6 +41,7 @@ function World:start()
 	for i = 1, #list do
 		systems[list[i]]:start(EntityManager)
 	end
+	EntityManager:update()
 end
 
 function World:update(dt)
@@ -50,6 +51,7 @@ function World:update(dt)
 	for i = 1, #list do
 		systems[list[i]]:update(EntityManager, dt)
 	end
+	EntityManager:update()
 end
 
 function World:registerSystem(system)

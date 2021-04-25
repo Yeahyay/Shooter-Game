@@ -21,26 +21,26 @@ function RenderSystem:start(EntityManager)
 	-- 	-- print(#r, r[#r])
 	-- end
 
-	-- EntityManager:forEachNotParallel("rendersystem_start", function()
-	-- 	local graphics = Feint.Core.Graphics
-	--
-	-- 	local function execute(Entity, Renderer, Transform)
-	-- 		Transform.trueSizeX = Transform.scaleX / Transform.sizeX
-	-- 		Transform.trueSizeY = Transform.scaleY / Transform.sizeY
-	-- 		local trueSizeX = Transform.trueSizeX
-	-- 		local trueSizeY = Transform.trueSizeY
-	--
-	-- 		Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
-	-- 		Renderer.id = graphics:addRectangle(
-	-- 			Renderer.texture,-- Renderer.textureLength,
-	-- 			Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,
-	-- 			Transform.sizeX / 2, Transform.sizeY / 2
-	-- 		)
-	-- 		-- Renderer.id = math.floor(Feint.Math.random2(1, 100))
-	-- 		-- print(Renderer.id)
-	-- 	end
-	-- 	return execute
-	-- end)
+	EntityManager:forEachNotParallel("rendersystem_start", function()
+		local graphics = Feint.Core.Graphics
+
+		local function execute(Entity, Renderer, Transform)
+			Transform.trueSizeX = Transform.scaleX / Transform.sizeX
+			Transform.trueSizeY = Transform.scaleY / Transform.sizeY
+			local trueSizeX = Transform.trueSizeX
+			local trueSizeY = Transform.trueSizeY
+
+			Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
+			Renderer.id = graphics:addRectangle(
+				Renderer.texture,-- Renderer.textureLength,
+				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,
+				Transform.sizeX / 2, Transform.sizeY / 2
+			)
+			-- Renderer.id = math.floor(Feint.Math.random2(1, 100))
+			-- print(Renderer.id)
+		end
+		return execute
+	end)
 end
 
 -- local input = Feint.Core.Input
@@ -57,30 +57,31 @@ function RenderSystem:update(EntityManager, dt)
 	-- 	rect(px, py, angle, 1, 1)
 	-- end
 
-	-- EntityManager:forEachNotParallel("RenderSystem_update", function()
-	-- 	-- local sin = math.sin
-	-- 	-- local cos = math.cos
-	-- 	-- local pi = math.pi
-	-- 	local graphics = Feint.Core.Graphics
-	-- 	-- local time = Feint.Core.Time:getTime()
-	-- 	-- local oscillate = Feint.Math.oscillateManualSigned
-	-- 	-- print("noiokoij")
-	--
-	-- 	local function execute(Entity, Renderer, Transform)
-	-- 		-- print(Entity, "innkkopk")
-	-- 		-- print(Transform, "RENDERER")
-	-- 		graphics:modify(
-	-- 			Renderer.texture,
-	-- 			Renderer.id,
-	-- 			Transform.x,
-	-- 			Transform.y,
-	-- 			Transform.angle,
-	-- 			Transform.trueSizeX,
-	-- 			Transform.trueSizeY
-	-- 		)
-	-- 	end
-	-- 	return execute
-	-- end)
+	EntityManager:forEachNotParallel("RenderSystem_update", function()
+		-- local sin = math.sin
+		-- local cos = math.cos
+		-- local pi = math.pi
+		local graphics = Feint.Core.Graphics
+		-- local time = Feint.Core.Time:getTime()
+		-- local oscillate = Feint.Math.oscillateManualSigned
+		-- print("noiokoij")
+
+		local function execute(Entity, Renderer, Transform)
+			-- print(Entity, "innkkopk")
+			-- print(Entity, Renderer, "RENDERER")
+			print(Transform.x, Transform.y, Transform)
+			graphics:modify(
+				Renderer.texture,
+				Renderer.id,
+				Transform.x,
+				Transform.y,
+				Transform.angle,
+				Transform.trueSizeX,
+				Transform.trueSizeY
+			)
+		end
+		return execute
+	end)
 end
 
 return RenderSystem

@@ -29,13 +29,14 @@ function TransformSystem:update(EntityManager, dt)
 			local RenderSizeX = Feint.Core.Graphics.RenderSize.x / 2
 			local RenderSizeY = Feint.Core.Graphics.RenderSize.y / 2
 			local execute = function(Entity, Transform)
-				-- print(Data, Entity, Renderer, Transform)
+				-- print(Entity, Transform.x, Transform.y)
 				local offsetX = oscillate(time, RenderSizeX, 2, Entity)
 				local offsetY = oscillate(time, RenderSizeY, 2, (Entity * Entity))
 				-- print(Entity)
 
-				-- Transform.x = offsetX
-				-- Transform.y = offsetY
+				Transform.x = offsetX
+				Transform.y = offsetY
+				print(Transform.x, Transform.y, Transform)
 				Transform.angle = (time + Entity / 10) * pi -- + Entity * 6
 			end
 

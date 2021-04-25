@@ -56,29 +56,12 @@ function ExecuteFunctions:load(EntityManager)
 			local loopString = table.concat(loop) .. "\n"
 			-- print(argsString, "jnijoinopo[jipnj]")
 			local code = [[
-				-- local archetypeChunkManager, arguments, archetype, callback = ...
 				local ffi = require("ffi")
 				return function(entityManager, source, arguments, archetype, archetypeChunks, callback)
 					assert(archetype, "no archetype given to execute function", 2)
-					-- local archetypeChunkManager = entityManager.archetypeChunkManager
-					-- local archetypeChunkGroup = archetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
-
-					-- printf("System: %s, Archetype: %s\n   Num Args: %d, Callback: %s\n", source, archetype.signature, #arguments, callback)
-					-- local archetypeChunks = archetypeChunkGroup:getArchetypeChunks()
 			]]
 			.. argsString ..
 			[[
-					-- print(archetypeChunkGroup)
-					-- for k, v in pairs(archetypeChunkGroup) do
-					-- 	print(k, v, "--0-ko0")
-					-- end
-					-- print(source, archetype)
-
-					-- archetypeChunkGroup:getOpenArchetypeChunk():newEntity(entityManager:getNewEntityId())
-					-- print(archetypeChunkGroup, archetypeChunkGroup.size, archetypeChunkGroup.archetype)
-					-- print()
-					-- print(archetypeChunks, #archetypeChunks, archetypeChunks.archetype)
-					-- print()
 					for i = 1, #archetypeChunks or 0, 1 do
 						local archetypeChunk = archetypeChunks[i]
 						local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)

@@ -36,6 +36,21 @@ function EntityManager:init(world --[[name]])
 	self.entityID = {} -- {[idIndex] = id}
 	self.entityIDState = {} -- {[idIndex] = state}
 
+	self.forEachNotParallel_Queue = {
+		items = {};
+		push = function(self, jobData)
+			self.items[#self.items + 1] = jobData
+		end;
+		pop = function(self)
+			local job = self.items[#self.items]
+			self.items[#self.items] = nil
+			return job
+		end;
+		empty = function(self)
+			return #self.items <= 0
+		end
+	}
+
 	-- self.archetypes = setmetatable({}, {__index = {size = 0}}) -- all entity archetypes
 	-- self.archetypeCount = 0
 	-- self.archetypeChunks = {} -- a hash table of a list of archetype chunks
@@ -216,21 +231,23 @@ function EntityManager:cacheArguments(id, callback)
 end
 
 local queueCache = {}
-function EntityManager:preQueue(id, func)
+function EntityManager:preQueue(id, callback)
 	assert(id, "No id given", 2)
-	assert(func, "No callback given", 2)
-	assert(type(func) == "function", "callback is not a function")
+	assert(callback, "No callback given", 2)
+	assert(type(callback) == "function", "callback is not a function")
 
 	if not queueCache[id] then
-		-- local func = callback() -- get the execute function from the callback
+		local func = callback() -- get the execute function from the callback
 		self:cacheArguments(id, func)
 
 		queueCache[id] = {}
 		local currentQueue = queueCache[id]
 
+		currentQueue.id = id
+		currentQueue.func = func
+
 		currentQueue.source = argumentCache[id].Source
 
-		currentQueue.id = id
 		currentQueue.startTime = 0
 		currentQueue.endTime = 0
 		currentQueue.runTime = 0
@@ -239,6 +256,10 @@ function EntityManager:preQueue(id, func)
 		currentQueue.componentArguments = arguments.componentArguments
 		currentQueue.extraArguments = arguments.extraArguments
 		currentQueue.arguments = arguments.all
+
+		-- currentQueue.query = self:buildQueryFromComponents(arguments.componentArguments)
+		local queryBuilder = self.EntityQueryBuilder
+		currentQueue.query = queryBuilder:withAll(arguments.componentArguments):build()
 
 		-- convert the array of strings into an archetypeSignature
 		currentQueue.signature = EntityArchetype:getArchetypeSignatureFromComponents(currentQueue.componentArguments)
@@ -306,7 +327,53 @@ function EntityManager:getQueueCacheDebug()
 	return queueCache
 end
 
+function EntityManager:forEachNotParallel_enqueue(id, callback)
+	assert(id, "No id given", 2)
+	assert(callback, "No callback given", 2)
+	assert(type(callback) == "function", "callback is not a function")
+
+	self.forEachNotParallel_Queue:push(self:preQueue(id, callback))
+end
+
+function EntityManager:executeJob(jobData)
+	assert(jobData, "no job data given")
+	local archetypeChunks = jobData.query:getArchetypeChunks(jobData.query, self)
+
+	jobData.startTime = love.timer.getTime()
+	local status, message = pcall(function()
+		local status = jobData.execute(self, jobData.source, jobData.componentArguments, jobData.archetype, archetypeChunks, jobData.func)
+		assert(status == 0)
+	end)
+	if not status then
+		error(message, 2)
+		Feint.Core.Time:pause()
+	end
+	jobData.endTime = love.timer.getTime()
+	jobData.runTime = jobData.endTime - jobData.startTime
+
+end
+
+function EntityManager:update()
+	self:forEachNotParallel_execute()
+end
+
+function EntityManager:forEachNotParallel_execute()
+	-- for _, _ in ipairs(self.forEachNotParallel_Queue.items) do
+	-- 	local job = self.forEachNotParallel_Queue:pop()
+	-- 	print(job)
+	-- 	self:executeJob(job)
+	-- end
+	while not self.forEachNotParallel_Queue:empty() do
+		local job = self.forEachNotParallel_Queue:pop()
+		self:executeJob(job)
+	end
+end
+
 function EntityManager:forEachNotParallel(id, callback)
+	self:forEachNotParallel_enqueue(id, callback)
+end
+
+function EntityManager:forEachNotParallel_OLD(id, callback)
 	assert(id, "No id given", 2)
 	assert(callback, "No callback given", 2)
 	assert(type(callback) == "function", "callback is not a function")

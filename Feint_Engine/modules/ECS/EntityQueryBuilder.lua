@@ -1,8 +1,21 @@
-local ECSUtils = Feint.ECS.Util
+-- local ECSUtils = Feint.ECS.Util
 
 -- queries entities with specific filters
 local EntityQuery = Feint.ECS.EntityQuery
-local EntityQueryBuilder = ECSUtils.newClass("EntityQueryBuilder")
+local name = "BASE EntityQueryBuilder"
+local EntityQueryBuilder = setmetatable({Name = name}, {
+	__tostring = function()
+		return name
+	end
+})--ECSUtils.newClass("EntityQueryBuilder")
+function EntityQueryBuilder:new(...)
+	local newQueryBuilder = {}
+	setmetatable(newQueryBuilder, {
+		__index = self;
+	})
+	newQueryBuilder:init(...)
+	return newQueryBuilder
+end
 function EntityQueryBuilder:init()
 	self.queryComponents_With_Count = 0
 	self.queryComponents_With = setmetatable({},{
