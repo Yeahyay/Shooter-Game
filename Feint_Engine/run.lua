@@ -83,12 +83,12 @@ function love.keypressed(key, ...)
 			{trueSizeY = 10 / 32},	-- 8
 		})
 	end
-	if key == "a" then
-		Graphics:setRenderResolution((Graphics.RenderSize % Math.Vec2.new(0.5, 0.5)):split())
-	end
-	if key == "d" then
-		Graphics:setRenderResolution((Graphics.RenderSize % Math.Vec2.new(2, 2)):split())
-	end
+	-- if key == "a" then
+	-- 	Graphics:setRenderResolution((Graphics.RenderSize % Math.Vec2.new(0.5, 0.5)):split())
+	-- end
+	-- if key == "d" then
+	-- 	Graphics:setRenderResolution((Graphics.RenderSize % Math.Vec2.new(2, 2)):split())
+	-- end
 	if key == "z" then
 		Graphics.toggleInterpolation()
 	end
@@ -170,6 +170,7 @@ function love.update(dt)
 	Time:update()
 	Time:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
+	Graphics:resetQueues()
 
 	local startTime = getTime()
 
@@ -212,7 +213,11 @@ end
 local function updateRender(dt) -- luacheck: ignore
 end
 
+local debugCanvas = love.graphics.newCanvas()--Graphics.ScreenSize.x, Graphics.ScreenSize.y)
 local function debugDraw()
+	local oldCanvas = love.graphics.getCanvas()
+	love.graphics.setCanvas(debugCanvas)
+	love.graphics.clear()
 	LoveGraphics.printf(
 		Time:isPaused() and string.format("Game Speed: %s\n", "Paused") or
 		string.format("Game Speed: %.3f\n", Time:getSpeed()),
@@ -310,6 +315,7 @@ local function debugDraw()
 			0, DEFAULT_FONT_HEIGHT / 2 * (16 + i - 1), Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 		)
 	end
+	love.graphics.setCanvas(oldCanvas)
 end
 function love.draw(dt)
 	do
@@ -356,7 +362,33 @@ function love.draw(dt)
 	-- fpsGraph.drawGraphs(2, {fpsGraph1, memGraph1})
 	-- LoveGraphics.setFont(DEFAULT_FONT)
 
+	-- love.graphics.setColor(0, 0, 0, 1)
+
+
+	-- local function outline(times, x, y)++++++++++++
+
+
+	-- love.graphics.setFont(DEFAULT_FONT_BOLD)
 	debugDraw()
+
+	local function outline(canvas, depth, x, y)
+		love.graphics.setColor(0, 0, 0, 1)
+		for i = 0, depth - 1, 1 do
+			love.graphics.draw(canvas, x * i, y * i, 0, 1, 1, 0, 0, 0, 0)
+		end
+	end
+
+	outline(debugCanvas, 3, 1, 0)
+	outline(debugCanvas, 3, 1, 1)
+	outline(debugCanvas, 3, 0, 1)
+	outline(debugCanvas, 3, -1, 1)
+	outline(debugCanvas, 3, -1, 0)
+	outline(debugCanvas, 3, -1, -1)
+	outline(debugCanvas, 3, 0, -1)
+	outline(debugCanvas, 3, 1, -1)
+
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.draw(debugCanvas, 0, 0, 0, 1, 1, 0, 0, 0, 0)
 
 	local endTime = getTime()
 

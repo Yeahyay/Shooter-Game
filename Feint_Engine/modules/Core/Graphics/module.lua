@@ -84,16 +84,16 @@ function graphics:load(isThread)
 
 		-- local drawCall = self.drawables[id]
 		-- local interX, interY = drawCall[ENUM_INTERPOLATE_X], drawCall[ENUM_INTERPOLATE_Y]
-		local transformX, transformY = x, -y--drawCall.x,  drawCall.y
+		-- local transformX, transformY = x, -y--drawCall.x,  drawCall.y
 
 		-- local dx, dy = interX + interpolate * (transformX - interX), interY + interpolate * (transformY - interY)
 
-		local dx = math.floor(transformX)
-		local dy = math.floor(transformY)
+		-- local dx = math.floor(transformX)
+		-- local dy = math.floor(transformY)
 
 		local string = ffi.string(name.string, #name) -- VERY SLOW
 		local batchSet = TEXTURE_ASSETS[string]
-		batchSet:modifySprite(id, x, y, r, width, height)
+		batchSet:modifySprite(id, x, -y, r, width, height)
 		-- batch:set(id, dx, dy, r,
 		-- 	width, height,
 		-- 	drawable.sizeX / 2, drawable.sizeY / 2
@@ -117,6 +117,41 @@ function graphics:load(isThread)
 		-- for k, v in pairs(TEXTURE_ASSETS) do
 		-- 	v.batch:flush()
 		-- end
+	end
+
+	self.textQueue = {}
+	self.textQueue.size = 0
+	function self:queueText(string, x, y, r, sx, sy, ox, oy)
+		self.textQueue.size = self.textQueue.size + 1
+		local item = self.textQueue[self.textQueue.size]
+		if not item then
+			item = {}
+			self.textQueue[self.textQueue.size] = item
+		end
+		-- print(item, self.textQueue[self.textQueue.size])
+
+		item[1] = string
+		item[2] = x
+		item[3] = y
+		item[4] = r
+		item[5] = sx
+		item[6] = sy
+		item[7] = ox
+		item[8] = oy
+		item[9] = 0
+		item[10] = 0
+	end
+
+	function self:resetQueues()
+		self.textQueue.size = 0
+	end
+
+	function self:drawText()
+		for i = 1, self.textQueue.size, 1 do
+			local textData = self.textQueue[i]
+			-- print(i, unpack(textData))
+			love.graphics.print(textData[1], textData[2], -textData[3], textData[4], textData[5], textData[6], textData[7], textData[8], textData[9], textData[10])
+		end
 	end
 
 	function self:draw()
@@ -145,6 +180,8 @@ function graphics:load(isThread)
 				-- 	love.graphics.draw(batch, 0, 0, 0, 1, 1)
 				-- end
 			end
+
+			self:drawText()
 
 		love.graphics.pop()
 		love.graphics.setCanvas()
