@@ -32,7 +32,7 @@ function RenderSystem:start(EntityManager)
 			local trueSizeX = Transform.trueSizeX
 			local trueSizeY = Transform.trueSizeY
 
-			-- Renderer.texture = "walking1.png"--Feint.Core.FFI.cstring("walking1.png")
+			-- Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
 			Renderer.id = graphics:addRectangle(
 				Renderer.texture,-- Renderer.textureLength,
 				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,

@@ -4,6 +4,7 @@ local Component = ECSUtils.newClass("Component")
 local ffi = require("ffi")
 
 Component.NIL = "NIL_MEMBER"
+Component.ENTITY = "ENTITY_MEMBER"
 function Component:init(data, ...)
 	self.size = #data
 	self.sizeBytes = 0

@@ -14,7 +14,7 @@ function PlayerSystem:start(EntityManager)
 	local Player = world:getComponent("Player")
 	local Health = world:getComponent("Health")
 	local archetype = EntityManager:newArchetypeFromComponents{Renderer, Transform, Physics, Player, Health}
-	for i = 1, 1000, 1 do
+	for i = 1, 1, 1 do
 		EntityManager:createEntityFromArchetype(archetype)
 	end
 

@@ -26,7 +26,7 @@ function FFI:load()
 	do
 		ffi.cdef([[
 			typedef struct {
-				char* string;
+				const char* string;
 				uint8_t size;
 			} cstring;
 		]])
@@ -38,9 +38,9 @@ function FFI:load()
 			__new = function(ct, string)
 				-- print("Initializing " ..tostring(ct) .. " with string " .. string)
 				local self = ffi.new(ct)
-				_G.strings[string] = ffi.C.malloc(#string) --ffi.gc(ffi.C.malloc(#string), ffi.C.free)
-				self.string = _G.strings[string] -- ffi.C.malloc(#string)
-				ffi.copy(self.string, string)
+				-- _G.strings[string] = string--ffi.C.malloc(#string) --ffi.gc(ffi.C.malloc(#string), ffi.C.free)
+				self.string = string--_G.strings[string] -- ffi.C.malloc(#string)
+				-- ffi.copy(self.string, string)
 				self.size = #string
 				return self
 			end;

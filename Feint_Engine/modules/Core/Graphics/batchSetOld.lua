@@ -79,13 +79,6 @@ function batchSet:addSprite(x, y, r, width, height, ox, oy)
 	self.totalSize = self.totalSize + 1
 	return self.totalSize
 end
-function batchSet:updateSpriteData(id)
-	local batch = self.batches[self.currentBatch]
-	local size = self.batchSizes[self.currentBatch]
-	batch[id], batch[size] = batch[size], nil
-	size = size - 1
-	self.batchSizes[self.currentBatch] = size
-end
 function batchSet:modifySprite(id, x, y, r, width, height)
 	local spriteIndex = (id - 1) % self.batchCapacity + 1
 	local batchIndex = math.ceil(id / (self.batchCapacity))
