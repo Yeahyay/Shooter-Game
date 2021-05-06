@@ -1,5 +1,5 @@
 local graphics = {
-	depends = {"Math", "Core.Paths"},
+	depends = {"Math", "Core.Paths", "Core.AssetManager"},
 	isThreadSafe = false,
 	Public = {}
 }
@@ -36,19 +36,22 @@ function graphics:load(isThread)
 	local TEXTURE_ASSETS = {}
 	local SPRITES_PATH = Paths:SlashDelimited(Paths.Assets .. "sprites")
 	if not isThread then
-		for _, file in pairs(love.filesystem.getDirectoryItems(SPRITES_PATH)) do
-			if file:find(".png") then
-				local path = SPRITES_PATH .. "/" .. file
+		for _, filename in pairs(love.filesystem.getDirectoryItems(SPRITES_PATH)) do
+			if filename:find(".png") then
+				local path = SPRITES_PATH .. "/" .. filename
 				if not love.filesystem.getInfo(path).exists then
 					path = SPRITES_PATH .. "/" .. "Test Texture 1.png"
 				end
 				local image = love.graphics.newImage(path)
 				-- local batch = love.graphics.newSpriteBatch(image, nil, "stream")
 				-- TEXTURE_ASSETS[file] = {image = image, sizeX = image:getWidth(), sizeY = image:getHeight(), batches = {batch}}
-				TEXTURE_ASSETS[file] = BatchSet:new(image)
+				Feint.Core.AssetManager:registerAsset(image, filename, "image")
+				Feint.Core.AssetManager:registerAsset(BatchSet:new(image), filename, "batchSet")
+				TEXTURE_ASSETS[filename] = BatchSet:new(image)
 			end
 		end
 	end
+
 
 	function self:getTextures()
 		return TEXTURE_ASSETS
@@ -91,8 +94,11 @@ function graphics:load(isThread)
 		-- local dx = math.floor(transformX)
 		-- local dy = math.floor(transformY)
 
+		-- print("skdmdl;k")
 		local string = ffi.string(name.string, #name) -- VERY SLOW
+		-- print("skdmdl;k")
 		local batchSet = TEXTURE_ASSETS[string]
+		-- print(string)
 		batchSet:modifySprite(id, x, -y, r, width, height)
 		-- batch:set(id, dx, dy, r,
 		-- 	width, height,
@@ -102,6 +108,8 @@ function graphics:load(isThread)
 	end
 
 	function self:addRectangle(name, x, y, r, width, height, ox, oy)
+		assert(string, "no name given", 2)
+		-- local string = ffi.string(name, #name)
 		local string = ffi.string(name.string, #name) -- VERY SLOW
 		-- assert(string, "string is broken")
 		-- local id = TEXTURE_ASSETS[string].batch:add(x, y, r, width, height, width / 2, height / 2)

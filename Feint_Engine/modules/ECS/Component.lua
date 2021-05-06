@@ -3,6 +3,7 @@ local Component = ECSUtils.newClass("Component")
 
 local ffi = require("ffi")
 
+Component.NIL = "NIL_MEMBER"
 function Component:init(data, ...)
 	self.size = #data
 	self.sizeBytes = 0
@@ -18,6 +19,7 @@ function Component:init(data, ...)
 
 				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof("cstring")
 				structMembers[#structMembers + 1] = "cstring " .. k
+				-- structMembers[#structMembers + 1] = "const char* " .. k
 
 				self.strings[k] = v
 				-- the data table is used for initialization

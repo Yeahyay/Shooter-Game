@@ -13,9 +13,9 @@ function RenderSystem:start(EntityManager)
 	local world = World.DefaultWorld
 	local Renderer = world:getComponent("Renderer")
 	local Transform = world:getComponent("Transform")
-	for i = 1, 25, 1 do
-		EntityManager:createEntityFromComponents{Renderer, Transform}
-	end
+	-- for i = 1, 25, 1 do
+	-- 	EntityManager:createEntityFromComponents{Renderer, Transform}
+	-- end
 
 	-- local r = {}
 	-- for k, v in pairs(Feint.Core.Graphics:getTextures()) do
@@ -32,7 +32,7 @@ function RenderSystem:start(EntityManager)
 			local trueSizeX = Transform.trueSizeX
 			local trueSizeY = Transform.trueSizeY
 
-			Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
+			-- Renderer.texture = "walking1.png"--Feint.Core.FFI.cstring("walking1.png")
 			Renderer.id = graphics:addRectangle(
 				Renderer.texture,-- Renderer.textureLength,
 				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,
@@ -59,15 +59,15 @@ function RenderSystem:update(EntityManager, dt)
 	-- 	rect(px, py, angle, 1, 1)
 	-- end
 
-	EntityManager:forEachNotParallel("RenderSystem_PlayerName_update", function()
-		local graphics = Feint.Core.Graphics
-
-		local function execute(Entity, Player, Transform, Renderer)
-			local string = ffi.string(Player.Name.string, #Player.Name) -- VERY SLOW
-			graphics:queueText(string, Transform.x, Transform.y - 50, Transform.angle, 1, 1, 0, 0, 0, 0)
-		end
-		return execute
-	end)
+	-- EntityManager:forEachNotParallel("RenderSystem_PlayerName_update", function()
+	-- 	local graphics = Feint.Core.Graphics
+	--
+	-- 	local function execute(Entity, Player, Transform, Renderer)
+	-- 		-- local string = ffi.string(Player.Name.string, #Player.Name) -- VERY SLOW
+	-- 		-- graphics:queueText(string, Transform.x, Transform.y - 50, Transform.angle, 1, 1, 0, 0, 0, 0)
+	-- 	end
+	-- 	return execute
+	-- end)
 
 	EntityManager:forEachNotParallel("RenderSystem_update", function()
 		-- local sin = math.sin

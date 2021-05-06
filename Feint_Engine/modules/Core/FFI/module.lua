@@ -34,19 +34,23 @@ function FFI:load()
 		local mt = {
 			__len = function(t)
 				return t.size;
-			end,
+			end;
 			__new = function(ct, string)
 				-- print("Initializing " ..tostring(ct) .. " with string " .. string)
 				local self = ffi.new(ct)
-				_G.strings[string] = ffi.C.malloc(#string)-- ffi.gc(ffi.C.malloc(#string), ffi.C.free)
+				_G.strings[string] = ffi.C.malloc(#string) --ffi.gc(ffi.C.malloc(#string), ffi.C.free)
 				self.string = _G.strings[string] -- ffi.C.malloc(#string)
 				ffi.copy(self.string, string)
 				self.size = #string
 				return self
-			end,
+			end;
 			__tostring = function(t)
 				return "cstring: " .. ffi.string(t.string, t.size)
-			end,
+			end;
+			-- __gc = function(cObj)
+			-- 	print(cObj)
+			-- 	ffi.C.free(cObj)
+			-- end;
 			-- __eq = function(a, b)
 			-- 	return tostring(b) == a
 			-- end
