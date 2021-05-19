@@ -37,6 +37,28 @@ setmetatable(Feint, {
 	__index = Feint.Modules
 })
 
+-- luacheck: push ignore
+-- local mt = getmetatable(love.handlers)
+-- mt.delegates = {}
+-- for k, v in pairs(love.handlers) do
+-- 	local delegates = {v}
+-- 	mt.delegates[k] = delegates
+-- 	love.handlers[k] = function(...)
+-- 		for _, delegate in ipairs(delegates) do
+-- 			delegate(...)
+-- 		end
+-- 	end
+-- end
+-- mt.__newindex = function(t, k, v)
+-- 	print(t, k, v, "-----------")
+-- 	if rawget(t, k) then
+-- 		mt.delegates[k][#mt.delegates[k] + 1] = v
+-- 	else
+-- 		rawset(t, k, v)
+-- 	end
+-- end
+-- luacheck: pop ignore
+
 local moduleLoader = require("Feint_Engine.modules.moduleLoader")
 moduleLoader:setRoot(FEINT_ROOT:gsub("%.", "/") .. "modules")
 Feint.ModuleLoader = moduleLoader
