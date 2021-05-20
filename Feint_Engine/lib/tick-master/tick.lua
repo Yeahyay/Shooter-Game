@@ -26,7 +26,7 @@ love.run = function()
 	timer.step()
 	local lastframe = 0
 
-	love.update(0)
+	love.update(tickModule.rate)
 
 	while true do
 		timer.step()
