@@ -25,11 +25,19 @@ function FFI:load()
 	-- local strings = {}--setmetatable({}, {__mode = "k"})
 	do
 		ffi.cdef([[
-			typedef struct {
+		typedef struct _cstring cstring;
+		struct _cstring {
 				const char* string;
 				uint8_t size;
-			} cstring;
+				uint8_t type;
+		};
 		]])
+		self.typeEnums = {
+			cstring = 1;
+		}
+		for k, v in pairs(self.typeEnums) do
+			self.typeEnums[v] = k
+		end
 		self.typeSize.cstring = ffi.sizeof("cstring")
 		local mt = {
 			__len = function(t)
@@ -42,10 +50,11 @@ function FFI:load()
 				self.string = string--_G.strings[string] -- ffi.C.malloc(#string)
 				-- ffi.copy(self.string, string)
 				self.size = #string
+				self.type = FFI.typeEnums["cstring"]
 				return self
 			end;
 			__tostring = function(t)
-				return "cstring: " .. ffi.string(t.string, t.size)
+				return ffi.string(t.string, t.size)
 			end;
 			-- __gc = function(cObj)
 			-- 	print(cObj)
