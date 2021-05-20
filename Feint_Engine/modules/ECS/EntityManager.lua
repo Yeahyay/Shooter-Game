@@ -87,6 +87,9 @@ function EntityManager:getNewEntityId()
 	-- self.entities
 
 	local id
+	-- id = -self.entitiesCount
+	-- return id
+
 	repeat
 		id = math.floor(love.math.random() * 100000000)
 	until not self.entities[id]
@@ -364,11 +367,11 @@ function EntityManager:executeJob(jobData)
 
 end
 
-function EntityManager:update()
-	self:forEachNotParallel_execute()
+function EntityManager:update(dt)
+	self:forEachNotParallel_execute(dt)
 end
 
-function EntityManager:forEachNotParallel_execute()
+function EntityManager:forEachNotParallel_execute(dt)
 	-- for _, _ in ipairs(self.forEachNotParallel_Queue.items) do
 	-- 	local job = self.forEachNotParallel_Queue:pop()
 	-- 	print(job)

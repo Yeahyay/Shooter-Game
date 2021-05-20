@@ -13,9 +13,10 @@ function RenderSystem:start(EntityManager)
 	local world = World.DefaultWorld
 	local Renderer = world:getComponent("Renderer")
 	local Transform = world:getComponent("Transform")
-	-- for i = 1, 25, 1 do
-	-- 	EntityManager:createEntityFromComponents{Renderer, Transform}
-	-- end
+	local Physics = world:getComponent("Physics")
+	for i = 1, 25, 1 do
+		EntityManager:createEntityFromComponents{Renderer, Transform, Physics}
+	end
 
 	-- local r = {}
 	-- for k, v in pairs(Feint.Core.Graphics:getTextures()) do

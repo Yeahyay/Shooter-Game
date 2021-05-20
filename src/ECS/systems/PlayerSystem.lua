@@ -48,19 +48,19 @@ function PlayerSystem:update(EntityManager)
 		local execute = function(Entity, Player, Transform, Physics)
 			local move = false
 			if down.w then
-				Physics.accelerationY = Physics.accelerationY + 2000 / 60
+				Physics.accY = Physics.accY + 2000 / 60
 				move = true
 			end
 			if down.a then
-				Physics.accelerationX = Physics.accelerationX - 2000 / 60
+				Physics.accX = Physics.accX - 2000 / 60
 				move = true
 			end
 			if down.s then
-				Physics.accelerationY = Physics.accelerationY - 2000 / 60
+				Physics.accY = Physics.accY - 2000 / 60
 				move = true
 			end
 			if down.d then
-				Physics.accelerationX = Physics.accelerationX + 2000 / 60
+				Physics.accX = Physics.accX + 2000 / 60
 				move = true
 			end
 			if move then
