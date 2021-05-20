@@ -14,8 +14,10 @@ function ArchetypeChunkGroup:new(...)
 	newGroup:init(...)
 	return newGroup
 end
-function ArchetypeChunkGroup:init(archetype)
+function ArchetypeChunkGroup:init(chunkManager, archetype)
 	assert(archetype, "ArchetypeChunkGroup needs an archetype")
+	self.entities = {}
+	self.archetypeChunkManager = chunkManager
 	self.archetypeChunks = setmetatable({}, {
 		__newindex = function(self, k, v)
 			assert(type(k) == "number", "archetypeChunks are an array only")
@@ -53,6 +55,19 @@ function ArchetypeChunkGroup:getOpenArchetypeChunk()
 
 	return archetypeChunk
 end
+function ArchetypeChunkGroup:createEntity(id)
+	local archetypeChunk = self:getOpenArchetypeChunk()
+	local index = archetypeChunk:newEntity(id)
+	self.entities[id] = {archetypeChunk, index}
+
+	self.archetypeChunkManager.entities[id] = self
+	return archetypeChunk, index
+end
+function ArchetypeChunkGroup:getArchetypeChunkFromId(id)
+	-- local thisChunk = self.archetypeChunkManager.archetypeChunkGroups[self.archetype]
+	-- thisChunk.entities[id] = self
+	return self.entities[id][1], self.entities[id][2]
+end
 function ArchetypeChunkGroup:newArchetypeChunk()
 	-- print(self)
 	-- print(self.size)
@@ -76,8 +91,8 @@ function entityArchetypeChunkManager:new(...)
 	return newManager
 end
 function entityArchetypeChunkManager:init()
-	self.entities = {}
 	self.archetypes = {size = 0}
+	self.entities = {}
 	local t = {size = 0}
 	local s = tostring(t)
 	self.archetypeChunkGroups = setmetatable(t, {
@@ -94,9 +109,19 @@ function entityArchetypeChunkManager:init()
 	})
 end
 
+-- ARCHETPYE GETTERS
+function entityArchetypeChunkManager:getArchetypeChunkFromId(id)
+	-- print(id, self.entities[id])
+	-- for k, v in pairs(self.entities) do
+	-- 	print("omlnm", k, v)
+	-- end
+	local archetypeChunkGroup = self.entities[id]
+	return archetypeChunkGroup:getArchetypeChunkFromId(id)
+end
+
 function entityArchetypeChunkManager:addArchetypeChunkGroup(archetype)
 	assert(not self.archetypeChunkGroups[archetype], "Archetype group " .. archetype.Name .. " already exists")
-	self.archetypeChunkGroups[archetype] = ArchetypeChunkGroup:new(archetype)
+	self.archetypeChunkGroups[archetype] = ArchetypeChunkGroup:new(self, archetype)
 	self.archetypeChunkGroups.size = self.archetypeChunkGroups.size + 1
 	printf("Adding archetype chunk group %s\n", archetype.Name)
 end

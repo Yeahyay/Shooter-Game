@@ -93,8 +93,8 @@ function EntityManager:getNewEntityId()
 	return id --self.entitiesCount --newID
 end
 
-function EntityManager:createEntity(archetypeChunk)
-	assert(archetypeChunk)
+function EntityManager:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
+	assert(archetypeChunkGroup)
 	-- print(archetypeChunk.numEntities)
 	-- local id
 	-- repeat
@@ -103,10 +103,9 @@ function EntityManager:createEntity(archetypeChunk)
 	-- assert(id)
 	local id = self:getNewEntityId()
 	-- assosciate the entity id with its respective chunk
-	self.entities[id] = {archetypeChunk, archetypeChunk.entityIdToIndex[id]}
-	archetypeChunk:newEntity(id)
-return id
-
+	local archetypeChunk = archetypeChunkGroup:createEntity(id)
+	self.entities[id] = {archetypeChunk, archetypeChunk:getEntityIndexFromID(id)}
+	return id
 end
 function EntityManager:createEntityFromArchetype(archetype)
 	assert(archetype, "no archetype given", 2)
@@ -115,8 +114,9 @@ function EntityManager:createEntityFromArchetype(archetype)
 	-- Feint.Log:logln("Creating entity from archetype " .. archetype.signature)
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
 	-- print(archetypeChunkGroup.archetype)
-	local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
-	return self:createEntity(archetypeChunk)
+
+	-- local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
+	return self:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
 end
 function EntityManager:createEntityFromArchetypeSignature(signature)
 
@@ -127,11 +127,22 @@ function EntityManager:createEntityFromComponents(components)
 	assert(#components > 0, "no components given", 2)
 
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
-	local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
-	return self:createEntity(archetypeChunk)
+	-- local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
+	return self:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
+end
+function EntityManager:getEntityDataFromID(entityID)
+	-- print("kolkmompkl;'l;/'")
+	local archetypeChunk, index = self:getArchetypeChunkFromEntity(entityID)
+	return self:getEntityDataFromArchetypeChunk(archetypeChunk, entityID), archetypeChunk.archetype, index
+end
+function EntityManager:getEntityDataFromArchetypeChunk(archetypeChunk, entityID)
+	return archetypeChunk:getDataArray()[archetypeChunk:getEntityIndexFromID(entityID) - 1]
 end
 
 -- WRAPPERS
+function EntityManager:getArchetypeChunkFromEntity(id)
+	return self.archetypeChunkManager:getArchetypeChunkFromId(id)
+end
 function EntityManager:newArchetypeFromComponents(components)
 	return self.archetypeChunkManager:newArchetypeFromComponents(components)
 end
@@ -148,7 +159,7 @@ function EntityManager:createEntityFromArchetype(archetype)
 	until not archetypeChunk.entityIdToIndex[id]
 	assert(id)
 	-- assosciate the entity id with its respective chunk
-	self.entities[id] = {archetypeChunk, archetypeChunk.entityIdToIndex[id]}
+	self.entities[id] = {archetypeChunk, archetypeChunk:entityIdToIndex(id)}
 	archetypeChunk:newEntity(id)
 	return id
 end
