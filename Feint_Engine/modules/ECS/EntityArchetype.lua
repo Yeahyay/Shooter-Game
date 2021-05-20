@@ -18,10 +18,15 @@ end
 -- 	__index = EntityArchetype
 -- })
 
+function EntityArchetype:containsComponent(component)
+	return self.signature:find(component.Name) and true or false
+end
+
 function EntityArchetype:init(components, ...)
 	assert(type(components) ~= "string", nil, 1)
 	-- holds components for the archetype
 	self.components = components
+	-- table.sort(self.components, function(a, b) return a.Name < b.Name end)
 	-- self.componentData = {}
 	-- self.componentData_componentName = {}
 	-- self.componentData_fieldCount = {}

@@ -13,9 +13,11 @@ function Component:init(data, ...)
 	if Feint.ECS.FFI_OPTIMIZATIONS then
 		self.data = data
 		self.strings = {}
+		self.orderedMembers = {}
 		local structMembers = {}
 		for k, v in pairs(data) do
 			local dataType = type(v)
+			self.orderedMembers[#self.orderedMembers + 1] = k
 			if dataType == "string" then
 
 				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof("cstring")
@@ -55,8 +57,10 @@ function Component:init(data, ...)
 			__pairs = function(t)
 				local function iter(t, k)
 					k = k + 1
+					-- print(t, k, self.orderedMembers[k], #structMembers)
+					-- print(t[self.orderedMembers[k]])
 					if k <= #structMembers then
-						return k, self.keys[k]
+						return k, self.orderedMembers[k], t[self.orderedMembers[k]]
 					end
 				end
 				return iter, t, 0

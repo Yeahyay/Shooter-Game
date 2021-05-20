@@ -61,6 +61,17 @@ end
 function EntityChunk:isEmpty()
 	return self.numEntities <= 0
 end
+
+function EntityChunk:getEntityIndexFromID(id)
+	return self.entityIdToIndex[id]
+end
+function EntityChunk:getEntityIDFromIndex(index)
+	return self.entityIndexToId[index]
+end
+function EntityChunk:getDataArray()
+	return ffi.cast(self.structDefinition, self.data)
+end
+
 -- function EntityChunk:getEntity()
 if Feint.ECS.FFI_OPTIMIZATIONS then
 	local cstring = ffi.typeof("cstring")
@@ -80,7 +91,7 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 	end
 	function EntityChunk:newEntity(id)
 		if not self:isFull() then
-			assert(type(id) == "number" and id >= 0, "new entity expects a number", 3)
+			assert(type(id) == "number" and id >= -math.huge, "new entity expects a number", 3)
 			self.numEntities = self.numEntities + 1
 			self.entityIdToIndex[id] = self.numEntities
 			self.entityIndexToId[self.numEntities] = id

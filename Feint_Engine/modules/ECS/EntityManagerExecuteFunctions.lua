@@ -61,7 +61,7 @@ function ExecuteFunctions:load(EntityManager)
 					assert(archetype, "no archetype given to execute function", 2)
 			]]
 			.. argsString ..
-			[[
+			[=[
 					for i = 1, #archetypeChunks or 0, 1 do
 						local archetypeChunk = archetypeChunks[i]
 						local data = ffi.cast(archetypeChunk.structDefinition, archetypeChunk.data)
@@ -69,8 +69,8 @@ function ExecuteFunctions:load(EntityManager)
 						-- print(archetypeChunk.numEntities, archetypeChunk.archetype)
 						local idList = archetypeChunk.entityIndexToId
 						for j = archetypeChunk.numEntities - 1, 0, -1 do
-							callback(j,
-			]]
+							callback(--[[j]] archetypeChunk.entityIndexToId[j + 1],
+			]=]
 			.. loopString ..
 			[[
 							)

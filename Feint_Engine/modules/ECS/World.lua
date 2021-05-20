@@ -41,6 +41,11 @@ function World:start()
 	for i = 1, #list do
 		systems[list[i]]:start(EntityManager)
 	end
+	for i = 1, #list do
+		if systems[list[i]].IMGUI_INIT then
+			systems[list[i]]:IMGUI_INIT(EntityManager)
+		end
+	end
 	EntityManager:update()
 end
 
@@ -52,6 +57,18 @@ function World:update(dt)
 		systems[list[i]]:update(EntityManager, dt)
 	end
 	EntityManager:update()
+end
+
+function World:IMGUI(dt)
+	local list = self.updateOrder
+	local systems = self.systems
+	local EntityManager = self.EntityManager
+	for i = 1, #list do
+		if systems[list[i]].IMGUI then
+			systems[list[i]]:IMGUI(EntityManager, dt)
+		end
+	end
+	-- EntityManager:update()
 end
 
 function World:registerSystem(system)
