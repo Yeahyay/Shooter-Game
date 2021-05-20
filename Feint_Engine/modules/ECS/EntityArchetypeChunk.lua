@@ -91,7 +91,10 @@ if Feint.ECS.FFI_OPTIMIZATIONS then
 	end
 	function EntityChunk:newEntity(id)
 		if not self:isFull() then
-			assert(type(id) == "number" and id >= -math.huge, "new entity expects a number", 3)
+			-- assert(type(id) == "number" and id >= -math.huge, "new entity expects a number", 3)
+			-- if not (type(id) == "number" and id >= -math.huge) then
+			-- 	print("New entity would like a number")
+			-- end
 			self.numEntities = self.numEntities + 1
 			self.entityIdToIndex[id] = self.numEntities
 			self.entityIndexToId[self.numEntities] = id

@@ -133,6 +133,8 @@ function love.load()
 	fpsIndex = 1
 	fpsSum = 0
 
+	Math.G_SEED = love.timer.getTime()
+	math.randomseed(Math.G_SEED)
 	love.math.setRandomSeed(Math.G_SEED)
 
 	DEFAULT_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)

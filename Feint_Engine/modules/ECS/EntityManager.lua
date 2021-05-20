@@ -87,13 +87,24 @@ function EntityManager:getNewEntityId()
 	-- self.entities
 
 	local id
-	-- id = -self.entitiesCount
+	-- id = self.entitiesCount
 	-- return id
 
-	repeat
-		id = math.floor(love.math.random() * 100000000)
-	until not self.entities[id]
-	return id --self.entitiesCount --newID
+	-- repeat
+	-- 	id = math.floor(love.math.random() * 100000000)
+	-- until not self.entities[id]
+	-- return id --self.entitiesCount --newID
+
+	-- local s = {}
+	-- for i = 1, 24, 1 do
+	-- 	local r = love.math.random(33, 126)
+	-- 	s[#s + 1] = string.char(r)
+	-- end
+	-- id = table.concat(s)
+	-- return id
+
+	id = Feint.Util.UUID.new()
+	return id
 end
 
 function EntityManager:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
