@@ -95,23 +95,29 @@ function love.keypressed(key, ...)
 end
 function love.keyreleased(...)
 end
-
 function love.mousemoved(x, y, dx, dy)
+	-- print(x, y)
 	Input.mousemoved(x, y, dx, dy)
 end
 
-function love.mousepressed(...)
+function love.mousepressed(x, y, button, isTouch)
+	Input.mousepressed(x, y, button, isTouch)
 end
-function love.mousereleased(...)
+function love.mousereleased(x, y, button, isTouch)
+	Input.mousereleased(x, y, button, isTouch)
 end
 
 function love.threaderror(thread, message)
 	error(string.format("Thread (%s): Error \"%s\"\n", thread, message), 2)
 end
+local uiCanvas = love.graphics.newCanvas()
+local debugCanvas = love.graphics.newCanvas()--Graphics.ScreenSize.x, Graphics.ScreenSize.y)
 function love.resize(x, y)
 	Graphics:setScreenResolution(x, y)
 	-- love.draw()
 	-- Graphics:draw()
+	uiCanvas = love.graphics.newCanvas()
+	debugCanvas = love.graphics.newCanvas()--Graphics.ScreenSize.x, Graphics.ScreenSize.y)
 end
 
 function love.load()
@@ -132,10 +138,18 @@ function love.load()
 	DEFAULT_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Regular.ttf", 28)
 	DEFAULT_FONT_BOLD = LoveGraphics.newFont("Assets/fonts/FiraCode-Bold.ttf", 28)
 	DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
+	DEFAULT_UI_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Medium.ttf", 12)
 	LoveGraphics.setFont(DEFAULT_FONT)
 
-	fpsGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 * 8)
-	memGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 *10)
+	-- fpsGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 * 8)
+	-- memGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 * 10)
+
+	-- Immediate Mode GUI
+	Graphics.UI.Immediate.DisableDocks({"Left", "Right", "Bottom"})
+	Graphics.UI.Immediate.Initialize()
+	Graphics.UI.Immediate.Update(Time.rate)
+	Graphics.UI.Immediate.PushFont(DEFAULT_UI_FONT)
+	print(Feint.Core.Graphics.UI.Immediate.GetINIStatePath())
 
 	Feint.ECS:init()
 
@@ -161,14 +175,12 @@ function love.load()
 		-- Log:logln("DONE WAITING FOR THREAD %d", i)
 	end
 
-	-- Immediate Mode GUI
-	Graphics.UI.Immediate.Initialize()
 end
 
-
+-- local SlabTest = require(Paths.Lib .. "Slab-0_7_2.SlabTest")
 function love.update(dt)
 	Time:update()
-	Time:setSpeed(Mouse.PositionNormalized.x)
+	-- Time:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
 	Graphics:resetQueues()
 
@@ -193,7 +205,17 @@ function love.update(dt)
 	-- Graphics.processQueue()		-- process all draw data updates
 
 	if Graphics.UI.Immediate then
+		-- Graphics.UI.Immediate.Update(dt)
+		-- World.DefaultWorld:IMGUI(dt)
+		-- SlabTest.Begin()
 		Graphics.UI.Immediate.Update(dt)
+		World.DefaultWorld:IMGUI(dt)
+
+		local previousCanvas = love.graphics.getCanvas()
+		love.graphics.setCanvas(uiCanvas)
+		love.graphics.clear()
+		Graphics.UI.Immediate.Draw()
+		love.graphics.setCanvas(previousCanvas)
 	end
 
 	local endTime = getTime()
@@ -204,20 +226,19 @@ function love.update(dt)
 
 	Time.G_UPDATE_TIME_PERCENT_FRAME = Time.G_UPDATE_TIME / (Time.rate) * 100
 
-	Graphics.UI.Immediate.Update(Time.G_RENDER_DT)
 
-	fpsGraph.updateFPS(fpsGraph1, Time.rate, Time.G_FPS)
-	fpsGraph.updateMem(memGraph1, Time.rate)
+	-- fpsGraph.updateFPS(fpsGraph1, Time.rate, Time.G_FPS)
+	-- fpsGraph.updateMem(memGraph1, Time.rate)
 end
 
 local function updateRender(dt) -- luacheck: ignore
 end
 
-local debugCanvas = love.graphics.newCanvas()--Graphics.ScreenSize.x, Graphics.ScreenSize.y)
 local function debugDraw()
 	local oldCanvas = love.graphics.getCanvas()
 	love.graphics.setCanvas(debugCanvas)
 	love.graphics.clear()
+	LoveGraphics.setFont(DEFAULT_FONT)
 	LoveGraphics.printf(
 		Time:isPaused() and string.format("Game Speed: %s\n", "Paused") or
 		string.format("Game Speed: %.3f\n", Time:getSpeed()),
@@ -357,8 +378,6 @@ function love.draw(dt)
 	-- LoveGraphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
 	-- -- LoveGraphics.draw(canvas, 50, 50, 0, 1, 1, 0, 0)
 
-	Graphics.UI.Immediate.Draw(Time.G_RENDER_DT)
-
 	-- fpsGraph.drawGraphs(2, {fpsGraph1, memGraph1})
 	-- LoveGraphics.setFont(DEFAULT_FONT)
 
@@ -390,6 +409,13 @@ function love.draw(dt)
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(debugCanvas, 0, 0, 0, 1, 1, 0, 0, 0, 0)
 
+	love.graphics.draw(uiCanvas, 0, 0, 0, 1, 1, 0, 0, 0, 0)
+
+	-- local dt = 1 / 60
+	-- Graphics.UI.Immediate.Update(dt)
+	-- World.DefaultWorld:IMGUI(dt)
+	-- Graphics.UI.Immediate.Draw()
+
 	local endTime = getTime()
 
 	Time.G_RENDER_DT = endTime - startTime
@@ -397,7 +423,6 @@ function love.draw(dt)
 	Time.G_RENDER_TIME = Time.G_RENDER_TIME + (Time.G_RENDER_DT - Time.G_RENDER_TIME) * (1 - Time.G_RENDER_TIME_SMOOTHNESS)
 
 	Time.G_RENDER_TIME_PERCENT_FRAME = Time.G_RENDER_TIME / (Time.rate) * 100
-
 
 	--[[
 	local f = 60
