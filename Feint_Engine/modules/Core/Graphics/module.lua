@@ -18,7 +18,7 @@ function graphics:load(isThread)
 	local BatchSet = require(Paths.Graphics .. "batchSet")
 
 
-	local Slab = require(Paths.Lib .. "Slab-0_6_3.Slab")
+	local Slab = require(Paths.Lib .. "Slab-0_7_2.Slab")
 	self.UI = {}
 	self.UI.Immediate = setmetatable({}, {
 		__index = Slab
@@ -30,6 +30,25 @@ function graphics:load(isThread)
 	setmetatable(self, {
 		__index = resolution
 	})
+
+	self.Camera = {
+		x = 0; y = 0; zoom = 0;
+		tx = 0; ty = 0; tzoom = 0;
+		setPosition = function(self, x, y)
+			self.tx = x
+			self.ty = y
+		end;
+		setRawPosition = function(self, x, y)
+			self.x = x
+			self.y = y
+		end;
+		setZoom = function(self, zoom)
+			self.tzoom = zoom
+		end;
+		setRawZoom = function(self, zoom)
+			self.zoom = zoom
+		end;
+	}
 
 	local interpolate = 0
 
