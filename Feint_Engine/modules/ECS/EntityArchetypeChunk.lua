@@ -5,11 +5,11 @@ local ECSutils = Feint.ECS.Util
 local EntityChunk = ECSutils.newClass("EntityChunk")
 function EntityChunk:init(archetype, ...)
 	assert(Feint.Core.Util:type(archetype) == "table", "EntityArchetypeChunk needs an archetype", 1)
+	self.Name = "ArchetypeChunk: " .. tostring(self)
 	self.archetype = archetype
-	-- self.Name = archetype.Name .. "_ArchetypeChunk"
-	self.isFull_cached = false
+	-- self.isFull_cached = false
 
-	self.entitySize = self.archetype.totalSize
+	-- self.entitySize = self.archetype.totalSize
 	self.entitySizeBytes = self.archetype.totalSizeBytes
 
 	self.capacityBytes = 16384
@@ -19,26 +19,18 @@ function EntityChunk:init(archetype, ...)
 	self.entityIdToIndex = {}
 	self.entityIndexToId = {}
 
-	self.Name = "ArchetypeChunk: " .. tostring(self)
 	getmetatable(self).__tostring = function() return self.Name end
 
 	self.structDefinition = "struct archetype_" .. self.archetype.signature .. "*"
 
-	-- self.ffiDataType =
-	-- self.data =
-	-- 	ffi.new("struct archetype_" .. self.archetype.signature .. "[?]", self.capacityBytes / self.entitySizeBytes)
 	local tp = ffi.typeof("struct archetype_" .. self.archetype.signature .. "[$]", self.capacity)
-	-- self.data = ffi.new(tp, self.archetype.initializer)
 	self.rawData = ffi.new(tp, self.archetype.initializer)
 	self.byteData = love.data.newByteData(self.capacity * self.entitySizeBytes)
 	local data = self.byteData:getFFIPointer()
 	ffi.copy(data, self.rawData, self.capacity * self.entitySizeBytes)
-	self.data = data--ffi.cast(self.structDefinition, data)
+	self.data = data
 
 	self:preallocate(self.capacity)
-
-	-- self.dataStatus = {}
-	-- self.dataAlive = 0
 
 	self.dead = false
 
@@ -72,86 +64,35 @@ function EntityChunk:getDataArray()
 	return ffi.cast(self.structDefinition, self.data)
 end
 
--- function EntityChunk:getEntity()
-if Feint.ECS.FFI_OPTIMIZATIONS then
-	local cstring = ffi.typeof("cstring")
-	function EntityChunk:preallocate(num)
-		local components = self.archetype.components
-		local data = ffi.cast(self.structDefinition, self.data)
-		for i = 0, num - 1, 1 do
-			local archetypeInstance = data[i]
-			for j = 1, #components, 1 do
-				local component = components[j]
-				local componentInstance = archetypeInstance[component.Name]
-				for k, v in pairs(component.strings) do
-					componentInstance[k] = cstring(v)
-				end
+local cstring = ffi.typeof("cstring")
+function EntityChunk:preallocate(num)
+	local components = self.archetype.components
+	local data = ffi.cast(self.structDefinition, self.data)
+	for i = 0, num - 1, 1 do
+		local archetypeInstance = data[i]
+		for j = 1, #components, 1 do
+			local component = components[j]
+			local componentInstance = archetypeInstance[component.Name]
+			for k, v in pairs(component.strings) do
+				componentInstance[k] = cstring(v)
 			end
 		end
 	end
-	function EntityChunk:newEntity(id)
-		if not self:isFull() then
-			-- assert(type(id) == "number" and id >= -math.huge, "new entity expects a number", 3)
-			-- if not (type(id) == "number" and id >= -math.huge) then
-			-- 	print("New entity would like a number")
-			-- end
-			self.numEntities = self.numEntities + 1
-			self.entityIdToIndex[id] = self.numEntities
-			self.entityIndexToId[self.numEntities] = id
-			return self.numEntities
-		else
-			Feint.Log:logln("Archetype chunk is full")
-		end
-		return nil
+end
+function EntityChunk:newEntity(id)
+	if not self:isFull() then
+		-- assert(type(id) == "number" and id >= -math.huge, "new entity expects a number", 3)
+		-- if not (type(id) == "number" and id >= -math.huge) then
+		-- 	print("New entity would like a number")
+		-- end
+		self.numEntities = self.numEntities + 1
+		self.entityIdToIndex[id] = self.numEntities
+		self.entityIndexToId[self.numEntities] = id
+		return self.numEntities
+	else
+		Feint.Log:logln("Archetype chunk is full")
 	end
-else
-	function EntityChunk:newEntity(id)
-		if not self:isFull() then
-			assert(type(id) == "number" and id >= 0, "new entity expects a number", 3)
-			local dataOffset = self.numEntities * self.entitySize
-			for archetyeComponentIndex = 1, #self.archetype.components, 1 do
-				local component = self.archetype.components[archetyeComponentIndex]
-				-- Feint.Log.log("Allocating memory for component %s\n", component.Name)
-				-- for k, v in pairs(self.archetype.components[i]) do
-				-- 	print(k, v)
-				-- end
-				for i = 1, component.size, 1 do
-					dataOffset = dataOffset + 1
-					local value = component.values[i]
-					self.data[dataOffset] = value -- set each field to its default value
-				end
-			end
-			self.numEntities = self.numEntities + 1
-			self.entityIdToIndex[id] = self.numEntities
-			self.entityIndexToId[self.numEntities] = id
-			return self.numEntities
-		else
-			Feint.Log:logln("Archetype chunk is full")
-		end
-		return nil
-	end
-	function EntityChunk:preallocate(num)
-		for j = 1, math.min(num, self.capacity), 1 do
-			local dataOffset = j * self.entitySize
-			for archetyeComponentIndex = 1, #self.archetype.components, 1 do
-				local component = self.archetype.components[archetyeComponentIndex]
-				-- Feint.Log.log("Allocating memory for component %s\n", component.Name)
-				-- for k, v in pairs(self.archetype.components[i]) do
-				-- 	print(k, v)
-				-- end
-				for i = 1, component.size, 1 do
-					dataOffset = dataOffset + 1
-					self.data[dataOffset] = component.values[i] -- set each field to its default value
-				end
-			end
-			-- self.numEntities = self.numEntities + 1
-			-- self.entityIdToIndex[id] = dataOffset / self.entitySize
-			-- self.entityIndexToId[dataOffset / self.entitySize] = id
-			-- return dataOffset / self.archetype.entitySize
-			-- self.dataAlive = self.dataAlive + 1
-			-- self.dataStatus[self.dataAlive] = true
-		end
-	end
+	return nil
 end
 function EntityChunk:removeEntity(index)
 	-- swap a removed entity with the last entity

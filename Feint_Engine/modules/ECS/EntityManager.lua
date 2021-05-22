@@ -4,7 +4,6 @@ local Paths = Feint.Core.Paths
 
 local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
 local EntityArchetype = Feint.ECS.EntityArchetype
--- local ArchetypeMethods = require(Paths.ECS .. "EntityManagerArchetypeMethods")
 local ExecuteFunctions = require(Paths.ECS .. "EntityManagerExecuteFunctions")
 local EntityQueryBuilderAPI = require(Paths.ECS .. "EntityManagerQueryBuilder")
 local ArchetypeChunkManager = Feint.ECS.EntityArchetypeChunkManager
@@ -51,22 +50,14 @@ function EntityManager:init(world --[[name]])
 		end
 	}
 
-	-- self.archetypes = setmetatable({}, {__index = {size = 0}}) -- all entity archetypes
-	-- self.archetypeCount = 0
-	-- self.archetypeChunks = {} -- a hash table of a list of archetype chunks
 	self.archetypeChunkManager = ArchetypeChunkManager:new()
-	-- self.archetypeChunksCount = {}
-	-- self.archetypeChunksOpenStacks = setmetatable({}, {__mode = "k, v"}) -- queue of open archetype chunks
 
-	-- ArchetypeMethods:load(self)
 	ExecuteFunctions:load(self)
 	EntityQueryBuilderAPI:load(self)
 
 	self.forEachJobs = {}
 
-	-- self.ID_INDEX = 0
-	self.EntityQueryBuilder = EntityQueryBuilder:new()--"EntityManager_EntityQueryBuilder")
-
+	self.EntityQueryBuilder = EntityQueryBuilder:new()
 	self.World = world
 end
 
@@ -107,14 +98,8 @@ function EntityManager:getNewEntityId()
 	return id
 end
 
-function EntityManager:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
+function EntityManager:createEntity(archetypeChunkGroup)
 	assert(archetypeChunkGroup)
-	-- print(archetypeChunk.numEntities)
-	-- local id
-	-- repeat
-	-- 	id = self:getNewEntityId()
-	-- until not archetypeChunk.entityIdToIndex[id]
-	-- assert(id)
 	local id = self:getNewEntityId()
 	-- assosciate the entity id with its respective chunk
 	local archetypeChunk = archetypeChunkGroup:createEntity(id)
@@ -125,12 +110,10 @@ function EntityManager:createEntityFromArchetype(archetype)
 	assert(archetype, "no archetype given", 2)
 	assert(archetype.name == "EntityArchetype", "not given an EntityArchetype")
 
-	-- Feint.Log:logln("Creating entity from archetype " .. archetype.signature)
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
-	-- print(archetypeChunkGroup.archetype)
 
 	-- local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
-	return self:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
+	return self:createEntity(archetypeChunkGroup)
 end
 function EntityManager:createEntityFromArchetypeSignature(signature)
 
@@ -141,11 +124,9 @@ function EntityManager:createEntityFromComponents(components)
 	assert(#components > 0, "no components given", 2)
 
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
-	-- local archetypeChunk = archetypeChunkGroup:getOpenArchetypeChunk()
-	return self:createEntity(--[[archetypeChunk]] archetypeChunkGroup)
+	return self:createEntity(archetypeChunkGroup)
 end
 function EntityManager:getEntityDataFromID(entityID)
-	-- print("kolkmompkl;'l;/'")
 	local archetypeChunk, index = self:getArchetypeChunkFromEntity(entityID)
 	return self:getEntityDataFromArchetypeChunk(archetypeChunk, entityID), archetypeChunk.archetype, index
 end
@@ -161,56 +142,11 @@ function EntityManager:newArchetypeFromComponents(components)
 	return self.archetypeChunkManager:newArchetypeFromComponents(components)
 end
 
---[[
-function EntityManager:createEntityFromArchetype(archetype)
-	-- print(archetype)
-	-- Feint.Log:logln("Creating entity from archetype ".. archetype.signature)
-	local archetypeChunk = self:getNextArchetypeChunk(archetype)
-	assert(archetypeChunk)
-	local id
-	repeat
-		id = self:getNewEntityId()
-	until not archetypeChunk.entityIdToIndex[id]
-	assert(id)
-	-- assosciate the entity id with its respective chunk
-	self.entities[id] = {archetypeChunk, archetypeChunk:entityIdToIndex(id)}
-	archetypeChunk:newEntity(id)
-	return id
-end
-
-function EntityManager:removeEntity(id)
-	self.entityIds[id] = nil
-end
-
-function EntityManager:setComponentData(entity, component, data)
-	local archetypeChunk = self:getArchetypeChunkFromEntity(entity)
-	print(archetypeChunk.data)
-	for i = 1, archetypeChunk.numEntities, 1 do
-		for k, v in pairs(archetypeChunk.archetype.components) do
-			print(archetypeChunk.data)
-		end
-	end
-	print(entity)
-	for k, v in pairs(self.entities[entity]) do
-		print(k, v)
-	end
-	local index = self:getArchetypeChunkEntityIndexFromEntity(entity)
-	local archetypeChunkData = archetypeChunk.data
-	-- local offset =
-	for i = 1, #data, 1 do
-		archetypeChunkData[index + i] = data[i]
-	end
-end
-
---]]
-
 function EntityManager:getEntityCount()
 	local count = 0
-	-- print(self.archetypeChunkManager.archetypeChunkGroups, "in90jionj9-0ikoio", "\n\n\n\n")
 	for k, archetypeChunkGroup in pairs(self.archetypeChunkManager.archetypeChunkGroups) do
 		if k == "size" then goto continue end
 		for index, archetypeChunk in pairs(archetypeChunkGroup:getArchetypeChunks()) do
-			-- print(index, archetypeChunk, archetypeChunk.numEntities)
 			count = count + archetypeChunk.numEntities
 		end
 		::continue::
@@ -228,7 +164,6 @@ function EntityManager:cacheArguments(id, callback)
 
 		local funcInfo = debug.getinfo(callback)
 
-		-- print(self.World.components[debug.getlocal(callback, 2)], debug.getlocal(callback, 2), "knomknjopk")
 		if funcInfo.nparams == 1 or (self.World.components[debug.getlocal(callback, 2)] and funcInfo.nparams >= 2) then
 			for j = 1, funcInfo.nparams, 1 do
 				local argument = debug.getlocal(callback, j)
@@ -239,19 +174,8 @@ function EntityManager:cacheArguments(id, callback)
 		end
 
 		argumentCache[id].info = funcInfo
-		-- for k, v in pairs(getfenv(4)) do
-		-- 	print(k, v)
-		-- end
-		-- local _, systems = debug.getlocal(5, 3)
-		-- local _, index = debug.getlocal(5, 5)
 		local _, source = debug.getlocal(4, 1)
 		argumentCache[id].Source = source.Name
-		-- print(systems[index])
-		-- print(debug.getlocal(4, 1))
-		-- print("saidmk", debug.getlocal(5, 3), debug.getlocal(5, 5))
-		-- for k, v in pairs(debug.getinfo(5, "n")) do
-		-- 	print(k, v)
-		-- end
 	end
 end
 
@@ -282,27 +206,19 @@ function EntityManager:preQueue(id, callback)
 		currentQueue.extraArguments = arguments.extraArguments
 		currentQueue.arguments = arguments.all
 
-		-- currentQueue.query = self:buildQueryFromComponents(arguments.componentArguments)
 		local queryBuilder = self.EntityQueryBuilder
 		currentQueue.query = queryBuilder:withAll(arguments.componentArguments):build()
 
 		-- convert the array of strings into an archetypeSignature
 		currentQueue.signature = EntityArchetype:getArchetypeSignatureFromComponents(currentQueue.componentArguments)
 		assert(currentQueue.signature, "pre queue failed to get archetype string")
-		currentQueue.archetype = self.archetypeChunkManager:getArchetypeFromComponents(currentQueue.componentArguments)--self.archetypes[currentQueue.signature]
+		currentQueue.archetype = self.archetypeChunkManager:getArchetypeFromComponents(currentQueue.componentArguments)
 		assert(currentQueue.archetype, "pre queue failed to get archetype \"" .. tostring(currentQueue.archetype) .. "\"")
 
-		-- if currentQueue.componentArguments[1] == "Data" and currentQueue.componentArguments[2] == "Entity" then
-		-- 	currentQueue.execute = ExecuteFunctions.executeEntity2
-		-- else
 		if argumentCache[id][1] == "NOARG" then
 			currentQueue.execute = ExecuteFunctions.noarg
 		else
-			-- currentQueue.execute = ExecuteFunctions["execute" .. #currentQueue.componentArguments]
 			currentQueue.execute = ExecuteFunctions:getExecuteFunction(#currentQueue.componentArguments)
-			-- for k, v in pairs(ExecuteFunctions) do
-			-- 	print(k, v)
-			-- end
 		end
 	end
 	return queueCache[id]
@@ -383,11 +299,6 @@ function EntityManager:update(dt)
 end
 
 function EntityManager:forEachNotParallel_execute(dt)
-	-- for _, _ in ipairs(self.forEachNotParallel_Queue.items) do
-	-- 	local job = self.forEachNotParallel_Queue:pop()
-	-- 	print(job)
-	-- 	self:executeJob(job)
-	-- end
 	while not self.forEachNotParallel_Queue:empty() do
 		local job = self.forEachNotParallel_Queue:pop()
 		self:executeJob(job)
@@ -409,10 +320,6 @@ function EntityManager:forEachNotParallel_OLD(id, callback)
 	local query = self:buildQueryFromComponents(preQueueData.componentArguments)
 	local archetypeChunks = query:getArchetypeChunks(self)
 
-	-- print(id, #archetypeChunks)
-
-	-- Feint.Util.Debug.DEBUG_PRINT_TABLE(preQueueData)
-
 	preQueueData.startTime = love.timer.getTime()
 	local status, message = pcall(function()
 		local status = preQueueData.execute(self, preQueueData.source, preQueueData.componentArguments, preQueueData.archetype, archetypeChunks, func)
@@ -424,7 +331,6 @@ function EntityManager:forEachNotParallel_OLD(id, callback)
 	end
 	preQueueData.endTime = love.timer.getTime()
 	preQueueData.runTime = preQueueData.endTime - preQueueData.startTime
-	-- print('komkl')
 end
 -- Feint.Util.Memoize(EntityManager.forEach)
 

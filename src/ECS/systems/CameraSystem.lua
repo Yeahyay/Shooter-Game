@@ -1,6 +1,5 @@
 local System = Feint.ECS.System
 local World = Feint.ECS.World
-local Graphics = Feint.Core.Graphics
 
 local CameraSystem = System:new("CameraSystem")
 function CameraSystem:init()

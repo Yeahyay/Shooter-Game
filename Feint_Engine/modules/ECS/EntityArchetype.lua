@@ -2,7 +2,7 @@ local ffi = require("ffi")
 
 -- local ECSutils = Feint.ECS.Util
 
-local EntityArchetype = {}--ECSutils.newClass("EntityArchetype")
+local EntityArchetype = {}
 function EntityArchetype:new(...)
 	local newArchetype = {name = "EntityArchetype"}
 	setmetatable(newArchetype, {
@@ -14,9 +14,6 @@ function EntityArchetype:new(...)
 	newArchetype:init(...)
 	return newArchetype
 end
--- setmetatable(EntityArchetype, {
--- 	__index = EntityArchetype
--- })
 
 function EntityArchetype:containsComponent(component)
 	return self.signature:find(component.Name) and true or false
@@ -26,15 +23,9 @@ function EntityArchetype:init(components, ...)
 	assert(type(components) ~= "string", nil, 1)
 	-- holds components for the archetype
 	self.components = components
-	-- table.sort(self.components, function(a, b) return a.Name < b.Name end)
-	-- self.componentData = {}
-	-- self.componentData_componentName = {}
-	-- self.componentData_fieldCount = {}
-	-- self.componentData_fieldName = {}
 	self.signature = nil
 	self.chunkCount = 0
 	self.numInstances = 0
-	-- self.chunkCapacity = 32
 	self.totalSize = 0 -- the total size of every component and its fields
 	self.totalSizeBytes = 0
 	self.ffiType = nil
@@ -106,14 +97,9 @@ function EntityArchetype:createArchetype()
 	self.initValues = {}
 	for i = 1, #self.components, 1 do
 		local name = self.components[i].Name
-		self.initValues[name] = self.components[i].data --{}
-		-- for k, v in ipairs(self.components[i].values) do
-		-- 	local field = self.components[i].keys[k]
-		-- 	self.initValues[name][field] = v
-		-- end
+		self.initValues[name] = self.components[i].data
 	end
 	self.initializer = ffi.new("struct archetype_" .. self.signature, self.initValues)
-
 
 	return self
 end

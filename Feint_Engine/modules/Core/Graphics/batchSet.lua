@@ -14,14 +14,10 @@ function batchSet:init(image)
 	self.batchCapacity = 1000
 	self.totalSize = 0
 	self.image = image
-	-- self.images = {}
 	self.currentBatch = 0 -- currently free batch
 
 	self:newBatch()
 end
--- function batchSet:addBatch(name, batch)
--- 	self.batches[name] = batch
--- endet
 function batchSet:getBatches()
 	return self.batches
 end

@@ -12,7 +12,7 @@ function EntityQuery:new(...)
 	return newEntityQuery
 end
 function EntityQuery:init(with, with_Count, withAll, withAll_Count, without, without_Count)
-	self.components = {}--withAll
+	self.components = {}
 	for k, v in pairs(withAll) do
 		self.components[k] = v
 	end
@@ -50,7 +50,6 @@ function EntityQuery:findValidArchetypes(query, entityManager)
 		if match then
 			validArchetypes[#validArchetypes + 1] = archetypeSignature
 		end
-		-- printf("Signature \"%s\" matches: %s\n\n", archetypeSignature, match)
 
 		::continue::
 	end
@@ -59,10 +58,8 @@ end
 function EntityQuery:getArchetypeChunks(query, entityManager)
 	local validArchetypes = self:findValidArchetypes(query, entityManager)
 	local archetypeChunks = {}
-	-- print(#validArchetypes)
 	for i = 1, #validArchetypes, 1 do
 		local archetypeChunkGroup = entityManager.archetypeChunkManager:getArchetypeChunkGroupFromArchetypeSignature(validArchetypes[i])
-		-- print(archetypeChunkGroup:getArchetypeChunks())
 		for _, archetypeChunk in pairs(archetypeChunkGroup:getArchetypeChunks()) do
 			archetypeChunks[#archetypeChunks + 1] = archetypeChunk
 		end

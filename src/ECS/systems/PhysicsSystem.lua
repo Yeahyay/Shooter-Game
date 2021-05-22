@@ -1,12 +1,8 @@
--- local ECSUtils = Feint.ECS.Util
 local System = Feint.ECS.System
-local World = Feint.ECS.World
-
 local fmath = Feint.Math
-local random2 = fmath.random2
 
 local PhysicsSystem = System:new("PhysicsSystem")
-function PhysicsSystem:init(...)
+function PhysicsSystem:init()
 end
 
 function PhysicsSystem:start(EntityManager)
@@ -20,13 +16,7 @@ function PhysicsSystem:start(EntityManager)
 	end)
 end
 
--- local function sign(x)
--- 	return x > 0 and 1 or x < 0 and -1 or 0
--- end
-
 function PhysicsSystem:update(EntityManager)
-	-- error(1, 2)
-	-- local time = Feint.Core.Time:getTime()
 	local dt = 1 / 60
 	local mouse = Feint.Core.Input.Mouse
 	mouse.ObjectHovered = false
@@ -40,22 +30,17 @@ function PhysicsSystem:update(EntityManager)
 		end
 		return execute
 	end)
-	-- print(mouse.ObjectHovered, mousePos)
 	EntityManager:forEachNotParallel("PhysicsSystem_update", function()
-			-- local pi = math.pi
 			local execute = function(Entity, Physics, Transform)
 				Physics.posXOld = Transform.x
 				Physics.posYOld = Transform.y
 
 				local posX, posY = Transform.x, Transform.y
 				local lastPosX, lastPosY = Physics.posXOld, Physics.posYOld
-				-- local velX, velY = Physics.velocityX, Physics.velocityY
 				local accX, accY = Physics.accX, Physics.accY
 				accX = accX - accX * Physics.drag
 				accY = accY - accY * Physics.drag
 				Physics.accX, Physics.accY = math.min(accX, Physics.accCapX), math.min(accY, Physics.accCapY)
-
-				-- print(accX, accY, dt * dt, accX * dt * dt)
 
 				local velX = posX - lastPosX
 				local velY = posY - lastPosY

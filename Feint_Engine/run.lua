@@ -121,7 +121,7 @@ function love.resize(x, y)
 end
 
 function love.load()
-	Time.framerate = 60 -- framerate cap
+	Time.framerate = 78 -- framerate cap
 	Time.rate = 1 / 60 -- update dt
 	Time.sleep = 0.001 -- don't toast the CPU
 	Time:setSpeed(1) -- default game speed

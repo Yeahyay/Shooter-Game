@@ -1,4 +1,5 @@
-local Player = Feint.ECS.Component:new("Player", {
+local Component = Feint.ECS.Component
+local Player = Component:new("Player", {
 	Score = 0;
 	Name = "Default Player";
 })

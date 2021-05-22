@@ -1,11 +1,9 @@
 local System = Feint.ECS.System
 local World = Feint.ECS.World
 
+local down
+
 local PlayerSystem = System:new("PlayerSystem")
-
-function PlayerSystem:init()
-
-end
 function PlayerSystem:start(EntityManager)
 	local world = World.DefaultWorld
 	local Renderer = world:getComponent("Renderer")
@@ -18,6 +16,8 @@ function PlayerSystem:start(EntityManager)
 		EntityManager:createEntityFromArchetype(archetype)
 	end
 
+	down = {w = false, a = false, s = false, d = false}
+
 	EntityManager:forEachNotParallel("PlayerSystem_start", function()
 		local execute = function(Entity, Player, Renderer)
 			-- Renderer.texture = Feint.Core.FFI.cstring("walking1.png")--"walking1.png"
@@ -25,7 +25,7 @@ function PlayerSystem:start(EntityManager)
 		return execute
 	end)
 end
-local down = {w = false, a = false, s = false, d = false}
+
 function PlayerSystem:update(EntityManager)
 	local isDown = love.keyboard.isDown
 	for k, v in pairs(down) do

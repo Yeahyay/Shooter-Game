@@ -1,6 +1,5 @@
-local Physics
-
-Physics = Feint.ECS.Component:new("Physics", {
+local Component = Feint.ECS.Component
+local Physics = Component:new("Physics", {
 	posXOld = 0;
 	posYOld = 0;
 	velX = 0;

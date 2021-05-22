@@ -3,13 +3,15 @@ local GUI = Feint.Core.Graphics.UI.Immediate
 local Mouse = Feint.Core.Input.Mouse
 local typeEnums = Feint.Core.FFI.typeEnums
 
-local GUISystem = System:new("GUISystem")
-
 local lastSelected
 local EntityPropertiesWindow
 local componentLeaves
 local abb
 
+local GUISystem = System:new("GUISystem")
+
+function GUISystem:init()
+end
 function GUISystem:start()
 	EntityPropertiesWindow = {
 		Title = "EntityProperties";

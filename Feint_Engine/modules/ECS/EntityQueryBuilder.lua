@@ -7,7 +7,7 @@ local EntityQueryBuilder = setmetatable({Name = name}, {
 	__tostring = function()
 		return name
 	end
-})--ECSUtils.newClass("EntityQueryBuilder")
+})
 function EntityQueryBuilder:new(...)
 	local newQueryBuilder = {}
 	setmetatable(newQueryBuilder, {
@@ -49,9 +49,7 @@ function EntityQueryBuilder:withAll(components)
 			self.queryComponents_WithAll[count] = v
 		end
 	end
-	-- print(#self.queryComponents_WithAll, count)
-	self.queryComponents_WithAll_Count = count--self.queryComponents_WithAll_Count + 1
-	-- print(self.queryComponents_WithAll_Count)
+	self.queryComponents_WithAll_Count = count
 	return self
 end
 function EntityQueryBuilder:with(components)
@@ -112,7 +110,6 @@ function EntityQueryBuilder:withoutArgs(...)
 end
 function EntityQueryBuilder:build()
 	-- create query
-	-- printf("Building entity query\n")
 	local query = EntityQuery:new(
 		self.queryComponents_With, self.queryComponents_With_Count,
 		self.queryComponents_WithAll, self.queryComponents_WithAll_Count,
@@ -122,15 +119,6 @@ function EntityQueryBuilder:build()
 	self.queryComponents_With_Count = 0
 	self.queryComponents_WithAll_Count = 0
 	self.queryComponents_Without_Count = 0
-	-- for i = 1, self.queryComponents_With_Count do
-	-- 	self.queryComponents_With[i] = nil
-	-- end
-	-- for i = 1, self.queryComponents_WithAll_Count do
-	-- 	self.queryComponents_WithAll[i] = nil
-	-- end
-	-- for i = 1, self.queryComponents_Without_Count do
-	-- 	self.queryComponents_Without[i] = nil
-	-- end
 
 	-- this creates new objects which is a no no unless query building is memoize
 	-- self:init()
@@ -140,6 +128,5 @@ end
 -- EntityQueryBuilder.withAll = Feint.Util.Memoize(EntityQueryBuilder.withAll)
 -- EntityQueryBuilder.without = Feint.Util.Memoize(EntityQueryBuilder.without)
 -- EntityQueryBuilder.build = Feint.Util.Memoize(EntityQueryBuilder.build) -- DON'T DO THIS
-
 
 return EntityQueryBuilder

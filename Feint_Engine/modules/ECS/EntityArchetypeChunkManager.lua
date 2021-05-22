@@ -39,19 +39,13 @@ end
 function ArchetypeChunkGroup:getOpenArchetypeChunk()
 	local archetypeChunk
 	if #self.archetypeChunks > 0 then
-		-- print("FOUND")
 		archetypeChunk = self.archetypeChunks[#self.archetypeChunks]
 		if archetypeChunk:isFull() then
-			-- print("FULL")
-			-- Feint.Log:logln(archetypeChunk.numEntities * archetypeChunk.entitySizeBytes)
-			-- Feint.Log:logln((archetypeChunk.numEntities * archetypeChunk.entitySizeBytes) / 1024)
 			archetypeChunk = self:newArchetypeChunk()
 		end
 	else
-		-- print("EMPTY")
 		archetypeChunk = self:newArchetypeChunk()
 	end
-	-- print(archetypeChunk, #self.archetypeChunks, archetypeChunk.numEntities)
 
 	return archetypeChunk
 end
@@ -64,19 +58,13 @@ function ArchetypeChunkGroup:createEntity(id)
 	return archetypeChunk, index
 end
 function ArchetypeChunkGroup:getArchetypeChunkFromId(id)
-	-- local thisChunk = self.archetypeChunkManager.archetypeChunkGroups[self.archetype]
-	-- thisChunk.entities[id] = self
 	return self.entities[id][1], self.entities[id][2]
 end
 function ArchetypeChunkGroup:newArchetypeChunk()
-	-- print(self)
-	-- print(self.size)
 	local archetypeChunk = EntityArchetypeChunk:new(self.archetype)
 	self.archetypeChunks[#self.archetypeChunks + 1] = archetypeChunk
 	return archetypeChunk
 end
-
-
 
 local entityArchetypeChunkManager = {}
 function entityArchetypeChunkManager:new(...)
@@ -111,10 +99,6 @@ end
 
 -- ARCHETPYE GETTERS
 function entityArchetypeChunkManager:getArchetypeChunkFromId(id)
-	-- print(id, self.entities[id])
-	-- for k, v in pairs(self.entities) do
-	-- 	print("omlnm", k, v)
-	-- end
 	local archetypeChunkGroup = self.entities[id]
 	return archetypeChunkGroup:getArchetypeChunkFromId(id)
 end
