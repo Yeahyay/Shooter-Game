@@ -20,11 +20,14 @@ function coreUtil:load()
 		end
 	end
 
+	function self:getMemoryUsageBytes()
+		return collectgarbage("count") * 1024
+	end
 	function self:getMemoryUsageKiB()
-		return collectgarbage("count") * (1000 / 1024)
+		return self:getMemoryUsageBytes() / 1024
 	end
 	function self:getMemoryUsageKb()
-		return collectgarbage("count")
+		return self:getMemoryUsageBytes() / 1000
 	end
 end
 

@@ -307,13 +307,13 @@ local function debugDraw()
 	-- )
 
 	-- MEMORY
-	LoveGraphics.printf(string.format("Memory Usage (MiB):   %12.2f", Core.Util.getMemoryUsageKiB() / 1024),
+	LoveGraphics.printf(string.format("Memory Usage (MiB):   %12.2f", Core.Util:getMemoryUsageKiB() / 1024),
 		0, DEFAULT_FONT_HEIGHT / 2 * 8, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	LoveGraphics.printf(string.format("Memory Usage (KiB):   %12.2f", Core.Util.getMemoryUsageKiB()),
+	LoveGraphics.printf(string.format("Memory Usage (KiB):   %12.2f", Core.Util:getMemoryUsageKiB()),
 		0, DEFAULT_FONT_HEIGHT / 2 * 9, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	LoveGraphics.printf(string.format("Memory Usage (bytes): %12.2f", Core.Util.getMemoryUsageKiB() * 1024),
+	LoveGraphics.printf(string.format("Memory Usage (bytes): %12d", Core.Util:getMemoryUsageBytes()),
 		0, DEFAULT_FONT_HEIGHT / 2 * 10, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
@@ -322,7 +322,7 @@ local function debugDraw()
 	LoveGraphics.printf(string.format("Draw calls: %d", stats.drawcalls),
 		0, DEFAULT_FONT_HEIGHT / 2 * 12, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
-	LoveGraphics.printf(string.format("Texture Memory: %d bytes", stats.texturememory),
+	LoveGraphics.printf(string.format("Texture Memory: %12.2f Mebibytes", stats.texturememory / 1048576),
 		0, DEFAULT_FONT_HEIGHT / 2 * 13, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	--]]
