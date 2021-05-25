@@ -26,7 +26,7 @@ setmetatable(batch, {
 	__index = {
 		new = function(...)
 			local newBatch = {
-				size = 0, x = {}, y = {}, r = {}, w = {}, h = {}, ox = {}, oy = {}
+				size = 0, x = {}, y = {}, r = {}, w = {}, h = {}, ox = {}, oy = {}, visible = {}
 			}
 			setmetatable(newBatch, {
 				__index = {
@@ -40,14 +40,18 @@ setmetatable(batch, {
 						self.h[id] = h
 						self.ox[id] = ox
 						self.oy[id] = oy
+						self.visible[id] = false
 					end;
-					set = function(self, id, x, y, r)--, w, h)
+					set = function(self, id, x, y, r, w, h)
 						self.x[id] = x
 						self.y[id] = y
 						self.r[id] = r
 						-- self.w[id] = w
 						-- self.h[id] = h
 					end;
+					setVisible = function(self, id, visible)
+						self.visible[id] = visible
+					end
 				}
 			})
 			return newBatch
@@ -88,6 +92,12 @@ function batchSet:modifySprite(id, x, y, r, width, height)
 	-- print(spriteIndex, batchIndex, #self.batches)
 	self.batches[batchIndex]:set(spriteIndex, x, y, r, width, height)
 end
+function batchSet:setVisible(id, visible)
+	local spriteIndex = (id - 1) % self.batchCapacity + 1
+	local batchIndex = math.ceil(id / (self.batchCapacity))
+	-- print(spriteIndex, batchIndex, #self.batches)
+	self.batches[batchIndex]:setVisible(spriteIndex, visible)
+end
 function batchSet:draw()
 	for i = 1, #self.batches, 1 do
 		local batch = self.batches[i]
@@ -100,9 +110,11 @@ function batchSet:draw()
 		local oy = batch.oy
 		local image = self.image
 		for j = 1, self.batchSizes[i], 1 do
+			if not batch.visible[j] then goto continue end
 			-- local spriteIndex = (j - 1) % self.batchCapacity + 1
 			-- love.graphics.rectangle("fill", batch.x[j], batch.y[j], 32 * batch.w[j], 32 * batch.h[j])
 			love.graphics.draw(image, x[j], y[j], r[j], w[j], h[j], ox[j], oy[j])
+			::continue::
 		end
 	end
 end

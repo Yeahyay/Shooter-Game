@@ -185,6 +185,7 @@ function love.update(dt)
 	-- Time:setSpeed(Mouse.PositionNormalized.x)
 	Graphics.clear()
 	Graphics:resetQueues()
+	Graphics:update()
 
 	local startTime = getTime()
 
@@ -386,7 +387,7 @@ function love.draw(dt)
 	-- love.graphics.setColor(0, 0, 0, 1)
 
 
-	-- local function outline(times, x, y)++++++++++++
+	-- local function outline(times, x, y)
 
 
 	-- love.graphics.setFont(DEFAULT_FONT_BOLD)

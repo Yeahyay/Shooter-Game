@@ -1,5 +1,6 @@
 local EntityManager = {}
 
+local Component = Feint.ECS.Component
 local Paths = Feint.Core.Paths
 
 local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
@@ -127,6 +128,9 @@ function EntityManager:createEntityFromComponents(components)
 	return self:createEntity(archetypeChunkGroup)
 end
 function EntityManager:getEntityDataFromID(entityID)
+	if tostring(entityID) == Component.ENTITY then
+		return nil, nil, nil
+	end
 	local archetypeChunk, index = self:getArchetypeChunkFromEntity(entityID)
 	return self:getEntityDataFromArchetypeChunk(archetypeChunk, entityID), archetypeChunk.archetype, index
 end
@@ -185,8 +189,8 @@ function EntityManager:preQueue(id, callback)
 	assert(callback, "No callback given", 2)
 	assert(type(callback) == "function", "callback is not a function")
 
+	local func = callback() -- get the execute function from the callback
 	if not queueCache[id] then
-		local func = callback() -- get the execute function from the callback
 		self:cacheArguments(id, func)
 
 		queueCache[id] = {}

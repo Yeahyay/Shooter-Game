@@ -31,6 +31,7 @@ function graphics:load(isThread)
 		__index = resolution
 	})
 
+	local RenderSize = Feint.Core.Graphics.RenderSize
 	self.Camera = {
 		x = 0; y = 0; zoom = 0;
 		tx = 0; ty = 0; tzoom = 0;
@@ -48,6 +49,16 @@ function graphics:load(isThread)
 		setRawZoom = function(self, zoom)
 			self.zoom = zoom
 		end;
+		update = function(self)
+			self.x = self.x + (self.tx - self.x) * 0.1
+			self.y = self.y + (self.ty - self.y) * 0.1
+		end;
+		getMousePosition = function(self)
+			return Feint.Core.Input.Mouse.Position + Feint.Math.Vec2(self.x, self.y)
+		end;
+		getScreenBounds = function(self)
+			return self.x - RenderSize.x * 0.5, self.y + RenderSize.y * 0.5, self.x + RenderSize.x * 0.5, self.y - RenderSize.y * 0.5
+		end
 	}
 
 	local interpolate = 0
@@ -125,6 +136,13 @@ function graphics:load(isThread)
 		-- )
 		-- love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
 	end
+	function self:setVisible(name, id, visible)
+		local string = ffi.string(name.string, #name) -- VERY SLOW
+		-- print("skdmdl;k")
+		local batchSet = TEXTURE_ASSETS[string]
+		-- print(string)
+		batchSet:setVisible(id, visible)
+	end
 
 	function self:addRectangle(name, x, y, r, width, height, ox, oy)
 		assert(string, "no name given", 2)
@@ -141,6 +159,7 @@ function graphics:load(isThread)
 
 	end
 	function self:update()
+		self.Camera:update()
 		-- for k, v in pairs(TEXTURE_ASSETS) do
 		-- 	v.batch:flush()
 		-- end
@@ -194,6 +213,7 @@ function graphics:load(isThread)
 		love.graphics.setColor(1, 1, 1, 1)
 
 		love.graphics.push()
+			love.graphics.translate(-self.Camera.x, self.Camera.y)
 			love.graphics.scale(self.RenderScale.x, self.RenderScale.y)
 			love.graphics.translate(self.RenderSize.x / 2, self.RenderSize.y / 2)
 			-- love.graphics.setWireframe(true)

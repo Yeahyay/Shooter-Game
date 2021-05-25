@@ -9,8 +9,8 @@ function PhysicsSystem:start(EntityManager)
 	EntityManager:forEachNotParallel("PhysicsSystem_start", function()
 		local function execute(Entity, Physics, Transform)
 			Physics.accX = 10
-			Transform.x = fmath.random2(-Feint.Core.Graphics.ScreenSize.x * 0.5, Feint.Core.Graphics.ScreenSize.x * 0.5)
-			Transform.y = fmath.random2(-Feint.Core.Graphics.ScreenSize.y * 0.5, Feint.Core.Graphics.ScreenSize.y * 0.5)
+			Transform.x = fmath.random2(-Feint.Core.Graphics.RenderSize.x * 10, Feint.Core.Graphics.RenderSize.x * 10)
+			Transform.y = fmath.random2(-Feint.Core.Graphics.RenderSize.y * 10, Feint.Core.Graphics.RenderSize.y * 10)
 		end
 		return execute
 	end)
@@ -21,11 +21,13 @@ function PhysicsSystem:update(EntityManager)
 	local mouse = Feint.Core.Input.Mouse
 	mouse.ObjectHovered = false
 	EntityManager:forEachNotParallel("PhysicsSystem_mouse_update", function()
-		local execute = function(Entity, Physics, Transform)
-			local mousePos = mouse.Position
-			if mousePos.x > Transform.x - Transform.sizeX / 2 and mousePos.x < Transform.x + Transform.sizeX / 2 and
-				mousePos.y > Transform.y - Transform.sizeY / 2 and mousePos.y < Transform.y + Transform.sizeY / 2 then
-					mouse.ObjectHovered = Entity
+		local execute = function(Entity, Physics, Transform, Renderer)
+			if Renderer.visible then
+				local mousePos = Feint.Core.Graphics.Camera:getMousePosition()
+				if mousePos.x > Transform.x - Transform.sizeX / 2 and mousePos.x < Transform.x + Transform.sizeX / 2 and
+					mousePos.y > Transform.y - Transform.sizeY / 2 and mousePos.y < Transform.y + Transform.sizeY / 2 then
+						mouse.ObjectHovered = Entity
+				end
 			end
 		end
 		return execute

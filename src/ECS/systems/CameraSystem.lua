@@ -1,5 +1,6 @@
 local System = Feint.ECS.System
 local World = Feint.ECS.World
+local Graphics = Feint.Core.Graphics
 
 local CameraSystem = System:new("CameraSystem")
 function CameraSystem:init()
@@ -15,14 +16,25 @@ function CameraSystem:start(EntityManager)
 	end
 end
 
+local focus
 function CameraSystem:update(EntityManager)
-	EntityManager:forEachNotParallel("CameraSystem_update", function()
-		local execute = function(Entity, Transform, Physics, Camera)
-			-- print(Camera.target)
-			-- Graphics.Camera:setPosition(Transform)
+	Feint.Core.Graphics.Camera:setPosition(Feint.Core.Input.Mouse.Position:split())
+	EntityManager:forEachNotParallel("CameraSystem_getEntity", function()
+		local execute = function(Entity, CameraFocus)
+			focus = Entity
 		end
 		return execute
 	end)
+	-- EntityManager:forEachNotParallel("CameraSystem_update", function()
+	-- 	local execute = function(Entity, Transform, Physics, Camera)
+	-- 		Camera.target = focus
+	-- 		local data = EntityManager:getEntityDataFromID(Camera.target)
+	-- 		if data then
+	-- 			Graphics.Camera:setPosition(data.Transform.x, data.Transform.y)
+	-- 		end
+	-- 	end
+	-- 	return execute
+	-- end)
 end
 
 return CameraSystem

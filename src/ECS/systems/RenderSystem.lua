@@ -8,7 +8,7 @@ function RenderSystem:start(EntityManager)
 	local Renderer = world:getComponent("Renderer")
 	local Transform = world:getComponent("Transform")
 	local Physics = world:getComponent("Physics")
-	for i = 1, 25, 1 do
+	for i = 1, 100000, 1 do
 		EntityManager:createEntityFromComponents{Renderer, Transform, Physics}
 	end
 
@@ -43,18 +43,27 @@ function RenderSystem:update(EntityManager, dt)
 	end)
 
 	EntityManager:forEachNotParallel("RenderSystem_update", function()
-		local graphics = Feint.Core.Graphics
+		local Graphics = Feint.Core.Graphics
 
 		local function execute(Entity, Renderer, Transform)
-			graphics:modify(
-				Renderer.texture,
-				Renderer.id,
-				Transform.x,
-				Transform.y,
-				Transform.angle,
-				Transform.trueSizeX,
-				Transform.trueSizeY
-			)
+			local TLX, TLY, BRX, BRY = Graphics.Camera:getScreenBounds()
+			local x, y, sX, sY = Transform.x, Transform.y, Transform.sizeX, Transform.sizeY
+			if x > TLX - sX and x < BRX + sX and y < TLY + sY and y > BRY - sY then
+				Graphics:modify(
+					Renderer.texture,
+					Renderer.id,
+					Transform.x,
+					Transform.y,
+					Transform.angle,
+					Transform.trueSizeX,
+					Transform.trueSizeY
+				)
+				Renderer.visible = true
+			else
+				Renderer.visible = false
+			end
+			Graphics:setVisible(Renderer.texture, Renderer.id, Renderer.visible)
+			-- Graphics.visible = math.random(0, 1) > 0.5 and true or false
 		end
 		return execute
 	end)
