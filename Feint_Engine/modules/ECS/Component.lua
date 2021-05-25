@@ -46,13 +46,14 @@ function Component:init(data, ...)
 		self.sizeBytes = self.trueSizeBytes + padding
 		-- print(self.trueSizeBytes, padding, self.sizeBytes)
 
+		local t = table.concat(structMembers, ";\n")
 		ffi.cdef(string.format([[
 			#pragma pack(1)
 			struct %s {
 				%s
 				char padding[%s];
 			}
-		]], self.ComponentName, table.concat(structMembers, ";\n") .. ";", padding))
+		]], self.ComponentName, #t > 0 and t .. ";" or "", padding))
 		self.ffiType = ffi.metatype("struct ".. self.ComponentName, {
 			__pairs = function(t)
 				local function iter(t, k)

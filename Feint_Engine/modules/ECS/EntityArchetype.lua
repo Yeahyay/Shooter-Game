@@ -41,7 +41,7 @@ function EntityArchetype:getArchetypeSignatureFromComponents(components)
 	for i = 1, #components do
 		local v = components[i]
 		if v.componentData then
-			stringTable[#stringTable + 1] = v.Name
+			stringTable[#stringTable + 1] = v.Name --.. "|"
 			assert(not unique[v.Name], "duplicate component \"" .. v.Name .. "\" for archetype", 2)
 			unique[v.Name] = true
 		end
