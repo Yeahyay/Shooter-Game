@@ -12,6 +12,7 @@ function batchSet:init(image)
 	self.batches = {}
 	self.batchSizes = {}
 	self.batchCapacity = 1000
+	self.invBatchCapacity = 1 / self.batchCapacity
 	self.totalSize = 0
 	self.image = image
 	self.currentBatch = 0 -- currently free batch
@@ -88,13 +89,13 @@ function batchSet:updateSpriteData(id)
 end
 function batchSet:modifySprite(id, x, y, r, width, height)
 	local spriteIndex = (id - 1) % self.batchCapacity + 1
-	local batchIndex = math.ceil(id / (self.batchCapacity))
+	local batchIndex = math.ceil(id * self.invBatchCapacity)
 	-- print(spriteIndex, batchIndex, #self.batches)
 	self.batches[batchIndex]:set(spriteIndex, x, y, r, width, height)
 end
 function batchSet:setVisible(id, visible)
 	local spriteIndex = (id - 1) % self.batchCapacity + 1
-	local batchIndex = math.ceil(id / (self.batchCapacity))
+	local batchIndex = math.ceil(id * self.invBatchCapacity)
 	-- print(spriteIndex, batchIndex, #self.batches)
 	self.batches[batchIndex]:setVisible(spriteIndex, visible)
 end

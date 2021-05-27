@@ -24,8 +24,8 @@ function PhysicsSystem:update(EntityManager)
 		local execute = function(Entity, Physics, Transform, Renderer)
 			if Renderer.visible then
 				local mousePos = Feint.Core.Graphics.Camera:getMousePosition()
-				if mousePos.x > Transform.x - Transform.sizeX / 2 and mousePos.x < Transform.x + Transform.sizeX / 2 and
-					mousePos.y > Transform.y - Transform.sizeY / 2 and mousePos.y < Transform.y + Transform.sizeY / 2 then
+				if mousePos.x > Transform.x - Transform.sizeX * 0.5 and mousePos.x < Transform.x + Transform.sizeX * 0.5 and
+					mousePos.y > Transform.y - Transform.sizeY * 0.5 and mousePos.y < Transform.y + Transform.sizeY * 0.5 then
 						mouse.ObjectHovered = Entity
 				end
 			end

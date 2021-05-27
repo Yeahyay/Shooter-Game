@@ -20,14 +20,16 @@ function coreUtil:load()
 		end
 	end
 
+	local div1024 = 1 / 1024
+	local div1000 = 1 / 1000
 	function self:getMemoryUsageBytes()
 		return collectgarbage("count") * 1024
 	end
 	function self:getMemoryUsageKiB()
-		return self:getMemoryUsageBytes() / 1024
+		return self:getMemoryUsageBytes() * div1024
 	end
 	function self:getMemoryUsageKb()
-		return self:getMemoryUsageBytes() / 1000
+		return self:getMemoryUsageBytes() * div1000
 	end
 end
 

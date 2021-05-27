@@ -132,7 +132,7 @@ function graphics:load(isThread)
 		batchSet:modifySprite(id, x, -y, r, width, height)
 		-- batch:set(id, dx, dy, r,
 		-- 	width, height,
-		-- 	drawable.sizeX / 2, drawable.sizeY / 2
+		-- 	drawable.sizeX * 0.5, drawable.sizeY * 0.5
 		-- )
 		-- love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
 	end
@@ -149,7 +149,7 @@ function graphics:load(isThread)
 		-- local string = ffi.string(name, #name)
 		local string = ffi.string(name.string, #name) -- VERY SLOW
 		-- assert(string, "string is broken")
-		-- local id = TEXTURE_ASSETS[string].batch:add(x, y, r, width, height, width / 2, height / 2)
+		-- local id = TEXTURE_ASSETS[string].batch:add(x, y, r, width, height, width * 0.5, height * 0.5)
 		local id = TEXTURE_ASSETS[string]:addSprite(x, y, r, width, height, ox, oy)
 		-- self.drawables[id] = {x = x, y = y, r = r, width = width, height = height}
 		return id
@@ -208,14 +208,14 @@ function graphics:load(isThread)
 		love.graphics.rectangle("fill", 0, 0, self.RenderSize.x, self.RenderSize.y)
 		love.graphics.setColor(0.25, 0.25, 0.25, 1)
 		love.graphics.rectangle("fill",
-			self.RenderSize.x / 4, self.RenderSize.y / 4, self.RenderSize.x / 2, self.RenderSize.y / 2
+			self.RenderSize.x * 0.25, self.RenderSize.y * 0.25, self.RenderSize.x * 0.5, self.RenderSize.y * 0.5
 		)
 		love.graphics.setColor(1, 1, 1, 1)
 
 		love.graphics.push()
 			love.graphics.translate(-self.Camera.x, self.Camera.y)
 			love.graphics.scale(self.RenderScale.x, self.RenderScale.y)
-			love.graphics.translate(self.RenderSize.x / 2, self.RenderSize.y / 2)
+			love.graphics.translate(self.RenderSize.x * 0.5, self.RenderSize.y * 0.5)
 			-- love.graphics.setWireframe(true)
 
 			for k, textureAsset in pairs(TEXTURE_ASSETS) do

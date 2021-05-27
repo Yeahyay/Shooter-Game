@@ -51,8 +51,9 @@ function extendedMath:load()
 		return self.oscillateManualSigned(util.getTime(), amplitude, rate, offset)
 	end
 
+	local PI = math.pi
 	function self.triangle(theta, amplitude, rate, offset)
-		return ((math.asin(math.cos(theta * rate + offset)) / (math.pi * 0.5))) * amplitude
+		return ((math.asin(math.cos(theta * rate + offset)) / (PI * 0.5))) * amplitude
 	end
 
 	local random = love.math.random

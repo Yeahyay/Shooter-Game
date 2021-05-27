@@ -61,7 +61,7 @@ function input:load()
 		mouse.PositionRaw = mouse.PositionRaw % Feint.Core.Graphics.ScreenToRenderRatio
 
 		mouse.PositionOld = mouse.Position
-		mouse.Position = mouse.PositionRaw - Feint.Core.Graphics.RenderSize / 2
+		mouse.Position = mouse.PositionRaw - Feint.Core.Graphics.RenderSize * 0.5
 
 
 		mouse.PositionUnitOld = mouse.PositionUnit
