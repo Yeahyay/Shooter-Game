@@ -18,23 +18,27 @@ end
 
 local focus
 function CameraSystem:update(EntityManager)
-	Feint.Core.Graphics.Camera:setPosition(Feint.Core.Input.Mouse.Position:split())
 	EntityManager:forEachNotParallel("CameraSystem_getEntity", function()
 		local execute = function(Entity, CameraFocus)
 			focus = Entity
 		end
 		return execute
 	end)
-	-- EntityManager:forEachNotParallel("CameraSystem_update", function()
-	-- 	local execute = function(Entity, Transform, Physics, Camera)
-	-- 		Camera.target = focus
-	-- 		local data = EntityManager:getEntityDataFromID(Camera.target)
-	-- 		if data then
-	-- 			Graphics.Camera:setPosition(data.Transform.x, data.Transform.y)
-	-- 		end
-	-- 	end
-	-- 	return execute
-	-- end)
+	-- print(focus, type(focus), "jnooiompk")
+	EntityManager:forEachNotParallel("CameraSystem_update", function()
+		local execute = function(Entity, Transform, Physics, Camera)
+			-- print(Camera)
+			local mousePosX, mousePosY = Feint.Core.Input.Mouse.Position:split()
+			if focus then
+				Camera.target = Feint.Core.FFI.cstring(focus)
+				local data = EntityManager:getEntityDataFromID(Camera.target)
+				if data then
+					Graphics.Camera:setPosition(data.Transform.x + mousePosX, data.Transform.y + mousePosY)
+				end
+			end
+		end
+		return execute
+	end)
 end
 
 return CameraSystem

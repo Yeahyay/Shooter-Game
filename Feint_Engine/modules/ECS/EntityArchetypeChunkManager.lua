@@ -127,7 +127,7 @@ function entityArchetypeChunkManager:getArchetypeFromComponents(components)
 	local archetypeSignature = EntityArchetype:getArchetypeSignatureFromComponents(components)
 	local archetype = self:getArchetypeFromArchetypeSignature(archetypeSignature)
 	if not archetype then
-		printf("Archetype signature \"%s\" not found, creating\n", archetypeSignature:gsub("_signature", ""))
+		-- printf("Archetype signature \"%s\" not found, creating\n", archetypeSignature:gsub("_signature", ""))
 		archetype = self:newArchetypeFromComponents(components)
 	end
 	return archetype

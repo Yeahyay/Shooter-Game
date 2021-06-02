@@ -127,12 +127,14 @@ function EntityManager:createEntityFromComponents(components)
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
 	return self:createEntity(archetypeChunkGroup)
 end
+local ffi = require("ffi")
 function EntityManager:getEntityDataFromID(entityID)
-	if tostring(entityID) == Component.ENTITY then
+	local id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
+	if id == Component.ENTITY then
 		return nil, nil, nil
 	end
-	local archetypeChunk, index = self:getArchetypeChunkFromEntity(entityID)
-	return self:getEntityDataFromArchetypeChunk(archetypeChunk, entityID), archetypeChunk.archetype, index
+	local archetypeChunk, index = self:getArchetypeChunkFromEntity(id)
+	return self:getEntityDataFromArchetypeChunk(archetypeChunk, id), archetypeChunk.archetype, index
 end
 function EntityManager:getEntityDataFromArchetypeChunk(archetypeChunk, entityID)
 	return archetypeChunk:getDataArray()[archetypeChunk:getEntityIndexFromID(entityID) - 1]
@@ -214,9 +216,11 @@ function EntityManager:preQueue(id, callback)
 		currentQueue.query = queryBuilder:withAll(arguments.componentArguments):build()
 
 		-- convert the array of strings into an archetypeSignature
-		currentQueue.signature = EntityArchetype:getArchetypeSignatureFromComponents(currentQueue.componentArguments)
-		assert(currentQueue.signature, "pre queue failed to get archetype string")
+		-- currentQueue.signature = EntityArchetype:getArchetypeSignatureFromComponents(currentQueue.componentArguments)
+		-- assert(currentQueue.signature, "pre queue failed to get archetype string")
 		currentQueue.archetype = self.archetypeChunkManager:getArchetypeFromComponents(currentQueue.componentArguments)
+		-- print(currentQueue.archetype.signature, "unoi0koioioi0k[ompko[pomp;]]")
+		currentQueue.signature = currentQueue.archetype.signature
 		assert(currentQueue.archetype, "pre queue failed to get archetype \"" .. tostring(currentQueue.archetype) .. "\"")
 
 		if argumentCache[id][1] == "NOARG" then
@@ -313,29 +317,6 @@ function EntityManager:forEachNotParallel(id, callback)
 	self:forEachNotParallel_enqueue(id, callback)
 end
 
-function EntityManager:forEachNotParallel_OLD(id, callback)
-	assert(id, "No id given", 2)
-	assert(callback, "No callback given", 2)
-	assert(type(callback) == "function", "callback is not a function")
-
-	local func = callback()
-	local preQueueData = self:preQueue(id, func)
-
-	local query = self:buildQueryFromComponents(preQueueData.componentArguments)
-	local archetypeChunks = query:getArchetypeChunks(self)
-
-	preQueueData.startTime = love.timer.getTime()
-	local status, message = pcall(function()
-		local status = preQueueData.execute(self, preQueueData.source, preQueueData.componentArguments, preQueueData.archetype, archetypeChunks, func)
-		assert(status == 0)
-	end)
-	if not status then
-		error(message)
-		Feint.Core.Time:pause()
-	end
-	preQueueData.endTime = love.timer.getTime()
-	preQueueData.runTime = preQueueData.endTime - preQueueData.startTime
-end
 -- Feint.Util.Memoize(EntityManager.forEach)
 
 Feint.Util.Table.makeTableReadOnly(EntityManager, function(self, k)

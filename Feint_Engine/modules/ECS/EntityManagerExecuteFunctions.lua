@@ -7,7 +7,7 @@ function ExecuteFunctions:load(EntityManager)
 		local _, count = code:match("([%s]*)%g"):gsub("\t", "__tab;")
 		return count
 	end
-	function self:debugPrint(code)
+	function self:debugPrint(name, code)
 		local tabString = string.rep("\t", 	4)
 		code = code:gsub("([^\n]*)\n", function(match, cap1)
 			local s = match:gsub(tabString, "   ")
@@ -18,7 +18,7 @@ function ExecuteFunctions:load(EntityManager)
 			c = c + 1
 			return string.format("%4d |\t%s\n", c, match)
 		end)
-		printf("\n%s\n", code)
+		printf("\n%s\n%s\n", name, code)
 	end
 	function ExecuteFunctions:generateExecuteFunction(num, name)
 		assert(num > 0, "no args", 2)
@@ -66,6 +66,7 @@ function ExecuteFunctions:load(EntityManager)
 			]]
 
 			local chunk = load(code, name)()
+			-- self:debugPrint(name, code)
 			rawset(self, name, chunk)
 			return chunk
 		else

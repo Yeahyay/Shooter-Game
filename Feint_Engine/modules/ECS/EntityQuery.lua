@@ -36,13 +36,13 @@ function EntityQuery:init(with, with_Count, withAll, withAll_Count, without, wit
 end
 function EntityQuery:findValidArchetypes(query, entityManager)
 	local validArchetypes = {}
-	-- printf("Finding valid archetypes for \"%s\"\n", self.rawArchetypeSignature)
+	-- printf("Finding valid archetypes for \"%s\"\n", self.archetypeSignature)
 	for archetypeSignature, _ in pairs(entityManager.archetypeChunkManager.archetypes) do
 		if archetypeSignature == "size" then goto continue end
 
 		local match = true
 		for _, component in ipairs(self.components) do
-			if not archetypeSignature:match(component.Name) then
+			if not archetypeSignature:match(component.Name .. "|") then
 				match = false
 				break
 			end

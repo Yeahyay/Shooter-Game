@@ -71,7 +71,7 @@ end
 -- end
 function batchSet:addSprite(x, y, r, width, height, ox, oy)
 	if self.batchSizes[self.currentBatch] >= self.batchCapacity then
-		print(self.batchSizes[self.currentBatch], self.batchCapacity)
+		-- print(self.batchSizes[self.currentBatch], self.batchCapacity)
 		self:newBatch()
 	end
 

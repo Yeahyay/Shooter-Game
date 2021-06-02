@@ -28,7 +28,6 @@ function Component:init(data, ...)
 				-- the data table is used for initialization
 				-- setting it to nil because it is initialized manually
 				self.data[k] = nil--ffi.C.malloc(k:len())
-				-- print(k, v, self.data[k])
 			else
 				dataType = dataType == "number" and "float" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
 				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof(dataType)
@@ -58,8 +57,6 @@ function Component:init(data, ...)
 			__pairs = function(t)
 				local function iter(t, k)
 					k = k + 1
-					-- print(t, k, self.orderedMembers[k], #structMembers)
-					-- print(t[self.orderedMembers[k]])
 					if k <= #structMembers then
 						return k, self.orderedMembers[k], t[self.orderedMembers[k]]
 					end
@@ -67,9 +64,6 @@ function Component:init(data, ...)
 				return iter, t, 0
 			end,
 		})
-		-- print(self.ffiType)
-
-		-- print(self.sizeBytes)
 	else
 		self.keys = {}
 		self.values = {}
@@ -85,14 +79,10 @@ function Component:init(data, ...)
 				end
 			end
 		end
-		-- self[1] = self.size
 		local padding = math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
 		self.sizeBytes = self.trueSizeBytes + padding
-		-- print(self.trueSizeBytes, padding, self.sizeBytes)
 	end
 end
-
--- function Component.modifyString()
 
 function Component:new(name, data, ...)
 	local instance = {

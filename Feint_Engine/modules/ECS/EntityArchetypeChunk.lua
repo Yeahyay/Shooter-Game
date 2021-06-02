@@ -21,9 +21,9 @@ function EntityChunk:init(archetype, ...)
 
 	getmetatable(self).__tostring = function() return self.Name end
 
-	self.structDefinition = "struct archetype_" .. self.archetype.signature .. "*"
+	self.structDefinition = "struct archetype_" .. self.archetype.signatureStripped .. "*"
 
-	local tp = ffi.typeof("struct archetype_" .. self.archetype.signature .. "[$]", self.capacity)
+	local tp = ffi.typeof("struct archetype_" .. self.archetype.signatureStripped .. "[$]", self.capacity)
 	self.rawData = ffi.new(tp, self.archetype.initializer)
 	self.byteData = love.data.newByteData(self.capacity * self.entitySizeBytes)
 	local data = self.byteData:getFFIPointer()

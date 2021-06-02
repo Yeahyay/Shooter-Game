@@ -24,6 +24,7 @@ function EntityArchetype:init(components, ...)
 	-- holds components for the archetype
 	self.components = components
 	self.signature = nil
+	self.signatureStripped = nil
 	self.chunkCount = 0
 	self.numInstances = 0
 	self.totalSize = 0 -- the total size of every component and its fields
@@ -41,31 +42,36 @@ function EntityArchetype:getArchetypeSignatureFromComponents(components)
 	for i = 1, #components do
 		local v = components[i]
 		if v.componentData then
-			stringTable[#stringTable + 1] = v.Name --.. "|"
+			stringTable[#stringTable + 1] = v.Name .. "|"
 			assert(not unique[v.Name], "duplicate component \"" .. v.Name .. "\" for archetype", 2)
 			unique[v.Name] = true
 		end
 	end
 	table.sort(stringTable, function(a, b) return a < b end)
-	local rawArchetypeSignature = table.concat(stringTable)
+	local archetypeSignatureStripped = table.concat(stringTable):gsub("|", "")
 	stringTable[#stringTable + 1] = "_signature"
 	local archetypeSignature = table.concat(stringTable)
-	return archetypeSignature, rawArchetypeSignature
+	return archetypeSignature, archetypeSignatureStripped
 end
 
 function EntityArchetype:createArchetype()
-	local components = {}
+	-- local components = {}
 	for i = 1, #self.components, 1 do
-		local v = self.components[i]
-		components[i] = v.Name
+		-- local v = self.components[i]
+		-- components[i] = v.Name
 		self.totalSize = self.totalSize + self.components[i].size
 		self.totalSizeBytes = self.totalSizeBytes + self.components[i].sizeBytes
 	end
-	table.sort(components, function(a, b) return a < b end)
-	components[#components + 1] = "_signature"
-	self.signature = table.concat(components)
-	self.Name = self.signature -- redundant?
+	-- table.sort(components, function(a, b) return a < b end)
+	-- components[#components + 1] = "_signature"
+	-- self.signature = table.concat(components)
+
+	self.signature, self.signatureStripped = self:getArchetypeSignatureFromComponents(self.components)
+
+	self.Name = self.signatureStripped -- redundant?
 	-- Feint.Log:logln(self.signature)
+	-- print(self.signature)
+	-- print()
 
 	local structMembers = {}
 	for k, v in pairs(self.components) do
@@ -75,11 +81,11 @@ function EntityArchetype:createArchetype()
 		struct archetype_%s {
 			%s
 		}
-	]], self.signature, table.concat(structMembers, ";\n") .. ";")
+	]], self.signatureStripped, table.concat(structMembers, ";\n") .. ";")
 	-- print(s)
 	ffi.cdef(s)
 
-	local ct = ffi.typeof("struct archetype_" .. self.signature)
+	local ct = ffi.typeof("struct archetype_" .. self.signatureStripped)
 	local final = ffi.metatype(ct, {
 		__pairs = function(t)
 			local function iter(t, k)
@@ -99,7 +105,7 @@ function EntityArchetype:createArchetype()
 		local name = self.components[i].Name
 		self.initValues[name] = self.components[i].data
 	end
-	self.initializer = ffi.new("struct archetype_" .. self.signature, self.initValues)
+	self.initializer = ffi.new("struct archetype_" .. self.signatureStripped, self.initValues)
 
 	return self
 end
