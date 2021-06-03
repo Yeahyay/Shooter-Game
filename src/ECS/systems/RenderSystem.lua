@@ -23,7 +23,7 @@ function RenderSystem:start(EntityManager)
 
 			-- Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
 			Renderer.id = graphics:addRectangle(
-				Renderer.texture,-- Renderer.textureLength,
+				Renderer.texture,
 				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,
 				Transform.sizeX / 2, Transform.sizeY / 2
 			)

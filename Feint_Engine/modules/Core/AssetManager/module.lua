@@ -7,7 +7,17 @@ function AssetManager:load(isThread)
 	local types = {
 		image = true;
 		batchSet = true;
+		FONT = true;
 	}
+	setmetatable(self, {
+		__index = function(t, k)
+			if types[k] then
+				return k
+			else
+				return rawget(t, k)
+			end
+		end;
+	})
 	function self:registerAsset(asset, name, type)
 		assert(types[type], "type \"" .. type .. "\" is not supported")
 		local key = self:getKey(name, type)

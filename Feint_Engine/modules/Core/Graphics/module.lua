@@ -193,6 +193,7 @@ function graphics:load(isThread)
 	end
 
 	function self:drawText()
+		love.graphics.setFont(Feint.Core.AssetManager:requestAsset("Default Font", Feint.Core.AssetManager.FONT))
 		for i = 1, self.textQueue.size, 1 do
 			local textData = self.textQueue[i]
 			-- print(i, unpack(textData))
