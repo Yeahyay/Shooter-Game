@@ -33,7 +33,7 @@ function CameraSystem:update(EntityManager)
 				Camera.target = Feint.Core.FFI.cstring(focus)
 				local data = EntityManager:getEntityDataFromID(Camera.target)
 				if data then
-					Graphics.Camera:setPosition(data.Transform.x + mousePosX, data.Transform.y + mousePosY)
+					Graphics.Camera:setPosition(data.Transform.x + mousePosX * 0.5, data.Transform.y + mousePosY * 0.5)
 				end
 			end
 		end

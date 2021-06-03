@@ -73,14 +73,13 @@ function love.keypressed(key, ...)
 		entityManager:setComponentData(entity, Transform, {
 			{x = Math.random2(Graphics.RenderSize.x / 2)},
 			{y = Math.random2(-Graphics.RenderSize.y / 2, Graphics.RenderSize.y / 2 - 300)},
-											-- 1
-			{angle = 0},				-- 2
-			{sizeX = 32},				-- 3
-			{sizeY = 32},				-- 4
-			{scaleX = 10},				-- 5
-			{scaleY = 10},				-- 6
-			{trueSizeX = 10 / 32},	-- 7
-			{trueSizeY = 10 / 32},	-- 8
+			{angle = 0},
+			{sizeX = 32},
+			{sizeY = 32},
+			{scaleX = 10},
+			{scaleY = 10},
+			{trueSizeX = 10 / 32},
+			{trueSizeY = 10 / 32},
 		})
 	end
 	-- if key == "a" then
@@ -141,6 +140,14 @@ function love.load()
 	DEFAULT_FONT_BOLD = LoveGraphics.newFont("Assets/fonts/FiraCode-Bold.ttf", 28)
 	DEFAULT_FONT_HEIGHT = DEFAULT_FONT:getHeight()
 	DEFAULT_UI_FONT = LoveGraphics.newFont("Assets/fonts/FiraCode-Medium.ttf", 12)
+
+	for k, v in pairs(Feint.Core.AssetManager) do
+		print(k, v)
+	end
+	Feint.Core.AssetManager:registerAsset(DEFAULT_FONT, "Default Font", Feint.Core.AssetManager.FONT)
+	Feint.Core.AssetManager:registerAsset(DEFAULT_FONT_BOLD, "Default Font Bold", Feint.Core.AssetManager.FONT)
+	Feint.Core.AssetManager:registerAsset(DEFAULT_UI_FONT, "Default UI Font", Feint.Core.AssetManager.FONT)
+
 	LoveGraphics.setFont(DEFAULT_FONT)
 
 	-- fpsGraph1 = fpsGraph.createGraph(350, DEFAULT_FONT_HEIGHT / 2 * 8)
@@ -360,37 +367,9 @@ function love.draw(dt)
 
 	local startTime = getTime()
 
-	-- LoveGraphics.setCanvas(canvas)
-	-- LoveGraphics.clear()
-	-- LoveGraphics.setColor(0.5, 0.5, 0.5, 1)
-	-- LoveGraphics.rectangle("fill", 0, 0, Graphics.ScreenSize.x, Graphics.ScreenSize.y)
-	-- LoveGraphics.setColor(1, 1, 1, 1)
-	-- LoveGraphics.push()
-	-- 	LoveGraphics.scale(Graphics.ScreenToRenderRatio.x, Graphics.ScreenToRenderRatio.y)
-	-- 	LoveGraphics.translate(Graphics.ScreenSize.x / 2, Graphics.ScreenSize.y / 2)
-	-- 	-- LoveGraphics.setWireframe(true)
-		Graphics:updateInterpolate(Time.accum)
-	-- 	-- Graphics.processQueue()
-		Graphics:draw()
-	-- 	-- LoveGraphics.setWireframe(false)
-	-- LoveGraphics.pop()
-	-- LoveGraphics.setCanvas()
-	-- -- print(Graphics.RenderToScreenRatio, Graphics.ScreenToRenderRatio)
-	-- -- LoveGraphics.translate(720 * Graphics.ScreenToRenderRatio.x / 2, 1)
-	-- local sx, sy = Graphics.RenderToScreenRatio.x, Graphics.RenderToScreenRatio.y
-	-- LoveGraphics.draw(canvas, 0, 0, 0, sx, sy, 0, 0)
-	-- -- LoveGraphics.draw(canvas, 50, 50, 0, 1, 1, 0, 0)
+	Graphics:updateInterpolate(Time.accum)
+	Graphics:draw()
 
-	-- fpsGraph.drawGraphs(2, {fpsGraph1, memGraph1})
-	-- LoveGraphics.setFont(DEFAULT_FONT)
-
-	-- love.graphics.setColor(0, 0, 0, 1)
-
-
-	-- local function outline(times, x, y)
-
-
-	-- love.graphics.setFont(DEFAULT_FONT_BOLD)
 	debugDraw()
 
 	local function outline(canvas, depth, x, y)
