@@ -99,6 +99,44 @@ function love.mousemoved(x, y, dx, dy)
 	Input.mousemoved(x, y, dx, dy)
 end
 
+function love.joystickadded(joystick)
+	print("ADDED", joystick)
+	-- print(joystick:getGamepadMappingString())
+	Input:joystickadded(joystick)
+end
+function love.joystickremoved(joystick)
+	print("REMOVED", joystick)
+end
+function love.gamepadaxis(joystick, axis, value)
+	Input:gamepadaxis(joystick, axis, value)
+	-- print("gamepadaxis", joystick, axis, value)
+end
+function love.gamepadpressed(joystick, button)
+	Input:gamepadpressed(joystick, button)
+	-- print("gamepadpressed", joystick, button)
+end
+function love.gamepadreleased(joystick, button)
+	Input:gamepadreleased(joystick, button)
+	-- print("gamepadreleased", joystick, button)
+end
+function love.joystickhat(joystick, hat, direction)
+	Input:joystickhat(joystick, hat, direction)
+	-- print("joystickhat", joystick, hat, direction)
+end
+function love.joystickaxis(joystick, axis, value)
+	Input:joystickaxis(joystick, axis, value)
+-- 	print("joystickaxis", joystick, axis, value)
+end
+function love.joystickpressed(joystick, button)
+	Input:joystickpressed(joystick, button)
+	-- print("joystickpressed", joystick, button)
+end
+function love.joystickreleased(joystick, button)
+	Input:joystickpressed(joystick, button)
+	-- print("joystickreleased", joystick, button)
+end
+
+
 function love.mousepressed(x, y, button, isTouch)
 	Input.mousepressed(x, y, button, isTouch)
 end
@@ -120,7 +158,7 @@ function love.resize(x, y)
 end
 
 function love.load()
-	Time.framerate = 78 -- framerate cap
+	Time.framerate = 60 -- framerate cap
 	Time.rate = 1 / 60 -- update dt
 	Time.sleep = 0.001 -- don't toast the CPU
 	Time:setSpeed(1) -- default game speed

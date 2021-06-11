@@ -79,6 +79,91 @@ function input:load()
 		mouse.ReleasePosition = mouse.Position
 		mouse.ReleasePositionWorld = mouse.PositionWorld
 	end
+
+	self.Gamepad = {}
+	self.joysticks = {}
+	function self:joystickadded(joystick)
+		local mappingString = joystick:getGamepadMappingString()
+		local id = joystick:getID()
+		self.joysticks[id] = joystick
+
+		local gamepad = {
+			buttons = {}, axes = {}, hats = {}, mappingIndex = {}
+		}
+		self.Gamepad[id] = gamepad
+		-- for i = 1, joystick:getButtonCount(), 1 do
+			-- gamepad.axes[#gamepad.axes + 1] =
+		-- end
+		-- print(mappingString:gsub("(,)", "%1\n"))
+		for name, input, type, number in mappingString:gmatch("(%a+):((%a+)([%d%p]+)),") do
+			-- print(name, type, number, input)
+			gamepad.mappingIndex[type] = name
+			gamepad.mappingIndex[name] = type
+			if type == "a" then
+				gamepad.axes[name] = 0
+			elseif type == "b" then
+				gamepad.buttons[name] = false
+			elseif type == "h" then
+				gamepad.hats[name] = false
+			end
+		end
+	end
+	function self:gamepadChanged(joystick)
+		-- local id = joystick:getID()
+		-- for _, buttonGroup in pairs(self.Gamepad[id]) do
+		-- 	for k, v in pairs(buttonGroup) do
+		-- 		print(k, v)
+		-- 	end
+		-- end
+	end
+	function self:gamepadaxis(joystick, axis, value)
+		local id = joystick:getID()
+		self.Gamepad[id].axes[axis] = value
+		-- print(axis, value)
+		self:gamepadChanged(joystick)
+	end
+	function self:gamepadpressed(joystick, button)
+		local id = joystick:getID()
+		local gamepad = self.Gamepad[id]
+		-- print(button)
+		if gamepad.mappingIndex[button] == "h" then
+			gamepad.hats[button] = true
+		else
+			gamepad.buttons[button] = true
+		end
+		self:gamepadChanged(joystick)
+	end
+	function self:gamepadreleased(joystick, button)
+		local id = joystick:getID()
+		local gamepad = self.Gamepad[id]
+		if gamepad.mappingIndex[button] == "h" then
+			gamepad.hats[button] = false
+		else
+			gamepad.buttons[button] = false
+		end
+		self:gamepadChanged(joystick)
+	end
+	function self:joystickhat(joystick, hat, direction)
+		-- local id = joystick:getID()
+		-- -- self.Gamepad[id].axes[button] = value
+		-- self:gamepadChanged(joystick)
+	end
+	function self:joystickaxis(joystick, axis, value)
+		-- local id = joystick:getID()
+		-- -- self.Gamepad[id].axes[button] = value
+		-- self:gamepadChanged(joystick)
+	end
+	function self:joystickpressed(joystick, button)
+		-- local id = joystick:getID()
+		-- self.Gamepad[id].buttons[button] = true
+		-- self:gamepadChanged(joystick)
+	end
+	function self:joystickreleased(joystick, button)
+		-- local id = joystick:getID()
+		-- self.Gamepad[id].buttons[button] = false
+		-- self:gamepadChanged(joystick)
+		-- print("kml;kl")
+	end
 end
 
 return input
