@@ -64,7 +64,7 @@ targets:
       - "-s 0.25" # seconds per day
       - "-c 0.5" # time scale
       - "-e 0.05" # node elasticity
-      # - "-p 0.0005" # start position
+      - "-p 0.0005" # start position
       - "--camera-mode track"
       - "--follow-user Yeahyay"
       - "--max-user-speed 250"

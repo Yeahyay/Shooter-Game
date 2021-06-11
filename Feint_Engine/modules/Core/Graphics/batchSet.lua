@@ -114,7 +114,7 @@ function batchSet:draw()
 			if not batch.visible[j] then goto continue end
 			-- local spriteIndex = (j - 1) % self.batchCapacity + 1
 			-- love.graphics.rectangle("fill", batch.x[j], batch.y[j], 32 * batch.w[j], 32 * batch.h[j])
-			love.graphics.draw(image, x[j], y[j], r[j], w[j], h[j], ox[j], oy[j])
+			love.graphics.draw(image, math.floor(x[j]), math.floor(y[j]), r[j], w[j], h[j], ox[j], oy[j])
 			::continue::
 		end
 	end

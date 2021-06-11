@@ -205,12 +205,12 @@ function graphics:load(isThread)
 		love.graphics.setCanvas(self.canvas)
 		love.graphics.clear()
 
-		love.graphics.setColor(0.35, 0.35, 0.35, 1)
-		love.graphics.rectangle("fill", 0, 0, self.RenderSize.x, self.RenderSize.y)
+		-- love.graphics.setColor(0.35, 0.35, 0.35, 1)
 		love.graphics.setColor(0.25, 0.25, 0.25, 1)
-		love.graphics.rectangle("fill",
-			self.RenderSize.x * 0.25, self.RenderSize.y * 0.25, self.RenderSize.x * 0.5, self.RenderSize.y * 0.5
-		)
+		love.graphics.rectangle("fill", 0, 0, self.RenderSize.x, self.RenderSize.y)
+		-- love.graphics.rectangle("fill",
+			-- self.RenderSize.x * 0.25, self.RenderSize.y * 0.25, self.RenderSize.x * 0.5, self.RenderSize.y * 0.5
+		-- )
 		love.graphics.setColor(1, 1, 1, 1)
 
 		love.graphics.push()
