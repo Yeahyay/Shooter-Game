@@ -164,7 +164,7 @@ function love.load()
 	Time:setSpeed(1) -- default game speed
 
 	fpsList = {}
-	for i = 1, Time.G_AVG_FPS_DELTA_ITERATIONS, 1 do
+	for i = 1, Time.AVG_FPS_DELTA_ITERATIONS, 1 do
 		fpsList[i] = 0
 	end
 	fpsIndex = 1
@@ -268,14 +268,14 @@ function love.update(dt)
 
 	local endTime = getTime()
 
-	Time.G_UPDATE_DT = endTime - startTime
+	Time.UPDATE_DT = endTime - startTime
 
-	Time.G_UPDATE_TIME = Time.G_UPDATE_TIME + (Time.G_UPDATE_DT - Time.G_UPDATE_TIME) * (1 - Time.G_UPDATE_TIME_SMOOTHNESS)
+	Time.UPDATE_TIME = Time.UPDATE_TIME + (Time.UPDATE_DT - Time.UPDATE_TIME) * (1 - Time.UPDATE_TIME_SMOOTHNESS)
 
-	Time.G_UPDATE_TIME_PERCENT_FRAME = Time.G_UPDATE_TIME / (Time.rate) * 100
+	Time.UPDATE_TIME_PERCENT_FRAME = Time.UPDATE_TIME / (Time.rate) * 100
 
 
-	-- fpsGraph.updateFPS(fpsGraph1, Time.rate, Time.G_FPS)
+	-- fpsGraph.updateFPS(fpsGraph1, Time.rate, Time.FPS)
 	-- fpsGraph.updateMem(memGraph1, Time.rate)
 end
 
@@ -294,11 +294,11 @@ local function debugDraw()
 
 	-- FPS
 	LoveGraphics.printf(
-		string.format("FPS:      %7.2f, DT:      %7.4fms\n", Time.G_FPS, 1000 * Time.G_FPS_DELTA),
+		string.format("FPS:      %7.2f, DT:      %7.4fms\n", Time.FPS, 1000 * Time.FPS_DELTA),
 		0, 0, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5)
 	-- [[
 	LoveGraphics.printf(
-		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Time.G_AVG_FPS, 1000 * Time.G_AVG_FPS_DELTA),
+		string.format("FPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Time.AVG_FPS, 1000 * Time.AVG_FPS_DELTA),
 		0, DEFAULT_FONT_HEIGHT / 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
@@ -308,7 +308,7 @@ local function debugDraw()
 
 	-- UPDATE TIME
 	LoveGraphics.printf(
-		string.format("UPDATE:     %8.4fms, %6.2f%% 60Hz\n", 1000 * Time.G_UPDATE_TIME, Time.G_UPDATE_TIME_PERCENT_FRAME),
+		string.format("UPDATE:     %8.4fms, %6.2f%% 60Hz\n", 1000 * Time.UPDATE_TIME, Time.UPDATE_TIME_PERCENT_FRAME),
 		0, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
@@ -316,12 +316,12 @@ local function debugDraw()
 		0, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
-		string.format("UPDATE TRUE:%8.4fms, %6.2f%% 60Hz\n", 1000 * Time.G_UPDATE_DT, Time.G_UPDATE_DT / (Time.rate) * 100),
+		string.format("UPDATE TRUE:%8.4fms, %6.2f%% 60Hz\n", 1000 * Time.UPDATE_DT, Time.UPDATE_DT / (Time.rate) * 100),
 		0, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	-- RENDER TIME
 	LoveGraphics.printf(
-		string.format("RENDER:     %8.4fms, %6.2f%% Frame\n", 1000 * Time.G_RENDER_TIME, Time.G_RENDER_TIME_PERCENT_FRAME),
+		string.format("RENDER:     %8.4fms, %6.2f%% Frame\n", 1000 * Time.RENDER_TIME, Time.RENDER_TIME_PERCENT_FRAME),
 		350, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
@@ -329,22 +329,22 @@ local function debugDraw()
 		350, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 	LoveGraphics.printf(
-		string.format("RENDER TRUE:%8.4fms, %6.2f%% Frame\n", 1000 * Time.G_RENDER_DT, Time.G_RENDER_DT / (Time.rate) * 100),
+		string.format("RENDER TRUE:%8.4fms, %6.2f%% Frame\n", 1000 * Time.RENDER_DT, Time.RENDER_DT / (Time.rate) * 100),
 		350, DEFAULT_FONT_HEIGHT / 2 * 6, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 	LoveGraphics.printf(
-		string.format("FRAME BUDGET: %6.2f%% Frame\n", Time.G_UPDATE_TIME_PERCENT_FRAME + Time.G_RENDER_TIME_PERCENT_FRAME),
+		string.format("FRAME BUDGET: %6.2f%% Frame\n", Time.UPDATE_TIME_PERCENT_FRAME + Time.RENDER_TIME_PERCENT_FRAME),
 		400, DEFAULT_FONT_HEIGHT / 2 * 2, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	)
 
 
 	-- LoveGraphics.printf(
-	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", Time.G_TPS, 1000 * Time.G_TPS_DELTA),
+	-- 	string.format("TPS:      %7.2f, DT:      %7.4fms\n", Time.TPS, 1000 * Time.TPS_DELTA),
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 4, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 	-- LoveGraphics.printf(
-	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Time.G_AVG_TPS, 1000 * Time.G_AVG_TPS_DELTA),
+	-- 	string.format("TPS AVG:  %7.2f, DT AVG:  %7.4fms\n", Time.AVTPS, 1000 * Time.AVTPS_DELTA),
 	-- 	0, DEFAULT_FONT_HEIGHT / 2 * 5, Graphics.ScreenSize.x, "left", 0, 0.5, 0.5
 	-- )
 	-- LoveGraphics.printf(
@@ -388,17 +388,17 @@ local function debugDraw()
 end
 function love.draw(dt)
 	do
-		Time.G_FPS_DELTA = Time.G_FPS_DELTA + (Time.dt - Time.G_FPS_DELTA) * (1 - Time.G_FPS_DELTA_SMOOTHNESS)
-		Time.G_FPS = 1 / Time.G_FPS_DELTA
+		Time.FPS_DELTA = Time.FPS_DELTA + (Time.dt - Time.FPS_DELTA) * (1 - Time.FPS_DELTA_SMOOTHNESS)
+		Time.FPS = 1 / Time.FPS_DELTA
 	end
 
 	do
 		fpsSum = fpsSum -	fpsList[fpsIndex] + Time.dt
 		fpsList[fpsIndex] = Time.dt
-		fpsIndex = fpsIndex % Time.G_AVG_FPS_DELTA_ITERATIONS + 1
-		Time.G_AVG_FPS_DELTA = fpsSum / Time.G_AVG_FPS_DELTA_ITERATIONS
+		fpsIndex = fpsIndex % Time.AVG_FPS_DELTA_ITERATIONS + 1
+		Time.AVG_FPS_DELTA = fpsSum / Time.AVG_FPS_DELTA_ITERATIONS
 
-		Time.G_AVG_FPS = 1 / Time.G_AVG_FPS_DELTA
+		Time.AVG_FPS = 1 / Time.AVG_FPS_DELTA
 	end
 
 	Time.G_INT = Time.accum / math.max(0, Time.rate)
@@ -438,15 +438,15 @@ function love.draw(dt)
 
 	local endTime = getTime()
 
-	Time.G_RENDER_DT = endTime - startTime
+	Time.RENDER_DT = endTime - startTime
 
-	Time.G_RENDER_TIME = Time.G_RENDER_TIME + (Time.G_RENDER_DT - Time.G_RENDER_TIME) * (1 - Time.G_RENDER_TIME_SMOOTHNESS)
+	Time.RENDER_TIME = Time.RENDER_TIME + (Time.RENDER_DT - Time.RENDER_TIME) * (1 - Time.RENDER_TIME_SMOOTHNESS)
 
-	Time.G_RENDER_TIME_PERCENT_FRAME = Time.G_RENDER_TIME / (Time.rate) * 100
+	Time.RENDER_TIME_PERCENT_FRAME = Time.RENDER_TIME / (Time.rate) * 100
 
 	--[[
 	local f = 60
-	acc = acc + Time.G_RENDER_DT * f
+	acc = acc + Time.RENDER_DT * f
 	while acc > 1 / 60 do
 		updateRender(acc)
 		acc = acc - 1 / 60

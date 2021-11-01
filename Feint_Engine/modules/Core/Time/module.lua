@@ -54,31 +54,31 @@ function run:load()
 	self.G_DEBUG = false
 	-- G_TIMER = 0
 
-	self.G_UPDATE_TIME_PERCENT_FRAME = 0
-	self.G_UPDATE_DT = 0
-	self.G_UPDATE_TIME = 0
-	self.G_UPDATE_TIME_SMOOTHNESS = 0.975
+	self.UPDATE_TIME_PERCENT_FRAME = 0
+	self.UPDATE_DT = 0
+	self.UPDATE_TIME = 0
+	self.UPDATE_TIME_SMOOTHNESS = 0.975
 
-	self.G_RENDER_TIME_PERCENT_FRAME = 0
-	self.G_RENDER_DT = 0
-	self.G_RENDER_TIME = 0
-	self.G_RENDER_TIME_SMOOTHNESS = 0.975
+	self.RENDER_TIME_PERCENT_FRAME = 0
+	self.RENDER_DT = 0
+	self.RENDER_TIME = 0
+	self.RENDER_TIME_SMOOTHNESS = 0.975
 
-	self.G_FPS = 0
-	self.G_FPS_DELTA = 0
-	self.G_FPS_DELTA_SMOOTHNESS = 0.975
+	self.FPS = 0
+	self.FPS_DELTA = 0
+	self.FPS_DELTA_SMOOTHNESS = 0.975
 
-	self.G_AVG_FPS = 0
-	self.G_AVG_FPS_DELTA = 0
-	self.G_AVG_FPS_DELTA_ITERATIONS = self.framerate > 0 and self.framerate * 2 or 60
+	self.AVG_FPS = 0
+	self.AVG_FPS_DELTA = 0
+	self.AVG_FPS_DELTA_ITERATIONS = self.framerate > 0 and self.framerate * 2 or 60
 
-	self.G_TPS = 0
-	self.G_TPS_DELTA = 0
-	self.G_TPS_DELTA_SMOOTHNESS = 0.9
+	self.TPS = 0
+	self.TPS_DELTA = 0
+	self.TPS_DELTA_SMOOTHNESS = 0.9
 
-	self.G_AVG_TPS = 0
-	self.G_AVG_TPS_DELTA = 0
-	self.G_AVG_TPS_DELTA_ITERATIONS = 60
+	self.AVTPS = 0
+	self.AVTPS_DELTA = 0
+	self.AVTPS_DELTA_ITERATIONS = 60
 
 	self.G_SPEED = 1
 
