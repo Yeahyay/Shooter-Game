@@ -61,6 +61,22 @@ function graphics:load(isThread)
 		end
 	}
 
+	love.window.setMode(self.ScreenSize.x, self.ScreenSize.y, {
+		fullscreen = false,
+		fullscreentype = "desktop",
+		vsync = false,
+		msaa = 0,
+		resizable = true,
+		borderless = false,
+		centered = true,
+		-- display = 1,
+		minwidth = 1,
+		minheight = 1,
+		highdpi = false,
+		x = nil,
+		y = nil,
+	})
+
 	local interpolate = 0
 
 	local TEXTURE_ASSETS = {}
@@ -93,21 +109,21 @@ function graphics:load(isThread)
 		love.graphics.setLineStyle("rough")
 		love.graphics.setDefaultFilter("nearest", "nearest", 16)
 
-		love.window.updateMode(self.ScreenSize.x, self.ScreenSize.y, {
-			fullscreen = false,
-			fullscreentype = "desktop",
-			vsync = false,
-			msaa = 0,
-			resizable = true,
-			borderless = false,
-			centered = true,
-			-- display = 1,
-			minwidth = 1,
-			minheight = 1,
-			highdpi = false,
-			x = nil,
-			y = nil,
-		})
+		-- love.window.updateMode(self.ScreenSize.x, self.ScreenSize.y, {
+		-- 	fullscreen = false,
+		-- 	fullscreentype = "desktop",
+		-- 	vsync = false,
+		-- 	msaa = 0,
+		-- 	resizable = true,
+		-- 	borderless = false,
+		-- 	centered = true,
+		-- 	-- display = 1,
+		-- 	minwidth = 1,
+		-- 	minheight = 1,
+		-- 	highdpi = false,
+		-- 	x = nil,
+		-- 	y = nil,
+		-- })
 
 		self.canvas = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
 		self.canvas2 = love.graphics.newCanvas(self.RenderSize.x, self.RenderSize.y, {msaa = 0})
@@ -137,8 +153,10 @@ function graphics:load(isThread)
 		-- love.graphics.draw(drawable.image, dx, dy, r, width, height, drawable.sizeX, drawable.sizeY)
 	end
 	function self:setVisible(name, id, visible)
-		local string = ffi.string(name.string, #name) -- VERY SLOW
+		local string = ffi.string(name.string, name.size) -- VERY SLOW
 		-- print("skdmdl;k")
+		-- print("nm\n", ffi.cast(name, 2));
+		-- print(name.string);
 		local batchSet = TEXTURE_ASSETS[string]
 		-- print(string)
 		batchSet:setVisible(id, visible)
@@ -201,6 +219,12 @@ function graphics:load(isThread)
 		end
 	end
 
+	local shader = love.graphics.newShader([[
+		vec4 effect(vec4 color, Image texture, vec2 textureCoords, vec2 screenCoords){
+			vec4 pixel = Texel(texture, textureCoords);//This is the current pixel color
+			return pixel * color;
+		}
+	]])
 	function self:draw()
 		love.graphics.setCanvas(self.canvas)
 		love.graphics.clear()
@@ -212,6 +236,8 @@ function graphics:load(isThread)
 			-- self.RenderSize.x * 0.25, self.RenderSize.y * 0.25, self.RenderSize.x * 0.5, self.RenderSize.y * 0.5
 		-- )
 		love.graphics.setColor(1, 1, 1, 1)
+
+		love.graphics.setShader(shader)
 
 		love.graphics.push()
 			love.graphics.translate(-self.Camera.x, self.Camera.y)
@@ -232,6 +258,9 @@ function graphics:load(isThread)
 			self:drawText()
 
 		love.graphics.pop()
+
+		love.graphics.setShader()
+
 		love.graphics.setCanvas()
 
 		local sx = self.RenderToScreenRatio.x / self.RenderScale.x
