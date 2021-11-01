@@ -8,18 +8,20 @@ local ECS = {
 function ECS:load()
 	local Paths = Feint.Core.Paths
 	Paths:Add("ECS", Paths.Modules .. "ECS") -- add path
+	Paths:Add("ECS_Entity", Paths.ECS .. "Entity") -- add path
 
 	self.FFI_OPTIMIZATIONS = true
 
-	self.EntityArchetype = require(Paths.ECS .. "EntityArchetype")
-	self.EntityArchetypeChunk = require(Paths.ECS .. "EntityArchetypeChunk")
-	self.EntityArchetypeChunkManager = require(Paths.ECS .. "EntityArchetypeChunkManager")
+	self.EntityArchetype = require(Paths.ECS_Entity .. "Archetype")
+	self.EntityArchetypeChunk = require(Paths.ECS_Entity .. "ArchetypeChunk")
+	self.EntityArchetypeChunkManager = require(Paths.ECS_Entity .. "ArchetypeChunkManager")
 
-	self.EntityQuery = require(Paths.ECS .. "EntityQuery")
-	self.EntityQueryBuilder = require(Paths.ECS .. "EntityQueryBuilder")
+	self.EntityQuery = require(Paths.ECS_Entity .. "EntityQuery")
+	self.EntityQueryBuilder = require(Paths.ECS_Entity .. "EntityQueryBuilder")
 
 	self.Component = require(Paths.ECS .. "Component")
-	self.EntityManager = require(Paths.ECS .. "EntityManager")
+	self.EntityManager = require(Paths.ECS_Entity .. "EntityManager")
+	-- print("j lkm;l", Paths.ECS_Entity .. "EntityManager")
 
 	self.World = require(Paths.ECS .. "World")
 	self.World.DefaultWorld = self.World:new("DefaultWorld")

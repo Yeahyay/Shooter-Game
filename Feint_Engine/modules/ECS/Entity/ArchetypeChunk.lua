@@ -2,8 +2,8 @@ local ffi = require("ffi")
 
 local ECSutils = Feint.ECS.Util
 
-local EntityChunk = ECSutils.newClass("EntityChunk")
-function EntityChunk:init(archetype, ...)
+local ArchetypeChunk = ECSutils.newClass("ArchetypeChunk")
+function ArchetypeChunk:init(archetype, ...)
 	assert(Feint.Core.Util:type(archetype) == "table", "EntityArchetypeChunk needs an archetype", 1)
 	self.Name = "ArchetypeChunk: " .. tostring(self)
 	self.archetype = archetype
@@ -37,35 +37,35 @@ function EntityChunk:init(archetype, ...)
 	self.archetype.chunkCount = self.archetype.chunkCount + 1
 	self.index = self.archetype.chunkCount
 end
-function EntityChunk:remove()
+function ArchetypeChunk:remove()
 	self.archetype.chunkCount = self.archetype.chunkCount - 1
 	for k, v in pairs(self) do
 		self[k] = nil
 	end
 	self.dead = true
 end
-function EntityChunk:isFull()
+function ArchetypeChunk:isFull()
 	return self.numEntities >= self.capacity
 end
-function EntityChunk:isFullBytes()
+function ArchetypeChunk:isFullBytes()
 	return self.numEntities * self.entitySizeBytes >= self.capacityBytes - self.entitySizeBytes
 end
-function EntityChunk:isEmpty()
+function ArchetypeChunk:isEmpty()
 	return self.numEntities <= 0
 end
 
-function EntityChunk:getEntityIndexFromID(id)
+function ArchetypeChunk:getEntityIndexFromID(id)
 	return self.entityIdToIndex[id]
 end
-function EntityChunk:getEntityIDFromIndex(index)
+function ArchetypeChunk:getEntityIDFromIndex(index)
 	return self.entityIndexToId[index]
 end
-function EntityChunk:getDataArray()
+function ArchetypeChunk:getDataArray()
 	return ffi.cast(self.structDefinition, self.data)
 end
 
 local cstring = ffi.typeof("cstring")
-function EntityChunk:preallocate(num)
+function ArchetypeChunk:preallocate(num)
 	local components = self.archetype.components
 	local data = ffi.cast(self.structDefinition, self.data)
 	for i = 0, num - 1, 1 do
@@ -79,7 +79,7 @@ function EntityChunk:preallocate(num)
 		end
 	end
 end
-function EntityChunk:newEntity(id)
+function ArchetypeChunk:newEntity(id)
 	if not self:isFull() then
 		-- assert(type(id) == "number" and id >= -math.huge, "new entity expects a number", 3)
 		-- if not (type(id) == "number" and id >= -math.huge) then
@@ -94,12 +94,12 @@ function EntityChunk:newEntity(id)
 	end
 	return nil
 end
-function EntityChunk:removeEntity(index)
+function ArchetypeChunk:removeEntity(index)
 	-- swap a removed entity with the last entity
 	self.data[index], self.data[self.numEntities] = self.data[self.numEntities], self.data[index]
 	self.numEntities = self.numEntities - 1
 end
--- Feint.Util.Table.makeTableReadOnly(EntityChunk, function(self, k)
--- 	return string.format("attempt to modify %s", EntityChunk.Name)
+-- Feint.Util.Table.makeTableReadOnly(ArchetypeChunk, function(self, k)
+-- 	return string.format("attempt to modify %s", ArchetypeChunk.Name)
 -- end)
-return EntityChunk
+return ArchetypeChunk

@@ -1,6 +1,7 @@
 local EntityArchetype = Feint.ECS.EntityArchetype
 local EntityArchetypeChunk = Feint.ECS.EntityArchetypeChunk
 
+-- TODO: separate into it's own file
 local ArchetypeChunkGroup = {}
 function ArchetypeChunkGroup:new(...)
 	local newGroup = {}
@@ -40,11 +41,12 @@ function ArchetypeChunkGroup:getOpenArchetypeChunk()
 	local archetypeChunk
 	if #self.archetypeChunks > 0 then
 		archetypeChunk = self.archetypeChunks[#self.archetypeChunks]
-		if archetypeChunk:isFull() then
+		-- the current archetypeChunk is assumed to be open
+		if archetypeChunk:isFull() then	-- if it's full, create a new one
 			archetypeChunk = self:newArchetypeChunk()
 		end
 	else
-		archetypeChunk = self:newArchetypeChunk()
+		archetypeChunk = self:newArchetypeChunk() -- lazily instantiate the first open archetype chunk
 	end
 
 	return archetypeChunk
@@ -58,6 +60,7 @@ function ArchetypeChunkGroup:createEntity(id)
 	return archetypeChunk, index
 end
 function ArchetypeChunkGroup:getArchetypeChunkFromId(id)
+	-- TODO: use individual tables instead
 	return self.entities[id][1], self.entities[id][2]
 end
 function ArchetypeChunkGroup:newArchetypeChunk()
@@ -66,19 +69,19 @@ function ArchetypeChunkGroup:newArchetypeChunk()
 	return archetypeChunk
 end
 
-local entityArchetypeChunkManager = {}
-function entityArchetypeChunkManager:new(...)
+local ArchetypeChunkManager = {}
+function ArchetypeChunkManager:new(...)
 	local newManager = {}
 	setmetatable(newManager, {
 		__index = self;
 		__tostring = function()
-			return "EntityArchetypeChunkManager"
+			return "ArchetypeChunkManager"
 		end
 	})
 	newManager:init(...)
 	return newManager
 end
-function entityArchetypeChunkManager:init()
+function ArchetypeChunkManager:init()
 	self.archetypes = {size = 0}
 	self.entities = {}
 	local t = {size = 0}
@@ -92,18 +95,18 @@ function entityArchetypeChunkManager:init()
 			rawset(self, k, v)
 		end;
 		__tostring = function()
-			return "EntityArchetypeChunkManager_EntityArchetypeChunkGroups: " .. s
+			return "ArchetypeChunkManager_EntityArchetypeChunkGroups: " .. s
 		end
 	})
 end
 
 -- ARCHETPYE GETTERS
-function entityArchetypeChunkManager:getArchetypeChunkFromId(id)
+function ArchetypeChunkManager:getArchetypeChunkFromId(id)
 	local archetypeChunkGroup = self.entities[id]
 	return archetypeChunkGroup:getArchetypeChunkFromId(id)
 end
 
-function entityArchetypeChunkManager:addArchetypeChunkGroup(archetype)
+function ArchetypeChunkManager:addArchetypeChunkGroup(archetype)
 	assert(not self.archetypeChunkGroups[archetype], "Archetype group " .. archetype.Name .. " already exists")
 	self.archetypeChunkGroups[archetype] = ArchetypeChunkGroup:new(self, archetype)
 	self.archetypeChunkGroups.size = self.archetypeChunkGroups.size + 1
@@ -111,8 +114,8 @@ function entityArchetypeChunkManager:addArchetypeChunkGroup(archetype)
 end
 
 -- ARCHETYPE CONSTRUCTORS
-function entityArchetypeChunkManager:newArchetypeFromComponents(components)
-	-- print("EntityArchetypeChunkManager:newArchetypeFromComponents(components)")
+function ArchetypeChunkManager:newArchetypeFromComponents(components)
+	-- print("ArchetypeChunkManager:newArchetypeFromComponents(components)")
 	local archetype = EntityArchetype:new(components)
 	self.archetypes[archetype.signature] = archetype
 	self.archetypes.size = self.archetypes.size + 1
@@ -122,8 +125,8 @@ function entityArchetypeChunkManager:newArchetypeFromComponents(components)
 end
 
 -- ARCHETPYE GETTERS
-function entityArchetypeChunkManager:getArchetypeFromComponents(components)
-	-- print("EntityArchetypeChunkManager:getArchetypeSignatureFromComponents(components)")
+function ArchetypeChunkManager:getArchetypeFromComponents(components)
+	-- print("ArchetypeChunkManager:getArchetypeSignatureFromComponents(components)")
 	local archetypeSignature = EntityArchetype:getArchetypeSignatureFromComponents(components)
 	local archetype = self:getArchetypeFromArchetypeSignature(archetypeSignature)
 	if not archetype then
@@ -132,62 +135,62 @@ function entityArchetypeChunkManager:getArchetypeFromComponents(components)
 	end
 	return archetype
 end
-function entityArchetypeChunkManager:getArchetypeFromArchetypeSignature(signature)
-	-- print("entityArchetypeChunkManager:getArchetypeFromArchetypeSignature(signature)")
+function ArchetypeChunkManager:getArchetypeFromArchetypeSignature(signature)
+	-- print("ArchetypeChunkManager:getArchetypeFromArchetypeSignature(signature)")
 	return self.archetypes[signature]
 end
 
 -- ARCHETYPE SIGNATURE GETTERS
--- function entityArchetypeChunkManager:getArchetypeSignatureFromComponents(components)
--- 	-- print("entityArchetypeChunkManager:getArchetypeSignatureFromComponents(components)")
+-- function ArchetypeChunkManager:getArchetypeSignatureFromComponents(components)
+-- 	-- print("ArchetypeChunkManager:getArchetypeSignatureFromComponents(components)")
 -- end
 
 -- COMPONENT GETTERS
-function entityArchetypeChunkManager:getComponentsFromArchetype(archetype)
-	-- print("entityArchetypeChunkManager:getComponentsFromArchetype(archetype)")
+function ArchetypeChunkManager:getComponentsFromArchetype(archetype)
+	-- print("ArchetypeChunkManager:getComponentsFromArchetype(archetype)")
 	return archetype.components
 end
-function entityArchetypeChunkManager:getComponentsFromArchetypeSignature(signature)
-	-- print("entityArchetypeChunkManager:getComponentsFromArchetypeSignature(signature)")
+function ArchetypeChunkManager:getComponentsFromArchetypeSignature(signature)
+	-- print("ArchetypeChunkManager:getComponentsFromArchetypeSignature(signature)")
 	return self:getComponentsFromArchetype(self:getArchetypeFromArchetypeSignature(signature))
 end
 
 -- ARCHETYPE CHUNK CONSTRUCTORS
--- function entityArchetypeChunkManager:newArchetypeChunkFromArchetype(archetype)
--- 	print("entityArchetypeChunkManager:newArchetypeChunkFromArchetype(archetype)")
+-- function ArchetypeChunkManager:newArchetypeChunkFromArchetype(archetype)
+-- 	print("ArchetypeChunkManager:newArchetypeChunkFromArchetype(archetype)")
 -- end
--- function entityArchetypeChunkManager:newArchetypeChunkFromSignature(signature)
--- 	print("entityArchetypeChunkManager:newArchetypeChunkFromSignature(signature)")
+-- function ArchetypeChunkManager:newArchetypeChunkFromSignature(signature)
+-- 	print("ArchetypeChunkManager:newArchetypeChunkFromSignature(signature)")
 -- end
--- function entityArchetypeChunkManager:newArchetypeChunkFromComponents(components)
--- 	print("entityArchetypeChunkManager:newArchetypeChunkFromComponents(components)")
+-- function ArchetypeChunkManager:newArchetypeChunkFromComponents(components)
+-- 	print("ArchetypeChunkManager:newArchetypeChunkFromComponents(components)")
 -- end
 
 -- ARCHETYPE CHUNK GROUP GETTERS
-function entityArchetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
-	-- print("entityArchetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)")
+function ArchetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
+	-- print("ArchetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)")
 	-- local archetypeChunkGroup = self.archetypeChunkGroups[archetype]
 	assert(archetype, "No archetype given", 2)
 	assert(self.archetypeChunkGroups[archetype], "Archetype " .. tostring(archetype) .. " is not registered")
 	return self.archetypeChunkGroups[archetype]--- archetypeChunkGroup:getOpenArchetypeChunk()
 end
-function entityArchetypeChunkManager:getArchetypeChunkGroupFromArchetypeSignature(signature)
-	-- print("entityArchetypeChunkManager:getArchetypeChunkGroupFromArchetypeSignature(signature)")
+function ArchetypeChunkManager:getArchetypeChunkGroupFromArchetypeSignature(signature)
+	-- print("ArchetypeChunkManager:getArchetypeChunkGroupFromArchetypeSignature(signature)")
 	return self:getArchetypeChunkGroupFromArchetype(self:getArchetypeFromArchetypeSignature(signature))
 end
-function entityArchetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
-	-- print("entityArchetypeChunkManager:getArchetypeChunkGroupFromComponents(components)")
+function ArchetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
+	-- print("ArchetypeChunkManager:getArchetypeChunkGroupFromComponents(components)")
 	return self:getArchetypeChunkGroupFromArchetype(self:getArchetypeFromComponents(components))
 end
 
-function entityArchetypeChunkManager:queryArchetypeChunksForEntity(id)
-	print("entityArchetypeChunkManager:queryArchetypeChunksForEntity(id)")
+function ArchetypeChunkManager:queryArchetypeChunksForEntity(id)
+	print("ArchetypeChunkManager:queryArchetypeChunksForEntity(id)")
 end
 
-function entityArchetypeChunkManager:queryArchetypeChunkEntityIndexFromEntity(id)
+function ArchetypeChunkManager:queryArchetypeChunkEntityIndexFromEntity(id)
 	-- entities are stored unorderd in a two-way mapped list, therefore, an entity's id is not the index it belongs in
-	print("entityArchetypeChunkManager:queryArchetypeChunkEntityIndexFromEntity(id)")
+	print("ArchetypeChunkManager:queryArchetypeChunkEntityIndexFromEntity(id)")
 end
 
 
-return entityArchetypeChunkManager
+return ArchetypeChunkManager

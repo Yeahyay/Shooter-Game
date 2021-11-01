@@ -2,24 +2,24 @@ local ffi = require("ffi")
 
 -- local ECSutils = Feint.ECS.Util
 
-local EntityArchetype = {}
-function EntityArchetype:new(...)
-	local newArchetype = {name = "EntityArchetype"}
+local Archetype = {}
+function Archetype:new(...)
+	local newArchetype = {name = "Archetype"}
 	setmetatable(newArchetype, {
 		__index = self;
 		__tostring = function()
-			return string.format("EntityArchetype \"%s\"", newArchetype.Name)
+			return string.format("Archetype \"%s\"", newArchetype.Name)
 		end
 	})
 	newArchetype:init(...)
 	return newArchetype
 end
 
-function EntityArchetype:containsComponent(component)
+function Archetype:containsComponent(component)
 	return self.signature:find(component.Name) and true or false
 end
 
-function EntityArchetype:init(components, ...)
+function Archetype:init(components, ...)
 	assert(type(components) ~= "string", nil, 1)
 	-- holds components for the archetype
 	self.components = components
@@ -35,7 +35,7 @@ function EntityArchetype:init(components, ...)
 	return self
 end
 
-function EntityArchetype:getArchetypeSignatureFromComponents(components)
+function Archetype:getArchetypeSignatureFromComponents(components)
 	local stringTable = {}
 	assert(components, "no components", 3)
 	local unique = {}
@@ -54,7 +54,7 @@ function EntityArchetype:getArchetypeSignatureFromComponents(components)
 	return archetypeSignature, archetypeSignatureStripped
 end
 
-function EntityArchetype:createArchetype()
+function Archetype:createArchetype()
 	-- local components = {}
 	for i = 1, #self.components, 1 do
 		-- local v = self.components[i]
@@ -110,7 +110,7 @@ function EntityArchetype:createArchetype()
 	return self
 end
 
--- Feint.Util.Table.makeTableReadOnly(EntityArchetype, function(self, k)
--- 	return string.format("attempt to modify %s", EntityArchetype.Name)
+-- Feint.Util.Table.makeTableReadOnly(Archetype, function(self, k)
+-- 	return string.format("attempt to modify %s", Archetype.Name)
 -- end)
-return EntityArchetype
+return Archetype

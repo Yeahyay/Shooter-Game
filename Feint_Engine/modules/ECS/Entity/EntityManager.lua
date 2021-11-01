@@ -4,9 +4,9 @@ local Component = Feint.ECS.Component
 local Paths = Feint.Core.Paths
 
 local EntityQueryBuilder = Feint.ECS.EntityQueryBuilder
-local EntityArchetype = Feint.ECS.EntityArchetype
-local ExecuteFunctions = require(Paths.ECS .. "EntityManagerExecuteFunctions")
-local EntityQueryBuilderAPI = require(Paths.ECS .. "EntityManagerQueryBuilder")
+-- local EntityArchetype = Feint.ECS.EntityArchetype
+local ExecuteFunctions = require(Paths.ECS_Entity .. "EntityManagerExecuteFunctions")
+local EntityQueryBuilderAPI = require(Paths.ECS_Entity .. "EntityManagerQueryBuilder")
 local ArchetypeChunkManager = Feint.ECS.EntityArchetypeChunkManager
 
 function EntityManager:new(...)
@@ -109,7 +109,7 @@ function EntityManager:createEntity(archetypeChunkGroup)
 end
 function EntityManager:createEntityFromArchetype(archetype)
 	assert(archetype, "no archetype given", 2)
-	assert(archetype.name == "EntityArchetype", "not given an EntityArchetype")
+	assert(archetype.name == "Archetype", "not given an EntityArchetype")
 
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromArchetype(archetype)
 
@@ -127,17 +127,35 @@ function EntityManager:createEntityFromComponents(components)
 	local archetypeChunkGroup = self.archetypeChunkManager:getArchetypeChunkGroupFromComponents(components)
 	return self:createEntity(archetypeChunkGroup)
 end
-local ffi = require("ffi")
+
+function EntityManager:deleteEntityFromID(entityID)
+	local id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
+	if id == Component.ENTITY then
+		return
+	end
+	local archetypeChunk, archetypeChunkIndex = self:getArchetypeChunkFromEntity(id)
+end
+
+
+-- local ffi = require("ffi")
 function EntityManager:getEntityDataFromID(entityID)
 	local id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
 	if id == Component.ENTITY then
 		return nil, nil, nil
 	end
-	local archetypeChunk, index = self:getArchetypeChunkFromEntity(id)
-	return self:getEntityDataFromArchetypeChunk(archetypeChunk, id), archetypeChunk.archetype, index
+	local archetypeChunk, archetypeChunkIndex = self:getArchetypeChunkFromEntity(id)
+	return self:getEntityDataFromArchetypeChunk(archetypeChunk, id), archetypeChunk.archetype, archetypeChunkIndex
 end
 function EntityManager:getEntityDataFromArchetypeChunk(archetypeChunk, entityID)
-	return archetypeChunk:getDataArray()[archetypeChunk:getEntityIndexFromID(entityID) - 1]
+	--[[
+		Get the entity's index in the given archetype from its entityID.
+		Get the raw array that holds entity data.
+		Index that array with the entity's index, subtracting 1 to convert to zero-indexing.
+	--]]
+	return archetypeChunk:getDataArray()[self:getEntityIndexFromArchetypeChunk(archetypeChunk, entityID)]
+end
+function EntityManager:getEntityIndexFromArchetypeChunk(archetypeChunk, entityID)
+	return archetypeChunk:getEntityIndexFromID(entityID) - 1
 end
 
 -- WRAPPERS
@@ -307,6 +325,7 @@ function EntityManager:update(dt)
 end
 
 function EntityManager:forEachNotParallel_execute(dt)
+	-- print(#self.forEachNotParallel_Queue.items)
 	while not self.forEachNotParallel_Queue:empty() do
 		local job = self.forEachNotParallel_Queue:pop()
 		self:executeJob(job)
