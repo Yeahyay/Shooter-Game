@@ -168,9 +168,15 @@ function graphics:load(isThread)
 		local string = ffi.string(name.string, #name) -- VERY SLOW
 		-- assert(string, "string is broken")
 		-- local id = TEXTURE_ASSETS[string].batch:add(x, y, r, width, height, width * 0.5, height * 0.5)
-		local id = TEXTURE_ASSETS[string]:addSprite(x, y, r, width, height, ox, oy)
+		local id = TEXTURE_ASSETS[string]:addSprite(x, -y, r, width, height, ox, oy)
 		-- self.drawables[id] = {x = x, y = y, r = r, width = width, height = height}
 		return id
+	end
+
+	function self:removeRectangle(name, id)
+		assert(string, "no name given", 2)
+		local string = ffi.string(name.string, #name) -- VERY SLOW
+		TEXTURE_ASSETS[string]:removeSprite(id)
 	end
 
 	function self:clear()

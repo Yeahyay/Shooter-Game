@@ -41,7 +41,26 @@ setmetatable(batch, {
 						self.h[id] = h
 						self.ox[id] = ox
 						self.oy[id] = oy
-						self.visible[id] = false
+						self.visible[id] = true
+					end;
+					remove = function(self, id)
+						self.size = self.size - 1
+						self.x[id] = self.x[#self.x]
+						self.y[id] = self.y[#self.y]
+						self.r[id] = self.r[#self.r]
+						self.w[id] = self.w[#self.w]
+						self.h[id] = self.h[#self.h]
+						self.ox[id] = self.ox[#self.ox]
+						self.oy[id] = self.oy[#self.oy]
+						self.visible[id] = self.visible[#self.visible]
+						self.x[#self.x] = nil
+						self.y[#self.y] = nil
+						self.r[#self.r] = nil
+						self.w[#self.w] = nil
+						self.h[#self.h] = nil
+						self.ox[#self.ox] = nil
+						self.oy[#self.oy] = nil
+						self.visible[#self.visible] = nil
 					end;
 					set = function(self, id, x, y, r, w, h)
 						self.x[id] = x
@@ -56,6 +75,17 @@ setmetatable(batch, {
 				}
 			})
 			return newBatch
+		end;
+		delete = function(self)
+			self.size = 0
+			self.x = nil
+			self.y = nil
+			self.r = nil
+			self.w = nil
+			self.h = nil
+			self.ox = nil
+			self.oy = nil
+			self.visible = nil
 		end
 	}
 })
@@ -63,6 +93,11 @@ function batchSet:newBatch()
 	self.batches[#self.batches + 1] = batch:new()--love.graphics.newSpriteBatch(self.image, self.batchCapacity, "stream")
 	self.batchSizes[#self.batchSizes + 1] = 0
 	self.currentBatch = self.currentBatch + 1
+end
+function batchSet:deleteBatch()
+	self.batches[#self.batches] = batch:delete(self.batches[#self.batches])
+	self.batchSizes[#self.batchSizes] = nil
+	self.currentBatch = self.currentBatch - 1
 end
 
 -- function batchSet:setBatch(name)
@@ -79,6 +114,16 @@ function batchSet:addSprite(x, y, r, width, height, ox, oy)
 	self.batches[self.currentBatch]:add(x, y, r, width, height, ox, oy)
 	self.totalSize = self.totalSize + 1
 	return self.totalSize
+end
+function batchSet:removeSprite(id)
+	self.batchSizes[self.currentBatch] = self.batchSizes[self.currentBatch] - 1
+	self.batches[self.currentBatch]:remove(id)
+	self.totalSize = self.totalSize - 1
+
+	if self.batchSizes[self.currentBatch] <= 0 then
+		-- print(self.batchSizes[self.currentBatch], self.batchCapacity)
+		self:deleteBatch()
+	end
 end
 function batchSet:updateSpriteData(id)
 	local batch = self.batches[self.currentBatch]

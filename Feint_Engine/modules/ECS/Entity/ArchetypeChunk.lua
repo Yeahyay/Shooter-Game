@@ -96,7 +96,8 @@ function ArchetypeChunk:newEntity(id)
 end
 function ArchetypeChunk:removeEntity(index)
 	-- swap a removed entity with the last entity
-	self.data[index], self.data[self.numEntities] = self.data[self.numEntities], self.data[index]
+	local data = self:getDataArray()
+	data[index], data[self.numEntities] = data[self.numEntities], data[index]
 	self.numEntities = self.numEntities - 1
 end
 -- Feint.Util.Table.makeTableReadOnly(ArchetypeChunk, function(self, k)

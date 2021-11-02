@@ -79,8 +79,8 @@ function EntityManager:getNewEntityId()
 	-- self.entities
 
 	local id
-	-- id = self.entitiesCount
-	-- return id
+	id = self.entitiesCount
+	return id
 
 	-- repeat
 	-- 	id = math.floor(love.math.random() * 100000000)
@@ -95,8 +95,8 @@ function EntityManager:getNewEntityId()
 	-- id = table.concat(s)
 	-- return id
 
-	id = Feint.Util.UUID.new()
-	return id
+	-- id = Feint.Util.UUID.new()
+	-- return id
 end
 
 function EntityManager:createEntity(archetypeChunkGroup)
@@ -129,17 +129,34 @@ function EntityManager:createEntityFromComponents(components)
 end
 
 function EntityManager:deleteEntityFromID(entityID)
-	local id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
+	local id
+	if type(entityID) == "number" then
+		id = entityID
+	else
+		id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
+	end
 	if id == Component.ENTITY then
 		return
 	end
-	local archetypeChunk, archetypeChunkIndex = self:getArchetypeChunkFromEntity(id)
+	local archetypeChunk = self:getArchetypeChunkFromEntity(id)
+	print(id, self:getEntityIndexFromArchetypeChunk(archetypeChunk, id))
+
+	local rawData = self:getEntityDataFromArchetypeChunk(archetypeChunk, id)
+	Feint.Core.Graphics:removeRectangle(rawData.Renderer.texture, rawData.Renderer.id)
+	-- print(rawData.Renderer.id)
+
+	archetypeChunk:removeEntity(self:getEntityIndexFromArchetypeChunk(archetypeChunk, id))
 end
 
 
 -- local ffi = require("ffi")
 function EntityManager:getEntityDataFromID(entityID)
-	local id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
+	local id
+	if type(entityID) == "number" then
+		id = entityID
+	else
+		id = tostring(entityID)--ffi.string(entityID.string, entityID.size)
+	end
 	if id == Component.ENTITY then
 		return nil, nil, nil
 	end

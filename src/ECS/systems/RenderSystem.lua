@@ -21,7 +21,7 @@ function RenderSystem:start(EntityManager)
 			local trueSizeX = Transform.trueSizeX
 			local trueSizeY = Transform.trueSizeY
 
-			-- Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
+			Renderer.texture = Feint.Core.FFI.cstring("walking1.png")
 			Renderer.id = graphics:addRectangle(
 				Renderer.texture,
 				Transform.x - trueSizeX / 2, Transform.y - trueSizeY / 2, Transform.angle, trueSizeX, trueSizeY,
@@ -64,6 +64,12 @@ function RenderSystem:update(EntityManager, dt)
 			end
 			Graphics:setVisible(Renderer.texture, Renderer.id, Renderer.visible)
 			-- Graphics.visible = math.random(0, 1) > 0.5 and true or false
+
+			-- Graphics:addRectangle(
+			-- 	Renderer.texture,
+			-- 	Transform.x, Transform.y, Transform.angle, Transform.trueSizeX, Transform.trueSizeY,
+			-- 	Transform.sizeX / 2, Transform.sizeY / 2
+			-- )
 		end
 		return execute
 	end)

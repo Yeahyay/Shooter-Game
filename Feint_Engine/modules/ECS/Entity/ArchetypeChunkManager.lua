@@ -1,73 +1,5 @@
 local EntityArchetype = Feint.ECS.EntityArchetype
-local EntityArchetypeChunk = Feint.ECS.EntityArchetypeChunk
-
--- TODO: separate into it's own file
-local ArchetypeChunkGroup = {}
-function ArchetypeChunkGroup:new(...)
-	local newGroup = {}
-	local s = tostring(newGroup)
-	setmetatable(newGroup, {
-		__index = self;
-		__tostring = function()
-			return "EntityArchetypeChunkGroup: " .. s
-		end
-	})
-	newGroup:init(...)
-	return newGroup
-end
-function ArchetypeChunkGroup:init(chunkManager, archetype)
-	assert(archetype, "ArchetypeChunkGroup needs an archetype")
-	self.entities = {}
-	self.archetypeChunkManager = chunkManager
-	self.archetypeChunks = setmetatable({}, {
-		__newindex = function(self, k, v)
-			assert(type(k) == "number", "archetypeChunks are an array only")
-			rawset(self, k, v)
-		end;
-		__tostring = function()
-			return "EntityArchetypeChunkGroup_ArchetypeChunks"
-		end
-	})
-	self.archetype = archetype
-end
-function ArchetypeChunkGroup:getArchetypeChunk(index)
-	assert(index > 0 and index <= #self.archetypeChunks, "given ArchetypeChunk index " .. index .. "out of range")
-	return self.archetypeChunks[index]
-end
-function ArchetypeChunkGroup:getArchetypeChunks()
-	return self.archetypeChunks
-end
-function ArchetypeChunkGroup:getOpenArchetypeChunk()
-	local archetypeChunk
-	if #self.archetypeChunks > 0 then
-		archetypeChunk = self.archetypeChunks[#self.archetypeChunks]
-		-- the current archetypeChunk is assumed to be open
-		if archetypeChunk:isFull() then	-- if it's full, create a new one
-			archetypeChunk = self:newArchetypeChunk()
-		end
-	else
-		archetypeChunk = self:newArchetypeChunk() -- lazily instantiate the first open archetype chunk
-	end
-
-	return archetypeChunk
-end
-function ArchetypeChunkGroup:createEntity(id)
-	local archetypeChunk = self:getOpenArchetypeChunk()
-	local index = archetypeChunk:newEntity(id)
-	self.entities[id] = {archetypeChunk, index}
-
-	self.archetypeChunkManager.entities[id] = self
-	return archetypeChunk, index
-end
-function ArchetypeChunkGroup:getArchetypeChunkFromId(id)
-	-- TODO: use individual tables instead
-	return self.entities[id][1], self.entities[id][2]
-end
-function ArchetypeChunkGroup:newArchetypeChunk()
-	local archetypeChunk = EntityArchetypeChunk:new(self.archetype)
-	self.archetypeChunks[#self.archetypeChunks + 1] = archetypeChunk
-	return archetypeChunk
-end
+local ArchetypeChunkGroup = require(Feint.Core.Paths.ECS_Entity .. "ArchetypeChunkGroup")
 
 local ArchetypeChunkManager = {}
 function ArchetypeChunkManager:new(...)
@@ -82,12 +14,15 @@ function ArchetypeChunkManager:new(...)
 	return newManager
 end
 function ArchetypeChunkManager:init()
-	self.archetypes = {size = 0}
-	self.entities = {}
-	local t = {size = 0}
-	local s = tostring(t)
-	self.archetypeChunkGroups = setmetatable(t, {
-		-- __index = self;
+	self.archetypes = {
+		size = 0
+	}
+	self.entityIDToArchetypeChunkGroup = {}
+	local obj = {
+		size = 0
+	}
+	local s = tostring(obj)
+	self.archetypeChunkGroups = setmetatable(obj, {
 		__newindex = function(self, k, v)
 			if type(k) == "number" then
 				error("archetypeChunkGroups are a hashmap only")
@@ -100,9 +35,21 @@ function ArchetypeChunkManager:init()
 	})
 end
 
+function ArchetypeChunkManager:registerEntityWithArchetypeChunkGroup(entityID, archetypeChunkGroup)
+	assert(entityID, "registerEntityWithArchetypeChunkGroup error: no id given", 2)
+	assert(archetypeChunkGroup, "registerEntityWithArchetypeChunkGroup error: no archetypeChunkGroup given", 2)
+	printf("registered entity (%s) to %q", entityID, tostring(archetypeChunkGroup))
+	self.entityIDToArchetypeChunkGroup[entityID] = archetypeChunkGroup
+end
+function ArchetypeChunkManager:getArchetypeChunkGroupFromEntity(entityID)
+	assert(entityID, "getArchetypeChunkGroupFromEntity error: no id given", 2)
+	return self.entityIDToArchetypeChunkGroup[entityID]
+end
+
 -- ARCHETPYE GETTERS
 function ArchetypeChunkManager:getArchetypeChunkFromId(id)
-	local archetypeChunkGroup = self.entities[id]
+	local archetypeChunkGroup = self:getArchetypeChunkGroupFromEntity(id)
+	assert(archetypeChunkGroup, "Something bad from id " .. tostring(id) .. " wtf")
 	return archetypeChunkGroup:getArchetypeChunkFromId(id)
 end
 

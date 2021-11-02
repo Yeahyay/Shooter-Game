@@ -101,6 +101,17 @@ function EntityProperties(EntityManager)
 	if Mouse.ObjectSelected ~= lastSelected then
 		EntityPropertiesWindow.IsOpen = true
 	end
+	if Mouse.ObjectSelected then
+		-- local data = EntityManager:getEntityDataFromID(Mouse.ObjectSelected)
+		local name = "Entity " .. Mouse.ObjectSelected
+		if GUI.BeginContextMenuWindow(2) then
+			if GUI.MenuItem("Delete") then
+				printf("Deleting %s\n", name)
+				EntityManager:deleteEntityFromID(Mouse.ObjectSelected)
+			end
+			GUI.EndContextMenu()
+		end
+	end
 	if Mouse.ObjectSelected and EntityPropertiesWindow.IsOpen then
 		lastSelected = Mouse.ObjectSelected
 		local data, archetype, index = EntityManager:getEntityDataFromID(Mouse.ObjectSelected)
