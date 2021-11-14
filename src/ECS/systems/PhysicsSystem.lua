@@ -9,8 +9,9 @@ function PhysicsSystem:start(EntityManager)
 	EntityManager:forEachNotParallel("PhysicsSystem_start", function()
 		local function execute(Entity, Physics, Transform)
 			Physics.accX = 10
-			Transform.x = fmath.random2(-Feint.Core.Graphics.RenderSize.x * 10, Feint.Core.Graphics.RenderSize.x * 10)
-			Transform.y = fmath.random2(-Feint.Core.Graphics.RenderSize.y * 10, Feint.Core.Graphics.RenderSize.y * 10)
+			local s = 0.25
+			Transform.x = fmath.random2(-Feint.Core.Graphics.RenderSize.x * s, Feint.Core.Graphics.RenderSize.x * s)
+			Transform.y = fmath.random2(-Feint.Core.Graphics.RenderSize.y * s, Feint.Core.Graphics.RenderSize.y * s)
 		end
 		return execute
 	end)

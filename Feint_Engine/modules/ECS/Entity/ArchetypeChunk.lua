@@ -13,7 +13,7 @@ function ArchetypeChunk:init(archetype, ...)
 	self.entitySizeBytes = self.archetype.totalSizeBytes
 
 	self.capacityBytes = 16384
-	self.capacity = math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
+	self.capacity = 2--math.floor(self.capacityBytes / self.entitySizeBytes) -- 1024 - 2
 	self.numEntities = 0
 
 	self.entityIdToIndex = {}

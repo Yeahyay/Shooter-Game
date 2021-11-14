@@ -3,7 +3,7 @@ local resolution = {}
 function resolution:load(isThread)
 	-- local width, height, flags = love.window.getMode() -- luacheck: ignore
 	local aspectRatio = 16 / 9
-	local screenHeight = 1080
+	local screenHeight = 720
 	local renderHeight = 1080
 	local screenWidth = screenHeight * (aspectRatio)
 	local renderWidth = renderHeight * (aspectRatio)

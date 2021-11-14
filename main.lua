@@ -60,8 +60,10 @@ end
 
 initEnv(0)
 
--- BOOTSTRAP
+require("luarocks.loader")
+-- require("luacov")
 
+-- BOOTSTRAP
 require("Feint_Engine.init")
 
 require(Feint.Core.Paths.Root.."run")

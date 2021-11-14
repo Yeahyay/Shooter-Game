@@ -8,7 +8,7 @@ function RenderSystem:start(EntityManager)
 	local Renderer = world:getComponent("Renderer")
 	local Transform = world:getComponent("Transform")
 	local Physics = world:getComponent("Physics")
-	for i = 1, 50000, 1 do
+	for i = 1, 4, 1 do
 		EntityManager:createEntityFromComponents{Renderer, Transform, Physics}
 	end
 

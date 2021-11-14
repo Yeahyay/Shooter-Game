@@ -16,6 +16,7 @@ function DataStructures:load(isThread)
 	Paths:Add("DataStructures", Paths.Core .. "DataStructures")
 
 	self.Stack = require(Paths.DataStructures .. "Stack")
+	self.Queue = require(Paths.DataStructures .. "Queue")
 	self.FSM = require(Paths.DataStructures .. "FiniteStateMachine")
 	self.FSM2 = require(Paths.DataStructures .. "FiniteStateMachine2")
 	self.BinaryHeap = require(Paths.DataStructures .. "BinaryHeap")

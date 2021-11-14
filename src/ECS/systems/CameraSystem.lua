@@ -30,6 +30,7 @@ function CameraSystem:update(EntityManager)
 			-- print(Camera)
 			local mousePosX, mousePosY = Feint.Core.Input.Mouse.Position:split()
 			if focus then
+				print(focus)
 				Camera.target = Feint.Core.FFI.cstring(focus)
 				local data = EntityManager:getEntityDataFromID(Camera.target)
 				if data then

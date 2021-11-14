@@ -13,6 +13,7 @@ function input:load()
 	Feint.Core.Paths:Add("Input", Feint.Core.Paths.Modules .."input")
 
 	self.Mouse = {}
+	self.Mouse.Context = "World"
 	self.Mouse.ClickPosition = Feint.Math.Vec2(0, 0)
 	self.Mouse.ClickPositionWorld = Feint.Math.Vec2(0, 0)
 

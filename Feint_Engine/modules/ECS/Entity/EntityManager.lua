@@ -36,20 +36,21 @@ function EntityManager:init(world --[[name]])
 	self.entityID = {} -- {[idIndex] = id}
 	self.entityIDState = {} -- {[idIndex] = state}
 
-	self.forEachNotParallel_Queue = {
-		items = {};
-		push = function(self, jobData)
-			self.items[#self.items + 1] = jobData
-		end;
-		pop = function(self)
-			local job = self.items[#self.items]
-			self.items[#self.items] = nil
-			return job
-		end;
-		empty = function(self)
-			return #self.items <= 0
-		end
-	}
+	self.forEachNotParallel_Queue = Feint.Core.DataStructures.Queue:new()
+	-- {
+	-- 	items = {};
+	-- 	push = function(self, jobData)
+	-- 		self.items[#self.items + 1] = jobData
+	-- 	end;
+	-- 	pop = function(self)
+	-- 		local job = self.items[#self.items]
+	-- 		self.items[#self.items] = nil
+	-- 		return job
+	-- 	end;
+	-- 	empty = function(self)
+	-- 		return #self.items <= 0
+	-- 	end
+	-- }
 
 	self.archetypeChunkManager = ArchetypeChunkManager:new()
 
@@ -321,6 +322,7 @@ end
 
 function EntityManager:executeJob(jobData)
 	assert(jobData, "no job data given")
+	-- print(jobData.id)
 	local archetypeChunks = jobData.query:getArchetypeChunks(jobData.query, self)
 
 	jobData.startTime = love.timer.getTime()
@@ -328,7 +330,12 @@ function EntityManager:executeJob(jobData)
 		local status = jobData.execute(self, jobData.source, jobData.componentArguments, jobData.archetype, archetypeChunks, jobData.func)
 		assert(status == 0)
 	end)
+	-- printf("%s: %q\n", status, message or "nil")
+	-- for k, v in pairs(jobData) do
+	-- 	print(k, v)
+	-- end
 	if not status then
+		printf("Error with job %s on archetype %s:", jobData.id, jobData.archetype)
 		error(message, 2)
 		Feint.Core.Time:pause()
 	end
@@ -351,6 +358,26 @@ end
 
 function EntityManager:forEachNotParallel(id, callback)
 	self:forEachNotParallel_enqueue(id, callback)
+end
+
+function EntityManager:destroy()
+	-- self.name = name
+	self.entities = nil
+	self.entitiesCount = nil
+	self.entityID = nil
+	self.entityIDState = nil
+
+	self.forEachNotParallel_Queue = nil
+
+	self.archetypeChunkManager = nil
+
+	-- ExecuteFunctions:load(self)
+	-- EntityQueryBuilderAPI:load(self)
+
+	self.forEachJobs = nil
+
+	self.EntityQueryBuilder = nil
+	self.World = nil
 end
 
 -- Feint.Util.Memoize(EntityManager.forEach)

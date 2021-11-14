@@ -11,6 +11,7 @@ function ECS:load()
 	Paths:Add("ECS_Entity", Paths.ECS .. "Entity") -- add path
 
 	self.FFI_OPTIMIZATIONS = true
+	self.ENTITIY_MANAGER_ID_MODE = ""
 
 	self.EntityArchetype = require(Paths.ECS_Entity .. "Archetype")
 	self.EntityArchetypeChunk = require(Paths.ECS_Entity .. "ArchetypeChunk")
@@ -27,40 +28,18 @@ function ECS:load()
 	self.World.DefaultWorld = self.World:new("DefaultWorld")
 	self.System = require(Paths.ECS .. "System")
 
+	Paths:Add("Game_ECS_Files", "src.ECS")
+	Paths:Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
+	Paths:Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
+	Paths:Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
 	function self:init()
-		Paths:Add("Game_ECS_Files", "src.ECS")
-		Paths:Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
-		Paths:Add("Game_ECS_Components", Paths.Game_ECS_Files.."components")
-		Paths:Add("Game_ECS_Systems", Paths.Game_ECS_Files.."systems")
 
-		local components = {} -- luacheck: ignore
-		local componentCount = 0
-		for k, v in pairs(love.filesystem.getDirectoryItems(Paths:SlashDelimited(Paths.Game_ECS_Components))) do
-			if v:match(".lua") then
-				local path = Paths.Game_ECS_Components..v:gsub(".lua", "")
-				local component = require(path)
-				assert(component, "Empty Component file")
-				componentCount = componentCount + 1
-				components[componentCount] = component
-				self.World.DefaultWorld:addComponent(component)
-			end
-		end
-
-		local systems = {} -- luacheck: ignore
-		local systemCount = 0
-		for k, v in pairs(love.filesystem.getDirectoryItems(Paths:SlashDelimited(Paths.Game_ECS_Systems))) do
-			if v:match(".lua") then
-				local path = Paths.Game_ECS_Systems..v:gsub(".lua", "")
-				local system = require(path)
-				assert(system, "Empty System file")
-				systemCount = systemCount + 1
-				systems[systemCount] = system
-				self.World.DefaultWorld:registerSystem(system)
-			end
-		end
+		self.World.DefaultWorld:addComponentsFromDirectory(Paths:SlashDelimited(Paths.Game_ECS_Components))
+		self.World.DefaultWorld:addSystemsFromDirectory(Paths:SlashDelimited(Paths.Game_ECS_Systems))
 
 		printf("\n%s update order:\n", self.World.DefaultWorld.Name)
 		self.World.DefaultWorld:generateUpdateOrderList()
+		print(#self.World.DefaultWorld.updateOrder)
 		for k, v in ipairs(self.World.DefaultWorld.updateOrder) do
 			printf("%d: %s\n", k, self.World.DefaultWorld.systems[k].Name)
 		end

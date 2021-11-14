@@ -27,9 +27,9 @@ function FFI:load()
 		ffi.cdef([[
 		typedef struct _cstring cstring;
 		struct _cstring {
-				const char* string;
-				uint8_t size;
-				uint8_t type;
+			const char* string;
+			uint8_t size;
+			uint8_t type;
 		};
 		]])
 		self.typeEnums = {
@@ -40,10 +40,11 @@ function FFI:load()
 		end
 		self.typeSize.cstring = ffi.sizeof("cstring")
 		local mt = {
-			__len = function(t)
-				return t.size;
+			__len = function(self)
+				return self.size;
 			end;
-			__new = function(ct, string)
+			__new = function(ct, _string)
+				local string = tostring(_string)
 				-- print("Initializing " ..tostring(ct) .. " with string " .. string)
 				local self = ffi.new(ct)
 				-- _G.strings[string] = string--ffi.C.malloc(#string) --ffi.gc(ffi.C.malloc(#string), ffi.C.free)
@@ -60,9 +61,9 @@ function FFI:load()
 			-- 	print(cObj)
 			-- 	ffi.C.free(cObj)
 			-- end;
-			-- __eq = function(a, b)
-			-- 	return tostring(b) == a
-			-- end
+			__eq = function(a, b)
+				return a.string == b
+			end
 		}
 		self.cstring = ffi.metatype("cstring", mt)
 	end

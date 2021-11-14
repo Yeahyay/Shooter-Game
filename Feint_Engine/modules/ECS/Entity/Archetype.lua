@@ -59,7 +59,7 @@ function Archetype:createArchetype()
 	for i = 1, #self.components, 1 do
 		-- local v = self.components[i]
 		-- components[i] = v.Name
-		self.totalSize = self.totalSize + self.components[i].size
+		self.totalSize = self.totalSize + self.components[i].numMembers
 		self.totalSizeBytes = self.totalSizeBytes + self.components[i].sizeBytes
 	end
 	-- table.sort(components, function(a, b) return a < b end)
@@ -78,11 +78,9 @@ function Archetype:createArchetype()
 		structMembers[k] = "struct component_" .. v.Name .. " " .. v.Name
 	end
 	local s = string.format([[
-		struct archetype_%s {
-			%s
-		}
+		struct archetype_%s {%s}
 	]], self.signatureStripped, table.concat(structMembers, ";\n") .. ";")
-	-- print(s)
+	print(s)
 	ffi.cdef(s)
 
 	local ct = ffi.typeof("struct archetype_" .. self.signatureStripped)

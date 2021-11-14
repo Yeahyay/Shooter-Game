@@ -5,32 +5,32 @@ local ffi = require("ffi")
 
 Component.NIL = "NIL_MEMBER"
 Component.ENTITY = "ENTITY_MEMBER"
-function Component:init(data, ...)
-	self.size = #data
+function Component:init(members, ...)
+	self.numMembers = #members
 	self.sizeBytes = 0
-	self.trueSizeBytes = 0
+	self.sizeBytesRaw = 0
 
 	if Feint.ECS.FFI_OPTIMIZATIONS then
-		self.data = data
+		-- self.members = members
 		self.strings = {}
 		self.orderedMembers = {}
 		local structMembers = {}
-		for k, v in pairs(data) do
+		for k, v in pairs(members) do
 			local dataType = type(v)
 			self.orderedMembers[#self.orderedMembers + 1] = k
 			if dataType == "string" then
 
-				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof("cstring")
+				-- self.sizeBytesRaw = self.sizeBytesRaw + ffi.sizeof("cstring")
 				structMembers[#structMembers + 1] = "cstring " .. k
 				-- structMembers[#structMembers + 1] = "const char* " .. k
 
 				self.strings[k] = v
 				-- the data table is used for initialization
 				-- setting it to nil because it is initialized manually
-				self.data[k] = nil--ffi.C.malloc(k:len())
+				-- self.members[k] = nil--ffi.C.malloc(k:len())
 			else
 				dataType = dataType == "number" and "float" or dataType == "table" and "struct" or dataType == "boolean" and "bool"
-				self.trueSizeBytes = self.trueSizeBytes + ffi.sizeof(dataType)
+				-- self.sizeBytesRaw = self.sizeBytesRaw + ffi.sizeof(dataType)
 				structMembers[#structMembers + 1] = dataType .. " " .. k
 			end
 		end
@@ -40,10 +40,9 @@ function Component:init(data, ...)
 		-- end)
 		-- for k, v in pairs(structMembers) do print(k, v) end
 
-		local padding = 0--math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
+		local padding = 0--math.ceil(self.sizeBytesRaw / 64) * 64 - self.sizeBytesRaw
 		-- self.sizeBytes = ffi.sizeof(self.ffiType)
-		self.sizeBytes = self.trueSizeBytes + padding
-		-- print(self.trueSizeBytes, padding, self.sizeBytes)
+		-- print(self.sizeBytesRaw, padding, self.sizeBytes)
 
 		local t = table.concat(structMembers, ";\n")
 		ffi.cdef(string.format([[
@@ -64,23 +63,25 @@ function Component:init(data, ...)
 				return iter, t, 0
 			end,
 		})
+		self.sizeBytesRaw = ffi.sizeof("struct " .. self.ComponentName)
+		self.sizeBytes = self.sizeBytesRaw + padding
 	else
 		self.keys = {}
 		self.values = {}
-		self.trueSizeBytes = 40 -- all tables are hash tables
-		for k, v in ipairs(data) do
+		self.sizeBytesRaw = 40 -- all tables are hash tables
+		for k, v in ipairs(members) do
 			for k, v in pairs(v) do
 				self.keys[#self.keys + 1] = k
 				self.values[#self.values + 1] = v
 				if type(k) == "number" then
-					self.trueSizeBytes = self.trueSizeBytes + 16 -- array
+					self.sizeBytesRaw = self.sizeBytesRaw + 16 -- array
 				else
-					self.trueSizeBytes = self.trueSizeBytes + 40 -- hash table
+					self.sizeBytesRaw = self.sizeBytesRaw + 40 -- hash table
 				end
 			end
 		end
-		local padding = math.ceil(self.trueSizeBytes / 64) * 64 - self.trueSizeBytes
-		self.sizeBytes = self.trueSizeBytes + padding
+		local padding = math.ceil(self.sizeBytesRaw / 64) * 64 - self.sizeBytesRaw
+		self.sizeBytes = self.sizeBytesRaw + padding
 	end
 end
 
@@ -93,7 +94,7 @@ function Component:new(name, data, ...)
 	setmetatable(instance, {
 		__index = self,
 	})
-	self.init(instance, data, ...)
+	instance:init(data, ...)
 	getmetatable(instance).__newindex = function(t, k, v)
 		error("No.")
 	end
