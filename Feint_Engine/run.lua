@@ -77,12 +77,12 @@ end
 
 function love.load(arg, unfilteredArg)
 	cute.go(arg)
-	Feint.Callbacks.General.Load(arg, unfilteredArg)
+	-- Feint.Callbacks.General.Load(arg, unfilteredArg)
 end
 
 function love.update(dt)
 	if Feint.loaded then
-		Feint.Callbacks.General.Update(dt)
+		-- Feint.Callbacks.General.Update(dt)
 	end
 end
 
@@ -91,7 +91,7 @@ end
 local font = love.graphics.newFont()
 function love.draw()
 	if Feint.loaded then
-		Feint.Callbacks.General.Draw()
+		-- Feint.Callbacks.General.Draw()
 	end
 	love.graphics.setFont(font)
 	cute.draw()

@@ -10,21 +10,23 @@ function ECS:load()
 	Paths:Add("ECS", Paths.Modules .. "ECS") -- add path
 	Paths:Add("ECS_Entity", Paths.ECS .. "Entity") -- add path
 
+	self.FFI_OPTIMIZATIONS = true
 	self.ENTITIY_MANAGER_ID_MODE = ""
 
-	-- self.EntityArchetype = require(Paths.ECS_Entity .. "Archetype")
-	-- self.EntityArchetypeChunk = require(Paths.ECS_Entity .. "ArchetypeChunk")
-	-- self.EntityArchetypeChunkManager = require(Paths.ECS_Entity .. "ArchetypeChunkManager")
+	self.EntityArchetype = require(Paths.ECS_Entity .. "Archetype")
+	self.EntityArchetypeChunk = require(Paths.ECS_Entity .. "ArchetypeChunk")
+	self.EntityArchetypeChunkManager = require(Paths.ECS_Entity .. "ArchetypeChunkManager")
 
-	-- self.EntityQuery = require(Paths.ECS_Entity .. "EntityQuery")
-	-- self.EntityQueryBuilder = require(Paths.ECS_Entity .. "EntityQueryBuilder")
+	self.EntityQuery = require(Paths.ECS_Entity .. "EntityQuery")
+	self.EntityQueryBuilder = require(Paths.ECS_Entity .. "EntityQueryBuilder")
 
 	self.Component = require(Paths.ECS .. "Component")
-	-- self.EntityManager = require(Paths.ECS_Entity .. "EntityManager")
+	self.EntityManager = require(Paths.ECS_Entity .. "EntityManager")
+	-- print("j lkm;l", Paths.ECS_Entity .. "EntityManager")
 
 	self.World = require(Paths.ECS .. "World")
 	self.World.DefaultWorld = self.World:new("DefaultWorld")
-	-- self.System = require(Paths.ECS .. "System")
+	self.System = require(Paths.ECS .. "System")
 
 	Paths:Add("Game_ECS_Files", "src.ECS")
 	Paths:Add("Game_ECS_Bootstrap", Paths.Game_ECS_Files.."bootstrap", "file")
@@ -43,7 +45,7 @@ function ECS:load()
 		end
 		print()
 
-		-- self.World.DefaultWorld:start()
+		self.World.DefaultWorld:start()
 	end
 
 	function self:setComponentString(component, string, value)

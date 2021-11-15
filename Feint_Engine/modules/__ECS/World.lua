@@ -9,7 +9,7 @@ function World:init(name)
 	self.systemsCount = 0
 	self.updateOrder = {}
 	self.components = {}
-	-- self.EntityManager = EntityManager:new(self)--self.Name .. "EntityManager")
+	self.EntityManager = EntityManager:new(self)--self.Name .. "EntityManager")
 	if love.physics then
 		self.PhysicsWorld = love.physics.newWorld(0, 9.82, true)
 	end
