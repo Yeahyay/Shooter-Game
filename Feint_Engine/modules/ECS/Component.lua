@@ -12,10 +12,10 @@ function Component.ARRAY(arg)
 		local arrayData = {
 			ARRAY_TYPE = true;
 			data = {};
-			size = 0;
+			size = #array;
 		}
 		local memberType = nil
-		for k, v in pairs(array) do
+		for k, v in ipairs(array) do
 			if memberType == nil then
 				memberType = type(v)
 			else
@@ -25,7 +25,6 @@ function Component.ARRAY(arg)
 			end
 			arrayData.data[k] = v
 		end
-		arrayData.size = #array
 		return arrayData
 	elseif type(arg) == "number" then
 		local arrayData = {
@@ -37,16 +36,16 @@ function Component.ARRAY(arg)
 	end
 end
 
-function Component.LIST(list)
+function Component.LIST(arg)
 	if type(arg) == "table" then
 		local list = arg
 		local listData = {
 			LIST_TYPE = true;
 			data = {};
-			size = 0;
+			size = #list;
 		}
 		local memberType = nil
-		for k, v in pairs(list) do
+		for k, v in ipairs(list) do
 			if memberType == nil then
 				memberType = type(v)
 			else
@@ -56,11 +55,10 @@ function Component.LIST(list)
 			end
 			listData.data[k] = v
 		end
-		listData.size = #list
 		return listData
 	elseif type(arg) == "number" then
 		local listData = {
-			ARRAY_TYPE = true;
+			LIST_TYPE = true;
 			data = {};
 			size = arg;
 		}
@@ -68,17 +66,26 @@ function Component.LIST(list)
 	end
 end
 
-function Component.MAP(map)
-	error("Go fuck yourself lmao")
-	local mapData = {
-		data = {};
-		size = 0;
-	}
-	for k, v in pairs(map) do
-		mapData.data[k] = v
+function Component.LIST_MIXED(arg)
+	if type(arg) == "table" then
+		local list = arg
+		local listData = {
+			LIST_MIXED_TYPE = true;
+			data = {};
+			size = #list;
+		}
+		for k, v in ipairs(list) do
+			listData.data[k] = v
+		end
+		return listData
+	elseif type(arg) == "number" then
+		local listData = {
+			LIST_MIXED_TYPE = true;
+			data = {};
+			size = arg;
+		}
+		return listData
 	end
-	mapData.size = #map
-	return mapData
 end
 
 function Component:init(members, ...)
@@ -95,6 +102,12 @@ function Component:init(members, ...)
 		table = "array";
 		boolean = "bool";
 	}
+	local numberAttributes = {
+		float = true;
+		double = true;
+		int = true;
+		long = true;
+	}
 	local structMembers = {}
 	for member, value in pairs(members) do
 		self.orderedMembers[#self.orderedMembers + 1] = member
@@ -110,12 +123,19 @@ function Component:init(members, ...)
 			-- setting it to nil because it is initialized manually
 			-- self.members[k] = nil--ffi.C.malloc(k:len())
 		elseif dataType == "table" then
-			if value.ARRAY_TYPE then
+			if #value == 2 then -- number attribute
+				local attribute = value[1]
+				local number = value[2]
+				assert(numberAttributes[attribute], "invalid number attribute " .. attribute)
+				structMembers[#structMembers + 1] = attribute .. " " .. member
+
+				print("NUMBER ATTRIBUTE")
+			elseif value.ARRAY_TYPE then
 				print("ARRAY")
-				print(member, value)
 			elseif value.LIST_TYPE then
 				print("LIST")
-				print(member, value)
+			elseif value.LIST_MIXED_TYPE then
+				print("LIST MIXED")
 			else
 				print("WHAT")
 				error("Raw tables are not allowed in components", 3)
@@ -124,10 +144,13 @@ function Component:init(members, ...)
 
 			-- self.sizeBytesRaw = self.sizeBytesRaw + ffi.sizeof(dataType)
 			structMembers[#structMembers + 1] = dataTypeLUT[dataType] .. " " .. member
+			-- print(dataTypeLUT[dataType] .. " " .. member)
+			-- print("saniodjoiuhiui90i-j9ioubipoji")
 		end
 
 		self.numMembers = self.numMembers + 1
 	end
+	-- self.members = structMembers
 
 	-- table.sort(structMembers, function(a, b)
 	-- 	return a < b

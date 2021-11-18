@@ -43,7 +43,7 @@ function Archetype:getArchetypeSignatureFromComponents(components)
 		local v = components[i]
 		if v.componentData then
 			stringTable[#stringTable + 1] = v.Name .. "|"
-			assert(not unique[v.Name], "duplicate component \"" .. v.Name .. "\" for archetype", 2)
+			assert(not unique[v.Name], string.format("duplicate component %q archetype", v.Name), 2)
 			unique[v.Name] = true
 		end
 	end
@@ -75,7 +75,7 @@ function Archetype:createArchetype()
 
 	local structMembers = {}
 	for k, v in pairs(self.components) do
-		structMembers[k] = "struct component_" .. v.Name .. " " .. v.Name
+		structMembers[k] = string.format("struct component_%s %s", v.Name, v.Name)
 	end
 	local s = string.format([[
 		struct archetype_%s {%s}
@@ -83,7 +83,7 @@ function Archetype:createArchetype()
 	print(s)
 	ffi.cdef(s)
 
-	local ct = ffi.typeof("struct archetype_" .. self.signatureStripped)
+	local ct = ffi.typeof(string.format("struct archetype_%s", self.signatureStripped))
 	local final = ffi.metatype(ct, {
 		__pairs = function(t)
 			local function iter(t, k)
@@ -103,7 +103,7 @@ function Archetype:createArchetype()
 		local name = self.components[i].Name
 		self.initValues[name] = self.components[i].data
 	end
-	self.initializer = ffi.new("struct archetype_" .. self.signatureStripped, self.initValues)
+	self.initializer = ffi.new(string.format("struct archetype_%s", self.signatureStripped), self.initValues)
 
 	return self
 end
