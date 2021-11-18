@@ -76,13 +76,22 @@ function love.resize(x, y)
 end
 
 function love.load(arg, unfilteredArg)
-	cute.go(arg)
-	-- Feint.Callbacks.General.Load(arg, unfilteredArg)
+	local testing = false
+	for k, v in pairs(arg) do
+		if v == "--tests" then
+			testing = true
+		end
+	end
+	if testing then
+		cute.go{"--cute"}
+	else
+		Feint.Callbacks.General.Load(arg, unfilteredArg)
+	end
 end
 
 function love.update(dt)
 	if Feint.loaded then
-		-- Feint.Callbacks.General.Update(dt)
+		Feint.Callbacks.General.Update(dt)
 	end
 end
 
@@ -91,7 +100,7 @@ end
 local font = love.graphics.newFont()
 function love.draw()
 	if Feint.loaded then
-		-- Feint.Callbacks.General.Draw()
+		Feint.Callbacks.General.Draw()
 	end
 	love.graphics.setFont(font)
 	cute.draw()

@@ -11,7 +11,7 @@ targets:
     name:    "Love2D Tests"
     args:
       - "./"
-      - "--cute"
+      - "--tests"
     sh:      true
     cwd:     "{PROJECT_PATH}"
     keymap:  ctrl-shift-b
