@@ -42,19 +42,19 @@ function moduleLoader:getRoot()
 end
 function moduleLoader:importModule(path)
 	local module = moduleObject:new(rootDir, path)
-	if module.Name:find("__[%a%d]+") then
+	if module.FullName:find("__[%w%.]+") then
 		return nil
 	end
-	if love.filesystem.getInfo(path).type ~= "directory" or module.Name:find("%.lua") then
-		if module.Name:find("%.lua") then
+	if love.filesystem.getInfo(path).type ~= "directory" or module.FullName:find("%.lua") then
+		if module.FullName:find("%.lua") then
 			funcSpace(1)
 			print(string.format("! Module Error in %s, %s: got lua file (expected folder)",
-				module.Name, module.FullName
+				module.FullName, module.FullName
 			))
 		else
 			funcSpace(1)
 			print(string.format("! Module Error in %s, %s: got something weird (expected folder)",
-				module.Name, module.FullName
+				module.FullName, module.FullName
 			))
 		end
 		return nil

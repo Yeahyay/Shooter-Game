@@ -72,7 +72,7 @@ function love.threaderror(thread, message)
 	Feint.Callbacks.Gneral.threaderror(thread, message)
 end
 function love.resize(x, y)
-	Feint.Callbacks.General.resize(x, y)
+	Feint.Callbacks.Window.resize(x, y)
 end
 
 function love.load(arg, unfilteredArg)
