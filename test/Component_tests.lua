@@ -20,16 +20,19 @@ end)
 cute.notion("Component LIST function works", function()
 	local Component = Feint.ECS.Component:new("COMPONENT_LIST_TEST", {
 		a = 0;
-		b = Feint.ECS.Component.LIST{1, 3, 7, 2}
+		b = Feint.ECS.Component.LIST("int", {1, 3, 7, 2});
+		c = Feint.ECS.Component.LIST("double", {1, 3, 7, 2});
 	})
 	cute.check(Component ~= nil).is(true)
 	cute.check(Component.members.a).is(0)
 	cute.check(Component.members.b.LIST_TYPE).is(true)
+	cute.check(Component.members.b.type == "int")
 	cute.check(Component.members.b.data[1]).is(1)
 	cute.check(Component.members.b.data[2]).is(3)
 	cute.check(Component.members.b.data[3]).is(7)
 	cute.check(Component.members.b.data[4]).is(2)
 	cute.check(Component.members.b.size).is(4)
+	cute.check(Component.members.c.type == "double")
 end)
 
 cute.notion("Component LIST_MIXED function works", function()

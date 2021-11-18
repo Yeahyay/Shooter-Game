@@ -1,17 +1,34 @@
-local ECSUtils = Feint.ECS.Util
-local Component = ECSUtils.newClass("Component")
+local Component = setmetatable({}, {})
 
 local ffi = require("ffi")
 
 Component.NIL = "NIL_MEMBER"
 Component.ENTITY = "ENTITY_MEMBER"
 
-function Component.ARRAY(arg)
+function Component:new(name, ...)
+	local object = {
+		Name = name;
+	}
+	setmetatable(object, {
+		__index = self;
+	})
+	object:init(...)
+	return object
+end
+function Component.ARRAY(arg1, arg2)
 	if type(arg) == "table" then
-		local array = arg
+		local array
+		local elementType = "float"
+		if type(arg1) == "string" then
+			array = arg2
+			elementType = arg1
+		else
+			array = arg1
+		end
 		local arrayData = {
 			ARRAY_TYPE = true;
 			data = {};
+			type = elementType;
 			size = #array;
 		}
 		local memberType = nil
@@ -36,12 +53,20 @@ function Component.ARRAY(arg)
 	end
 end
 
-function Component.LIST(arg)
+function Component.LIST(arg1, arg2)
 	if type(arg) == "table" then
-		local list = arg
+		local list
+		local elementType = "float"
+		if type(arg1) == "string" then
+			list = arg2
+			elementType = arg1
+		else
+			list = arg1
+		end
 		local listData = {
 			LIST_TYPE = true;
 			data = {};
+			type = elementType;
 			size = #list;
 		}
 		local memberType = nil
@@ -95,8 +120,9 @@ function Component:init(members, ...)
 
 	self.members = members
 	self.strings = {}
-	self.arrays = {}
+	-- self.arrays = {}
 	self.orderedMembers = {}
+	self.ffiType = false
 	local dataTypeLUT = {
 		number = "float";
 		table = "array";
@@ -108,6 +134,9 @@ function Component:init(members, ...)
 		int = true;
 		long = true;
 	}
+	getmetatable(self).__newindex = function(t, k, v)
+		error(string.format("attempt to modify table %s with key %s value %s\n", t, k, v), 2)
+	end
 	local structMembers = {}
 	for member, value in pairs(members) do
 		self.orderedMembers[#self.orderedMembers + 1] = member
@@ -123,19 +152,22 @@ function Component:init(members, ...)
 			-- setting it to nil because it is initialized manually
 			-- self.members[k] = nil--ffi.C.malloc(k:len())
 		elseif dataType == "table" then
-			if #value == 2 then -- number attribute
+			if value.ARRAY_TYPE then
+				print("ARRAY")
+				structMembers[#structMembers + 1] = value.type .. "* " .. member
+			elseif value.LIST_TYPE then
+				print("LIST")
+				structMembers[#structMembers + 1] = value.type .. "* " .. member
+			elseif value.LIST_MIXED_TYPE then
+				print("LIST MIXED")
+				structMembers[#structMembers + 1] = "void* " .. member
+			elseif #value == 2 then -- number attribute
 				local attribute = value[1]
-				local number = value[2]
+				-- local number = value[2]
 				assert(numberAttributes[attribute], "invalid number attribute " .. attribute)
 				structMembers[#structMembers + 1] = attribute .. " " .. member
 
 				print("NUMBER ATTRIBUTE")
-			elseif value.ARRAY_TYPE then
-				print("ARRAY")
-			elseif value.LIST_TYPE then
-				print("LIST")
-			elseif value.LIST_MIXED_TYPE then
-				print("LIST MIXED")
 			else
 				print("WHAT")
 				error("Raw tables are not allowed in components", 3)
