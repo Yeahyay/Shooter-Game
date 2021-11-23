@@ -4,17 +4,8 @@ local ffi = require("ffi")
 
 Component.NIL = "NIL_MEMBER"
 Component.ENTITY = "ENTITY_MEMBER"
+Component.DEFINED_TYPES = {}
 
-function Component:new(name, ...)
-	local object = {
-		Name = name;
-	}
-	setmetatable(object, {
-		__index = self;
-	})
-	object:init(...)
-	return object
-end
 function Component.ARRAY(arg1, arg2)
 	if type(arg) == "table" then
 		local array
@@ -113,12 +104,30 @@ function Component.LIST_MIXED(arg)
 	end
 end
 
+local function methodExpects(objectName, value, _type)
+	return string.format("method %s%s expected a %s, got a %s (%s) instead\n", objectName and objectName .. ":" or objectName, debug.getinfo(2).name, _type, type(value), value)
+end
+
+local function functionExpects(value, _type)
+	return string.format("function %s expected a %s, got a %s (%s) instead\n", debug.getinfo(2).name, _type, type(value), value)
+end
+
 function Component:init(members, ...)
+	assert(members ~= nil, "no members given")
+	assert(type(members) == "table", methodExpects("Component", members, "table"))--string.format("Component:init expected a %s, got a %s (%s) instead\n", "table", type(members), members))
+	local empty = true
+	if #members > 0 then
+		empty = false
+	elseif next(members, nil) then
+		empty = false
+	end
+	assert(not empty, "no members declared")
 	self.numMembers = 0
 	self.sizeBytes = 0
 	self.sizeBytesRaw = 0
 
 	self.members = members
+	self.initValues = {}
 	self.strings = {}
 	-- self.arrays = {}
 	self.orderedMembers = {}
@@ -147,27 +156,33 @@ function Component:init(members, ...)
 			structMembers[#structMembers + 1] = "cstring " .. member
 			-- structMembers[#structMembers + 1] = "const char* " .. k
 
+			self.initValues[member] = value
+
 			self.strings[member] = value
 			-- the data table is used for initialization
 			-- setting it to nil because it is initialized manually
 			-- self.members[k] = nil--ffi.C.malloc(k:len())
 		elseif dataType == "table" then
 			if value.ARRAY_TYPE then
-				print("ARRAY")
+				-- print("ARRAY")
 				structMembers[#structMembers + 1] = value.type .. "* " .. member
+				self.initValues[member] = value.data
 			elseif value.LIST_TYPE then
-				print("LIST")
+				-- print("LIST")
 				structMembers[#structMembers + 1] = value.type .. "* " .. member
+				self.initValues[member] = value.data
 			elseif value.LIST_MIXED_TYPE then
-				print("LIST MIXED")
+				-- print("LIST MIXED")
 				structMembers[#structMembers + 1] = "void* " .. member
+				self.initValues[member] = value.data
 			elseif #value == 2 then -- number attribute
 				local attribute = value[1]
-				-- local number = value[2]
+				local number = value[2]
 				assert(numberAttributes[attribute], "invalid number attribute " .. attribute)
 				structMembers[#structMembers + 1] = attribute .. " " .. member
+				self.initValues[member] = number
 
-				print("NUMBER ATTRIBUTE")
+				-- print("NUMBER ATTRIBUTE")
 			else
 				print("WHAT")
 				error("Raw tables are not allowed in components", 3)
@@ -178,6 +193,7 @@ function Component:init(members, ...)
 			structMembers[#structMembers + 1] = dataTypeLUT[dataType] .. " " .. member
 			-- print(dataTypeLUT[dataType] .. " " .. member)
 			-- print("saniodjoiuhiui90i-j9ioubipoji")
+			self.initValues[member] = value
 		end
 
 		self.numMembers = self.numMembers + 1
@@ -201,7 +217,7 @@ function Component:init(members, ...)
 			char padding[%s];
 		}
 	]], self.ComponentName, #t > 0 and t .. ";" or "", padding)
-	print(s)
+	-- print(s)
 	ffi.cdef(s)
 	self.ffiType = ffi.metatype("struct ".. self.ComponentName, {
 		__pairs = function(t)
@@ -218,11 +234,26 @@ function Component:init(members, ...)
 	self.sizeBytes = self.sizeBytesRaw + padding
 end
 
+function Component:getMembers()
+	return self.members
+end
+function Component:getInitValues()
+	return self.initValues
+end
+
+function Component:exists(componentName)
+	return Component.DEFINED_TYPES[componentName]
+end
+
 function Component:new(name, data, ...)
 	name = name:gsub(" ", function(s)
 		printf("COMPONENT NAME WARNING: converted space in %q to \"_\"\n", name)
 		return ""
 	end)
+	if self:exists(name) then
+		printf("COMPONENT DEFINITION WARNING: component %q is already defined\n", name)
+		return self.DEFINED_TYPES[name]
+	end
 	local instance = {
 		Name = name or "?",
 		ComponentName = "component_" .. (name or "?"),
@@ -232,6 +263,7 @@ function Component:new(name, data, ...)
 		__index = self,
 	})
 	instance:init(data, ...)
+	Component.DEFINED_TYPES[name] = instance
 	getmetatable(instance).__newindex = function(t, k, v)
 		error("No.")
 	end
