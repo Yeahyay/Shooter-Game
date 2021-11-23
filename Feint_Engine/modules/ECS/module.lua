@@ -12,7 +12,7 @@ function ECS:load()
 
 	self.ENTITIY_MANAGER_ID_MODE = ""
 
-	-- self.EntityArchetype = require(Paths.ECS_Entity .. "Archetype")
+	self.Archetype = require(Paths.ECS_Entity .. "Archetype")
 	-- self.EntityArchetypeChunk = require(Paths.ECS_Entity .. "ArchetypeChunk")
 	-- self.EntityArchetypeChunkManager = require(Paths.ECS_Entity .. "ArchetypeChunkManager")
 
