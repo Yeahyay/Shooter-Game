@@ -251,6 +251,15 @@ local _is = function (testVal, refVal)
   return true
 end
 
+local _isNot = function (testVal, refVal)
+	if type(testVal) == "table" and type(refVal) == "table" then
+		error("Can't compare tables with .isNot, I haven't programmed that in yet ", 3)
+	end
+	if testVal == refVal then error(
+		tostring(testVal) .. " == " .. tostring(refVal), 3) end
+	return true
+end
+
 local _shallowMatches = function (testTable, refTable)
   if #testTable ~= #refTable then
     local t1 = "t1: "
@@ -277,7 +286,7 @@ end
 
 local check = function (testVal)
   return {
-    is = function (refVal) _is(testVal, refVal) end,
+    is = function (refVal) _is(testVal, refVal) end, isNot = function(refVal) _isNot(testVal, refVal) end,
     shallowMatches = function (refTable) _shallowMatches(testVal, refTable) end
   }
 end
