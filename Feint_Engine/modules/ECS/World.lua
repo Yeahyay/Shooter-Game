@@ -1,8 +1,26 @@
-local ECSUtils = Feint.ECS.Util
-local EntityManager = Feint.ECS.EntityManager
-local Paths = Feint.Core.Paths
+local ffi = require("ffi")
 
-local World = ECSUtils.newClass("World")
+local World = {}
+function World:new(name, data, ...)
+	local world = {
+		ECSData = true;
+		ECSType = "World";
+		Name = false;
+		NameShort = name or "?";
+	}
+	world.Name = string.format("World %q (%s)", name, tostring(world):gsub("table: ", ""))
+	setmetatable(world, {
+		__index = self;
+		__tostring = function()
+			return world.Name
+		end;
+	})
+	world:init(data, ...)
+	Feint.Util.Table.makeTableReadOnly(world, function(self, k)
+		return string.format("attempt to modify %s", world.Name)
+	end)
+	return world
+end
 function World:init(name)
 	self.Name = name
 	self.systems = {}
@@ -137,7 +155,4 @@ function World:destroy()
 	self.EntityManager:destroy()
 end
 
--- Feint.Util.Table.makeTableReadOnly(World, function(self, k)
--- 	return string.format("attempt to modify %s", World.Name)
--- end)
 return World
