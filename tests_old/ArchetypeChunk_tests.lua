@@ -1,21 +1,26 @@
 local cute = require("Cute-0_4_0.cute")
 
-local World = Feint.ECS.World
+local TestComponent1 = Feint.ECS.Component:new("ARCHETYPE_TEST_COMPONENT_1", {
+	a = {"int", 0};
+	b = {"double", 1};
+	c = {"float", 4.5};
+})
+local TestComponent2 = Feint.ECS.Component:new("ARCHETYPE_TEST_COMPONENT_2", {
+	a = {"int", 0};
+	b = {"double", 1};
+	c = {"float", 4.5};
+})
+local TestComponent3 = Feint.ECS.Component:new("ARCHETYPE_TEST_COMPONENT_3", {
+	a = {"int", 0};
+	b = {"double", 1};
+	c = {"float", 4.5};
+})
+local TestArchetype1 = Feint.ECS.Archetype:new{TestComponent1, TestComponent2, TestComponent3}
 
-local EntityArchetypeChunk = Feint.ECS.EntityArchetypeChunk
+cute.notion("ArchetypeChunk creation with no archetype fails", function()
+	cute.check(pcall(Feint.ECS.ArchetypeChunk.new)).is(false)
+end)
 
--- cute.notion("Archetype Chunk instantiation is proper", function()
--- 	local world = World.DefaultWorld
--- 	local EntityManager = world.EntityManager
--- 	local Renderer = world:getComponent("Renderer")
--- 	local Transform = world:getComponent("Transform")
--- 	local Physics = world:getComponent("Physics")
--- 	local Player = world:getComponent("Player")
--- 	local Health = world:getComponent("Health")
--- 	local CameraFocus = world:getComponent("CameraFocus")
--- 	local archetype = EntityManager:newArchetypeFromComponents{Renderer, Transform, Physics, Player, Health, CameraFocus}
--- 	for i = 1, 1000, 1 do
--- 		local archetypeChunk = EntityArchetypeChunk:new(archetype)
--- 	end
--- 	return true
--- end)
+cute.notion("ArchetypeChunk creation works", function()
+	Feint.ECS.ArchetypeChunk:new(TestArchetype1)
+end)
