@@ -5,14 +5,6 @@ Component.NIL = "NIL_MEMBER"
 Component.ENTITY = "ENTITY_MEMBER"
 Component.DEFINED_TYPES = {}
 
-local function methodExpects(objectName, value, arg, _type)
-	return string.format("method %s%s argument %d expected a %s, got a %s (%s) instead\n", objectName and objectName .. ":" or objectName, debug.getinfo(2).name, arg, _type, type(value), value)
-end
-
-local function functionExpects(value, _type)
-	return string.format("function %s expected a %s, got a %s (%s) instead\n", debug.getinfo(2).name, _type, type(value), value)
-end
-
 function Component:new(name, data, ...)
 	name = name and name:gsub(" ", function(s)
 		printf("COMPONENT NAME WARNING: converted space in %q to \"_\"\n", name)

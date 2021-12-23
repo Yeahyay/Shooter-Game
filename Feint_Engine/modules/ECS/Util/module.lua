@@ -1,71 +1,15 @@
-local ECSUtils = {}
+local ECSUtil = {}
 
-function ECSUtils:load()
+function ECSUtil:load()
 
-	function ECSUtils.newClass(name)
-		local Class = {}
-		Class.Name = name or "?"
-		Class.Super = ECSUtils
-		Class.Type = "BASE_CLASS"
-		Class.string = tostring(Class)
-		Class.new = function(BaseClass, name, ...)
-			return ECSUtils.new(BaseClass, "class", name, ...)
-		end
-		local mt = {
-			-- when the Class gets called, it creates an Instance of Class
-			-- that new Instance is used to make an immutable and runnable instance
-			__call = Class.new,--[[function(BaseClass, name, ...)
-				return ECSUtils.new(BaseClass, "class", name, ...)
-			end,]]
-			-- __index = Class,
-			__tostring = function()
-				return string.format("class %s (%s)", Class.Name, Class.string)
-			end
-		}
-		setmetatable(Class, mt)
-
-		return Class
+	function ECSUtil.methodExpects(objectName, value, arg, _type)
+		return string.format("method %s%s argument %d expected a %s, got a %s (%s) instead\n", objectName and objectName .. ":" or objectName, debug.getinfo(2).name, arg, _type, type(value), value)
 	end
 
-	function ECSUtils.instantiateComponent(component)
-
+	function ECSUtil.functionExpects(value, _type)
+		return string.format("function %s expected a %s, got a %s (%s) instead\n", debug.getinfo(2).name, _type, type(value), value)
 	end
-
-	function ECSUtils.new(super, objType, --[[name,]] ...)
-		-- constructor for the instance
-
-		local newInstance = {}
-		-- assert(name, 2, "no name given")
-		-- newInstance.Name = name or "?"
-		newInstance.Super = super
-		newInstance.string = tostring(newInstance)
-		newInstance.Type = objType
-		-- assert(
-		-- 	type(newInstance.Name) == "string", 2,
-		-- 	Feint.Util.Exceptions.BAD_ARG_ERROR(1, "new instance name", "string", type(newInstance.Name))
-		-- )
-
-		setmetatable(newInstance, {
-			__index = super,
-			__call = function(newInstance, --[[name,]] ...)
-				return newInstance:new(--[[name,]] ...)
-			end,
-			__tostring = function()
-				return string.format("%s %s (%s)", objType, --[[newInstance.Name]] "nil", newInstance.string)
-			end
-		})
-
-		newInstance:init(...)
-		return newInstance
-		-- end
-
-	end
-
-	-- setmetatable(ECSUtils, {})
-	-- util.makeTableReadOnly(ECSUtils, function(self, k)
-	-- 	return util.READ_ONLY_MODIFICATION_ERROR(self, k)
-	-- end)
 
 end
 
-return ECSUtils
+return ECSUtil

@@ -5,10 +5,11 @@ function World:new(name, data, ...)
 	local world = {
 		ECSData = true;
 		ECSType = "World";
+		NameDisplay = false;
 		Name = false;
 		NameShort = name or "?";
 	}
-	world.Name = string.format("World %q (%s)", name, tostring(world):gsub("table: ", ""))
+	world.NameDisplay = string.format("World %q (%s)", name or "?", tostring(world):gsub("table: ", ""))
 	setmetatable(world, {
 		__index = self;
 		__tostring = function()
@@ -27,7 +28,7 @@ function World:init(name)
 	self.systemsCount = 0
 	self.updateOrder = {}
 	self.components = {}
-	-- self.EntityManager = EntityManager:new(self)--self.Name .. "EntityManager")
+	self.EntityManager = Feint.ECS.EntityManager:new(self)--self.Name .. "EntityManager")
 	if love.physics then
 		self.PhysicsWorld = love.physics.newWorld(0, 9.82, true)
 	end

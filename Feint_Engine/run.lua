@@ -17,10 +17,15 @@ local Core = Feint.Core
 local Input = Feint.Core.Input
 local Debug = Feint.Core.Util.Debug
 
+local running = true
+
 -- luacheck: pop
 
 function love.keypressed(key, scancode, isrepeat)
 	cute.keypressed(key, scancode, isrepeat)
+	if key == "space" then
+		running = true
+	end
 	Feint.Callbacks.Keyboard.Pressed(key, scancode, isrepeat)
 end
 function love.keyreleased(key, scancode)
@@ -83,15 +88,25 @@ function love.load(arg, unfilteredArg)
 		end
 	end
 	if testing then
+		cute.setKeys("h", "down", "up")
 		cute.go{"--cute"}
 	else
 		Feint.Callbacks.General.Load(arg, unfilteredArg)
+		local status, message = pcall(Feint.Callbacks.General.Load, arg, unfilteredArg)
+		if not status then
+			running = false
+			printf("FEINT LOAD ERROR: %s\n", message)
+		end
 	end
 end
 
 function love.update(dt)
-	if Feint.loaded then
-		Feint.Callbacks.General.Update(dt)
+	if Feint.loaded and running then
+		local status, message = pcall(Feint.Callbacks.General.Update, dt)
+		if not status then
+			running = false
+			printf("FEINT UPDATE ERROR: %S\n", message)
+		end
 	end
 end
 
@@ -99,8 +114,12 @@ local function updateRender(dt) -- luacheck: ignore
 end
 local font = love.graphics.newFont()
 function love.draw()
-	if Feint.loaded then
-		Feint.Callbacks.General.Draw()
+	if Feint.loaded and running then
+		local status, message = pcall(Feint.Callbacks.General.Draw, nil)
+		if not status then
+			running = false
+			printf("FEINT DRAW ERROR: %s\n", message)
+		end
 	end
 	love.graphics.setFont(font)
 	cute.draw()

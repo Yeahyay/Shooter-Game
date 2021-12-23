@@ -26,6 +26,22 @@ print("PATH: "..PATH)
 print("SAVEDIR: "..SAVEDIR)
 print()
 
+-- local g = {}
+-- for k, v in pairs(_G) do
+-- 	g[#g + 1] = {k, v}
+-- end
+-- table.sort(g, function(a, b)
+-- 	return a[1] < b[1]
+-- end)
+-- for _, v in ipairs(g) do
+-- 	print(v[1], v[2])
+-- end
+-- print()
+-- for k, v in pairs(package) do
+-- 	print(k, type(v))
+-- end
+-- print()
+
 -- luacheck: globals initEnv
 function initEnv(id)
 	local fenv = getfenv(2)

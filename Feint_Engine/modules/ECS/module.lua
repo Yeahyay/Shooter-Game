@@ -20,7 +20,7 @@ function ECS:load()
 	-- self.EntityQueryBuilder = require(Paths.ECS_Entity .. "EntityQueryBuilder")
 
 	-- self.Component = require(Paths.ECS .. "Component")
-	-- self.EntityManager = require(Paths.ECS_Entity .. "EntityManager")
+	self.EntityManager = require(Paths.ECS_Entity .. "EntityManager")
 
 	self.World = require(Paths.ECS .. "World")
 	self.World.DefaultWorld = self.World:new("DefaultWorld")
